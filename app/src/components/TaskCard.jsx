@@ -27,7 +27,7 @@ export default function TaskCard({ task, projects = [], onEdit }) {
 
   const project = task.projectId ? projects.find(p => p.id === task.projectId) : null;
   const taskType = project && task.taskTypeId ? project.taskTypes.find(tt => tt.id === task.taskTypeId) : null;
-  
+
   const projectColor = project ? project.color : 'transparent';
 
   const style = {
@@ -35,9 +35,11 @@ export default function TaskCard({ task, projects = [], onEdit }) {
     transition: transition || 'all 0.2s ease',
     opacity: isDragging ? 0.8 : 1,
     cursor: 'grab',
-    borderLeft: `4px solid ${projectColor}`, 
+    borderLeft: `4px solid ${projectColor}`,
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', 
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    width: '100%',
+    margin: '0 auto',
   };
 
   const cardStyle = {
@@ -46,7 +48,7 @@ export default function TaskCard({ task, projects = [], onEdit }) {
     borderRadius: '7px',
     transition: 'all 0.2s ease-in-out',
   };
-  
+
   const handleCardClick = () => {
     onEdit(task);
   }
@@ -61,15 +63,15 @@ export default function TaskCard({ task, projects = [], onEdit }) {
   };
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
+    <div
+      ref={setNodeRef}
+      style={style}
       {...attributes}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Card 
-        style={cardStyle} 
+      <Card
+        style={cardStyle}
         className="mb-2 text-light"
       >
         <div {...listeners} onClick={handleCardClick} style={{ cursor: 'grab' }}>
@@ -77,7 +79,7 @@ export default function TaskCard({ task, projects = [], onEdit }) {
             <div className="d-flex justify-content-between">
               <div className="d-flex align-items-center" style={{ minWidth: 0 }}>
                 {project && (
-                  <div 
+                  <div
                     style={{
                       width: '10px',
                       height: '10px',
@@ -92,31 +94,36 @@ export default function TaskCard({ task, projects = [], onEdit }) {
               </div>
             </div>
 
-            {task.description && (
-              <div 
-                ref={descriptionRef}
-                className={isHovered && isTruncated ? '' : 'task-description-clamp'}
-                style={{
-                  fontSize: '0.85em',
-                  color: '#8b949e',
-                  whiteSpace: 'pre-line',
-                  wordBreak: 'break-word',
-                  marginTop: '0.5rem',
-                }}
-              >
-                {task.description}
-              </div>
-            )}
-            
+            <div
+              ref={descriptionRef}
+              className="task-description-container"
+              style={{
+                fontSize: '0.85em',
+                color: task.description ? '#8b949e' : 'transparent',
+                whiteSpace: 'pre-line',
+                wordBreak: 'break-word',
+                marginTop: '0.5rem',
+                lineHeight: '1.5',
+                minHeight: '1.275em', // 0.85em * 1.5 line-height
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                WebkitLineClamp: isHovered && isTruncated ? 'unset' : 1,
+                userSelect: task.description ? 'text' : 'none',
+              }}
+            >
+              {task.description || '\u00A0'}
+            </div>
+
             <div className="d-flex justify-content-between align-items-center mt-2">
-                <small className="text-white-50">
-                  {formatDate(task.updatedAt)}
-                </small>
-                <div>
-                    {taskType && (
-                        <Badge pill bg="dark" className="fw-normal text-secondary">{taskType.name}</Badge>
-                    )}
-                </div>
+              <small className="text-white-50">
+                {formatDate(task.updatedAt)}
+              </small>
+              <div>
+                {taskType && (
+                  <Badge pill bg="dark" className="fw-normal text-secondary">{taskType.name}</Badge>
+                )}
+              </div>
             </div>
           </Card.Body>
         </div>
