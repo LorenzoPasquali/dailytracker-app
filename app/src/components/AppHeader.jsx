@@ -13,23 +13,23 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   </a>
 ));
 
-export default function AppHeader({ 
+export default function AppHeader({
   isMobile,
   isSidebarCollapsed,
   onToggleCollapse,
   onToggleMobileSidebar,
-  onNewTaskClick, 
-  currentUser, 
-  onLogoutClick 
+  onNewTaskClick,
+  currentUser,
+  onLogoutClick
 }) {
 
   return (
     <Navbar variant="dark" className="py-1 px-3 border-bottom border-secondary" style={{ backgroundColor: '#0d1117' }}>
       <div className="d-flex align-items-center">
         {isMobile ? (
-          <Button 
-            variant="link" 
-            onClick={onToggleMobileSidebar} 
+          <Button
+            variant="link"
+            onClick={onToggleMobileSidebar}
             className="text-secondary p-2 sidebar-toggle-btn"
           >
             <List size={22} />
@@ -52,14 +52,22 @@ export default function AppHeader({
         <Navbar.Brand href="#" className="ms-2 fs-4">Daily Tracker</Navbar.Brand>
       </div>
       <div className="d-flex align-items-center ms-auto">
-        <Button variant="primary" className="me-3" onClick={onNewTaskClick}>+ Nova Tarefa</Button>
-        
+        <Button
+          variant="primary"
+          className="me-3"
+          size={isMobile ? "sm" : undefined}
+          style={isMobile ? { fontSize: '0.85rem', padding: '0.25rem 0.75rem' } : {}}
+          onClick={onNewTaskClick}
+        >
+          {isMobile ? '+ Tarefa' : '+ Nova Tarefa'}
+        </Button>
+
         <Dropdown align="end">
           <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components" />
 
-          <Dropdown.Menu 
-            variant="dark" 
-            className="p-2" 
+          <Dropdown.Menu
+            variant="dark"
+            className="p-2"
             style={{ width: 'max-content', marginTop: '10px', border: '1px solid #30363d' }}
           >
             <div className="text-center px-2 py-1">
@@ -70,10 +78,10 @@ export default function AppHeader({
             </div>
             <Dropdown.Divider />
             <Dropdown.Item as="div" className="p-0">
-              <Button 
-                variant="danger" 
-                size="sm" 
-                className="w-100 d-flex align-items-center justify-content-center" 
+              <Button
+                variant="danger"
+                size="sm"
+                className="w-100 d-flex align-items-center justify-content-center"
                 onClick={onLogoutClick}
               >
                 <BoxArrowRight className="me-2" /> Sair

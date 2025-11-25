@@ -23,24 +23,31 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
   };
 
   const tasksContainerStyle = {
-    overflowY: 'auto',
+    overflowY: isMobile ? 'hidden' : 'auto',
+    overflowX: isMobile ? 'auto' : 'hidden',
     flexGrow: 1,
+    display: isMobile ? 'flex' : 'block',
+    flexDirection: isMobile ? 'row' : 'column',
+    gap: isMobile ? '1rem' : '0',
+    paddingBottom: isMobile ? '1rem' : '0',
+    minHeight: isMobile ? '170px' : 'auto',
+    alignItems: isMobile ? 'center' : 'stretch',
   };
 
   const taskIds = tasks.map(task => task.id);
 
   return (
-    <div ref={setNodeRef} style={isMobile ? columnStyle : desktopStyle} className="d-flex flex-column h-100">
+    <div ref={setNodeRef} style={isMobile ? columnStyle : desktopStyle} className={`d-flex flex-column ${isMobile ? '' : 'h-100'}`}>
       <div className="p-2 border-bottom border-secondary d-flex justify-content-between align-items-center flex-shrink-0">
         <h6 className="mb-0 text-light fw-normal">{title}</h6>
         <Badge pill bg="dark" className="text-secondary">{tasks.length}</Badge>
       </div>
-      
+
       <div className="p-2" style={tasksContainerStyle}>
         <SortableContext items={taskIds}>
           {tasks.length > 0 ? (
             tasks.map(task => (
-              <div key={task.id}>
+              <div key={task.id} style={isMobile ? { minWidth: '75vw' } : {}}>
                 <TaskCard task={task} projects={projects} onEdit={onEdit} />
               </div>
             ))
