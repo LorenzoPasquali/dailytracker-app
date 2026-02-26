@@ -46,7 +46,7 @@ export default function ProjectsModal({ show, handleClose }) {
       console.error("Erro ao criar projeto", error);
     }
   };
-  
+
   const handleUpdateProject = async (project, dataToUpdate) => {
     try {
       const response = await api.put(`/api/projects/${project.id}`, { ...project, ...dataToUpdate });
@@ -70,25 +70,25 @@ export default function ProjectsModal({ show, handleClose }) {
     handleUpdateProject(project, { name: editingProjectName });
     cancelEditing();
   };
-  
+
   const openDeleteConfirm = (project) => {
     setProjectToDelete(project);
     setShowDeleteConfirm(true);
   };
-  
+
   const confirmDelete = async () => {
     if (!projectToDelete) return;
     try {
-        await api.delete(`/api/projects/${projectToDelete.id}`);
-        setProjects(projects.filter(p => p.id !== projectToDelete.id));
+      await api.delete(`/api/projects/${projectToDelete.id}`);
+      setProjects(projects.filter(p => p.id !== projectToDelete.id));
     } catch (error) {
-        alert(error.response?.data?.message || "Não foi possível excluir o projeto.");
+      alert(error.response?.data?.message || "Não foi possível excluir o projeto.");
     } finally {
-        setShowDeleteConfirm(false);
-        setProjectToDelete(null);
+      setShowDeleteConfirm(false);
+      setProjectToDelete(null);
     }
   };
-  
+
   const handleCreateSubmit = (e) => {
     e.preventDefault();
     handleCreateProject();
@@ -105,15 +105,15 @@ export default function ProjectsModal({ show, handleClose }) {
   }
 
   const modalStyle = { backgroundColor: '#0d1117', color: '#c9d1d9' };
-  
-  const darkInputStyle = { 
-    backgroundColor: '#21262d', 
-    color: 'white', 
+
+  const darkInputStyle = {
+    backgroundColor: '#21262d',
+    color: 'white',
     borderColor: '#30363d',
-    boxShadow: 'none', 
+    boxShadow: 'none',
     '&:focus': {
-      borderColor: '#a78bfa',
-      boxShadow: '0 0 0 0.1rem rgba(167, 139, 250, 0.25)',
+      borderColor: '#3b82f6',
+      boxShadow: '0 0 0 0.1rem rgba(59, 130, 246, 0.25)',
       outline: 'none',
     }
   };
@@ -149,7 +149,7 @@ export default function ProjectsModal({ show, handleClose }) {
                 style={darkInputStyle}
                 className="custom-form-control"
               />
-              <div className="d-flex align-items-center px-2" style={{backgroundColor: '#21262d', border: '1px solid #30363d', borderRadius: '0 5px 5px 0'}}>
+              <div className="d-flex align-items-center px-2" style={{ backgroundColor: '#21262d', border: '1px solid #30363d', borderRadius: '0 5px 5px 0' }}>
                 <ColorPicker currentColor={newProjectColor} onColorSelect={setNewProjectColor} />
               </div>
               <Button variant="primary" type="submit">Criar</Button>
@@ -187,15 +187,15 @@ export default function ProjectsModal({ show, handleClose }) {
                         </InputGroup>
                       ) : (
                         <div className="d-flex align-items-center">
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: project.color, marginRight: '8px', border: '1px solid #30363d' }}></div>
-                            {project.name}
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: project.color, marginRight: '8px', border: '1px solid #30363d' }}></div>
+                          {project.name}
                         </div>
                       )}
                     </td>
                     <td className="text-center align-middle" style={customTdStyle}>
-                      <ColorPicker 
-                        currentColor={project.color} 
-                        onColorSelect={(color) => handleUpdateProject(project, { color })} 
+                      <ColorPicker
+                        currentColor={project.color}
+                        onColorSelect={(color) => handleUpdateProject(project, { color })}
                       />
                     </td>
                     <td className="text-center align-middle" style={customTdStyle}>
@@ -210,7 +210,7 @@ export default function ProjectsModal({ show, handleClose }) {
         </Modal.Body>
       </Modal>
 
-      <ConfirmationModal 
+      <ConfirmationModal
         show={showDeleteConfirm}
         handleClose={() => setShowDeleteConfirm(false)}
         handleConfirm={confirmDelete}

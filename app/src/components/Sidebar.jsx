@@ -17,9 +17,9 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
 
   if (isCollapsed) {
     return (
-      <div 
-        onClick={handleClick} 
-        role="button" 
+      <div
+        onClick={handleClick}
+        role="button"
         className="p-3 d-flex justify-content-center align-items-center text-secondary"
       >
         {children}
@@ -44,47 +44,50 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
 export default function Sidebar({ onProjectsClick, onTaskTypesClick, isCollapsed, onToggleCollapse, isMobile }) {
   const sidebarStyle = {
     width: isCollapsed ? '60px' : '260px',
-    backgroundColor: '#0d1117',
+    backgroundColor: 'rgba(13, 17, 23, 0.65)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     zIndex: 2,
     transition: 'width 0.3s ease-in-out',
     overflowX: 'hidden',
   };
 
   const activeLinkStyle = {
-    borderLeft: '3px solid #a78bfa',
-    backgroundColor: '#1c2128',
+    borderLeft: '3px solid #3b82f6',
+    background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(13, 17, 23, 0) 100%)',
+    boxShadow: 'inset 4px 0 8px -4px rgba(59, 130, 246, 0.5)',
   };
 
   return (
     <div style={sidebarStyle} className={`h-100 d-flex flex-column flex-shrink-0 ${!isMobile ? 'border-end border-secondary' : ''}`}>
       <Nav className="flex-column nav-pills flex-grow-1" style={{ whiteSpace: 'nowrap', paddingTop: '1rem' }}>
-        <Nav.Link 
-          href="#" 
-          className="text-light d-flex align-items-center p-3" 
+        <Nav.Link
+          href="#"
+          className="text-light d-flex align-items-center p-3"
           style={activeLinkStyle}
           onClick={isCollapsed ? onToggleCollapse : null}
         >
-          <HouseDoorFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} /> 
+          <HouseDoorFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
           {!isCollapsed && "Monitor de Tarefas"}
         </Nav.Link>
 
         <Accordion>
-            <CustomToggle eventKey="0" isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse}>
-              <CollectionFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} /> 
-              {!isCollapsed && "Cadastros"}
-            </CustomToggle>
-            {!isCollapsed && (
-              <Accordion.Collapse eventKey="0">
-                <div>
-                  <Nav.Link onClick={onProjectsClick} className="text-secondary d-flex align-items-center py-2 ps-5" role="button">
-                    <Folder className="me-2" /> Projetos
-                  </Nav.Link>
-                  <Nav.Link onClick={onTaskTypesClick} className="text-secondary d-flex align-items-center py-2 ps-5" role="button">
-                    <TagFill className="me-2" /> Tipos de Tarefa
-                  </Nav.Link>
-                </div>
-              </Accordion.Collapse>
-            )}
+          <CustomToggle eventKey="0" isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse}>
+            <CollectionFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
+            {!isCollapsed && "Cadastros"}
+          </CustomToggle>
+          {!isCollapsed && (
+            <Accordion.Collapse eventKey="0">
+              <div>
+                <Nav.Link onClick={onProjectsClick} className="text-secondary d-flex align-items-center py-2 ps-5" role="button">
+                  <Folder className="me-2" /> Projetos
+                </Nav.Link>
+                <Nav.Link onClick={onTaskTypesClick} className="text-secondary d-flex align-items-center py-2 ps-5" role="button">
+                  <TagFill className="me-2" /> Tipos de Tarefa
+                </Nav.Link>
+              </div>
+            </Accordion.Collapse>
+          )}
         </Accordion>
 
         <OverlayTrigger
@@ -97,7 +100,7 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, isCollapsed
           }
         >
           <div className="nav-link text-secondary d-flex align-items-center p-3 nav-link-no-action">
-            <BarChartFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} /> 
+            <BarChartFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
             {!isCollapsed && "Relatórios"}
           </div>
         </OverlayTrigger>

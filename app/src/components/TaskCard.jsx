@@ -32,21 +32,27 @@ export default function TaskCard({ task, projects = [], onEdit }) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'all 0.2s ease',
-    opacity: isDragging ? 0.8 : 1,
+    transition: transition || 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    opacity: isDragging ? 0.9 : 1,
     cursor: 'grab',
-    borderLeft: `4px solid ${projectColor}`,
+    borderLeft: `3px solid ${projectColor}`,
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    boxShadow: isDragging
+      ? '0 12px 24px rgba(0,0,0,0.5), 0 8px 8px rgba(0,0,0,0.3)'
+      : (isHovered ? '0 6px 12px rgba(0,0,0,0.3)' : '0 2px 4px rgba(0, 0, 0, 0.2)'),
     width: '100%',
     margin: '0 auto',
+    scale: isDragging ? '1.03' : '1',
+    zIndex: isDragging ? 999 : 1,
+    position: 'relative'
   };
 
   const cardStyle = {
-    backgroundColor: '#161b22',
+    backgroundColor: isHovered ? '#1c2128' : '#161b22',
     border: '1px solid #30363d',
-    borderRadius: '7px',
-    transition: 'all 0.2s ease-in-out',
+    borderRadius: '8px',
+    transition: 'all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    transform: isHovered && !isDragging ? 'translateY(-2px)' : 'translateY(0)',
   };
 
   const handleCardClick = () => {
@@ -81,16 +87,17 @@ export default function TaskCard({ task, projects = [], onEdit }) {
                 {project && (
                   <div
                     style={{
-                      width: '10px',
-                      height: '10px',
+                      width: '8px',
+                      height: '8px',
                       borderRadius: '50%',
                       backgroundColor: projectColor,
+                      boxShadow: `0 0 8px ${projectColor}`,
                       marginRight: '8px',
                       flexShrink: 0
                     }}
                   />
                 )}
-                <span className="mb-0 small text-truncate">{task.title}</span>
+                <span className="mb-0 small text-truncate fw-semibold" style={{ letterSpacing: '0.2px' }}>{task.title}</span>
               </div>
             </div>
 
