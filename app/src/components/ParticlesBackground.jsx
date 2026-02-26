@@ -15,9 +15,9 @@ export default function ParticlesBackground({ variant = 'default' }) {
     },
     fpsLimit: 144,
     particles: {
-      color: { value: "#5f4a9eff" },
+      color: { value: "#475569" }, // More subtle slate
       links: {
-        color: "#a78bfa",
+        color: "#94a3b8", // Subdued slate-blue link
         distance: 150,
         enable: isInteractive,
         opacity: 0.6,
@@ -36,16 +36,16 @@ export default function ParticlesBackground({ variant = 'default' }) {
         value: variant === 'home' ? 80 : (variant === 'login' ? 60 : 30),
       },
       opacity: {
-        value: variant === 'home' ? 0.3 : (variant === 'login' ? 0.5 : 0.15),
+        value: variant === 'home' ? 0.2 : (variant === 'login' ? 0.3 : 0.1),
       },
       shape: { type: "circle" },
-      size: { 
-        value: { min: 1, max: isInteractive ? 5 : 3 } 
+      size: {
+        value: { min: 1, max: isInteractive ? 3 : 2 }
       },
     },
     detectRetina: true,
   };
-  
+
   if (isInteractive) {
     options.interactivity = {
       events: {
@@ -72,7 +72,7 @@ export default function ParticlesBackground({ variant = 'default' }) {
         left: 0,
         width: '100%',
         height: '60%',
-        background: 'linear-gradient(to top, rgba(167, 139, 250, 0.15) 0%, rgba(13, 17, 23, 0) 100%)',
+        background: 'linear-gradient(to top, rgba(59, 130, 246, 0.12) 0%, rgba(13, 17, 23, 0) 100%)', // Subtle slate blue bottom glow for Dashboard
         pointerEvents: 'none'
       }} />
     </div>

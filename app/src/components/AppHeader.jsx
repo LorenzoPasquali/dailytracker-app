@@ -24,7 +24,7 @@ export default function AppHeader({
 }) {
 
   return (
-    <Navbar variant="dark" className="py-1 px-3 border-bottom border-secondary" style={{ backgroundColor: '#0d1117' }}>
+    <Navbar variant="dark" className="py-1 px-3 border-bottom border-secondary" style={{ backgroundColor: 'rgba(13, 17, 23, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
       <div className="d-flex align-items-center">
         {isMobile ? (
           <Button

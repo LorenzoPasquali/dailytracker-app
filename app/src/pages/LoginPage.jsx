@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-    useEffect(() => {
+  useEffect(() => {
     const handleMessage = (event) => {
       if (event.origin !== window.location.origin) {
         return;
@@ -74,10 +74,10 @@ export default function LoginPage() {
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <ParticlesBackground variant="login" />
       <Container fluid className="d-flex flex-column align-items-center justify-content-center text-light" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
-        
+
         <h1 className="text-center mb-4 fs-3 fw-normal">Entrar no DailyTracker</h1>
-        
-        <div style={{ width: '100%', maxWidth: '350px', padding: '20px', backgroundColor: 'rgba(22, 27, 34, 0.1)', backdropFilter: 'blur(10px)', border: '1px solid #252b31ff', borderRadius: '6px' }}>
+
+        <div style={{ width: '100%', maxWidth: '350px', padding: '2rem', backgroundColor: 'rgba(22, 27, 34, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(59, 130, 246, 0.2)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)', borderRadius: '12px' }}>
           <Form onSubmit={handleLogin}>
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Nome de usuário ou email</Form.Label>
@@ -97,22 +97,22 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mt-3" style={{ maxWidth: '350px', width: '100%' }}>
-            <div className="d-flex align-items-center my-3">
-                <hr className="flex-grow-1 border-secondary" />
-                <span className="mx-2 text-secondary">ou</span>
-                <hr className="flex-grow-1 border-secondary" />
-            </div>
-            <Button 
-                variant="outline-light" 
-                onClick={handleGoogleLogin} 
-                className="w-100 py-2 d-flex align-items-center justify-content-center"
-            >
-                <img src={googleLogo} alt="Google" style={{ width: 18, marginRight: 8 }} />
-                Continuar com Google
-            </Button>
+          <div className="d-flex align-items-center my-3">
+            <hr className="flex-grow-1 border-secondary" />
+            <span className="mx-2 text-secondary">ou</span>
+            <hr className="flex-grow-1 border-secondary" />
+          </div>
+          <Button
+            variant="outline-light"
+            onClick={handleGoogleLogin}
+            className="w-100 py-2 d-flex align-items-center justify-content-center"
+          >
+            <img src={googleLogo} alt="Google" style={{ width: 18, marginRight: 8 }} />
+            Continuar com Google
+          </Button>
         </div>
 
-        <div className="text-center mt-4 p-3 border border-secondary" style={{ maxWidth: '350px', width: '100%', backgroundColor: 'transparent', borderRadius: '6px'}}>
+        <div className="text-center mt-4 p-3 border border-secondary" style={{ maxWidth: '350px', width: '100%', backgroundColor: 'transparent', borderRadius: '6px' }}>
           Novo no DailyTracker? <Link to="/register" className="text-primary text-decoration-none">Crie uma conta</Link>
         </div>
       </Container>
