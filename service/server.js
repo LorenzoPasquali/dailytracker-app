@@ -1,28 +1,32 @@
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import 'dotenv/config';
 import session from 'express-session';
 import passport from 'passport';
 import './passport-setup.js';
+import prisma from './prisma.js';
 
 const app = express();
 app.set('trust proxy', 1);
-
-const prisma = new PrismaClient();
 
 if (!process.env.JWT_SECRET) {
   throw new Error('FATAL_ERROR: JWT_SECRET is not defined in the environment variables.');
 }
 
-app.use(express.json());
+// ── Middleware ────────────────────────────────────────────────────────────────
+
+app.use(express.json({ limit: '10kb' }));
 
 app.use(cors({
   origin: ['https://dailytracker.com.br', 'http://localhost:5173'],
   credentials: true,
 }));
+
+app.use(helmet());
 
 app.use(
   session({
@@ -36,7 +40,96 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.post('/auth/register', async (req, res) => {
+// ── Rate Limiters ────────────────────────────────────────────────────────────
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,      // 1 minute
+  max: 10,                   // 10 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Muitas tentativas. Tente novamente em 1 minuto.' },
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,      // 1 minute
+  max: 100,                  // 100 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Limite de requisições excedido. Tente novamente em 1 minuto.' },
+});
+
+/**
+ * Strict parseInt — rejects "42abc", "", NaN, etc.
+ * Returns the parsed integer or null.
+ */
+function parseId(value) {
+  if (typeof value !== 'string' || value.trim() === '') return null;
+  if (!/^\d+$/.test(value)) return null;
+  const n = Number(value);
+  if (!Number.isInteger(n) || n <= 0) return null;
+  return n;
+}
+
+/**
+ * Input length validation rules.
+ */
+const FIELD_MAX_LENGTHS = {
+  title: 200,
+  description: 5000,
+  name: 100,
+  color: 7,
+  email: 254,
+};
+
+/**
+ * Middleware that validates string field lengths in req.body.
+ */
+function validateBody(req, res, next) {
+  if (!req.body || typeof req.body !== 'object') return next();
+
+  for (const [field, maxLen] of Object.entries(FIELD_MAX_LENGTHS)) {
+    const value = req.body[field];
+    if (value !== undefined && value !== null) {
+      if (typeof value === 'string' && value.length > maxLen) {
+        return res.status(400).json({
+          message: `O campo '${field}' excede o tamanho máximo de ${maxLen} caracteres.`,
+        });
+      }
+    }
+  }
+  next();
+}
+
+/**
+ * Middleware that validates route param :id as a strict integer.
+ */
+function validateIdParam(req, res, next) {
+  const id = parseId(req.params.id);
+  if (id === null) {
+    return res.status(400).json({ message: 'ID inválido. Deve ser um número inteiro positivo.' });
+  }
+  req.parsedId = id;
+  next();
+}
+
+// ── Auth Middleware ──────────────────────────────────────────────────────────
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.userId = user.userId;
+    next();
+  });
+};
+
+// ── Auth Routes ──────────────────────────────────────────────────────────────
+
+app.post('/auth/register', authLimiter, validateBody, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ message: "Email e senha são obrigatórios." });
@@ -52,7 +145,7 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-app.post('/auth/login', async (req, res) => {
+app.post('/auth/login', authLimiter, validateBody, async (req, res) => {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -74,23 +167,34 @@ app.get(
   (req, res) => {
     const user = req.user;
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login/success?token=${token}`);
+    const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+    // Deliver token via postMessage to the opener window instead of exposing it in the URL.
+    // The frontend LoginPage already listens for 'message' events from the popup.
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Autenticando...</title></head>
+      <body>
+        <script>
+          if (window.opener) {
+            window.opener.postMessage({ token: '${token}' }, '${frontendOrigin}');
+          }
+          window.close();
+        </script>
+        <p>Autenticação concluída. Esta janela será fechada automaticamente.</p>
+      </body>
+      </html>
+    `);
   }
 );
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (token == null) return res.sendStatus(401);
+// ── API Routes ───────────────────────────────────────────────────────────────
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.userId = user.userId;
-    next();
-  });
-};
+// Apply rate limiter and body validation to all /api/* routes
+app.use('/api', apiLimiter, validateBody);
 
+// User
 app.get('/api/user/me', authenticateToken, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -107,6 +211,7 @@ app.get('/api/user/me', authenticateToken, async (req, res) => {
   }
 });
 
+// Tasks
 app.get('/api/tasks', authenticateToken, async (req, res) => {
   const tasks = await prisma.task.findMany({
     where: { userId: req.userId },
@@ -141,8 +246,8 @@ app.post('/api/tasks', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
+app.put('/api/tasks/:id', authenticateToken, validateIdParam, async (req, res) => {
+  const id = req.parsedId;
   const { title, description, status, projectId, taskTypeId } = req.body;
   const userId = req.userId;
 
@@ -162,8 +267,8 @@ app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
   try {
     const updatedTask = await prisma.task.update({
       where: {
-        id: parseInt(id),
-        userId: userId 
+        id: id,
+        userId: userId
       },
       data: dataToUpdate
     });
@@ -177,14 +282,14 @@ app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
+app.delete('/api/tasks/:id', authenticateToken, validateIdParam, async (req, res) => {
+  const id = req.parsedId;
   const userId = req.userId;
 
   try {
     await prisma.task.delete({
       where: {
-        id: parseInt(id),
+        id: id,
         userId: userId,
       }
     });
@@ -198,49 +303,14 @@ app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Projects
 app.get('/api/projects', authenticateToken, async (req, res) => {
   const projects = await prisma.project.findMany({
     where: { userId: req.userId },
-    include: { taskTypes: true }, 
+    include: { taskTypes: true },
     orderBy: { name: 'asc' }
   });
   res.json(projects);
-});
-
-app.put('/api/projects/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { name, color } = req.body;
-
-  try {
-    const updatedProject = await prisma.project.update({
-      where: { id: parseInt(id), userId: req.userId },
-      data: { name, color }
-    });
-    res.json(updatedProject);
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'Projeto não encontrado.' });
-    }
-    res.status(500).json({ message: 'Erro ao atualizar projeto.' });
-  }
-});
-
-app.delete('/api/projects/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  try {
-    await prisma.project.delete({
-      where: { id: parseInt(id), userId: req.userId }
-    });
-    res.status(204).send();
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'Projeto não encontrado.' });
-    }
-    if (error.code === 'P2003') {
-        return res.status(400).json({ message: 'Não é possível excluir. O projeto atrelado a tarefas ou tipos de tarefa.' });
-    }
-    res.status(500).json({ message: 'Erro ao deletar projeto.' });
-  }
 });
 
 app.post('/api/projects', authenticateToken, async (req, res) => {
@@ -253,10 +323,56 @@ app.post('/api/projects', authenticateToken, async (req, res) => {
   res.status(201).json(newProject);
 });
 
+app.put('/api/projects/:id', authenticateToken, validateIdParam, async (req, res) => {
+  const id = req.parsedId;
+  const { name, color } = req.body;
+
+  try {
+    const updatedProject = await prisma.project.update({
+      where: { id: id, userId: req.userId },
+      data: { name, color }
+    });
+    res.json(updatedProject);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Projeto não encontrado.' });
+    }
+    res.status(500).json({ message: 'Erro ao atualizar projeto.' });
+  }
+});
+
+app.delete('/api/projects/:id', authenticateToken, validateIdParam, async (req, res) => {
+  const id = req.parsedId;
+  try {
+    await prisma.project.delete({
+      where: { id: id, userId: req.userId }
+    });
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: 'Projeto não encontrado.' });
+    }
+    if (error.code === 'P2003') {
+      return res.status(400).json({ message: 'Não é possível excluir. O projeto atrelado a tarefas ou tipos de tarefa.' });
+    }
+    res.status(500).json({ message: 'Erro ao deletar projeto.' });
+  }
+});
+
+// Task Types
 app.post('/api/task-types', authenticateToken, async (req, res) => {
   const { name, projectId } = req.body;
   if (!name || !projectId) {
     return res.status(400).json({ message: 'Nome e ID do projeto são obrigatórios.' });
+  }
+
+  // IDOR fix: verify projectId belongs to the authenticated user
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, userId: req.userId }
+  });
+
+  if (!project) {
+    return res.status(404).json({ message: 'Projeto não encontrado ou não pertence ao usuário.' });
   }
 
   const newType = await prisma.taskType.create({
@@ -265,8 +381,8 @@ app.post('/api/task-types', authenticateToken, async (req, res) => {
   res.status(201).json(newType);
 });
 
-app.put('/api/task-types/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
+app.put('/api/task-types/:id', authenticateToken, validateIdParam, async (req, res) => {
+  const id = req.parsedId;
   const { name, projectId } = req.body;
 
   if (!name) {
@@ -275,15 +391,15 @@ app.put('/api/task-types/:id', authenticateToken, async (req, res) => {
 
   try {
     const project = await prisma.project.findFirst({
-        where: { id: projectId, userId: req.userId }
+      where: { id: projectId, userId: req.userId }
     });
 
     if (!project) {
-        return res.status(404).json({ message: 'Projeto não encontrado ou não pertence ao usuário.' });
+      return res.status(404).json({ message: 'Projeto não encontrado ou não pertence ao usuário.' });
     }
 
     const updatedTaskType = await prisma.taskType.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: { name },
     });
     res.json(updatedTaskType);
@@ -295,20 +411,20 @@ app.put('/api/task-types/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/task-types/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
+app.delete('/api/task-types/:id', authenticateToken, validateIdParam, async (req, res) => {
+  const id = req.parsedId;
 
   try {
     const taskTypeToDelete = await prisma.taskType.findFirst({
-        where: { id: parseInt(id), project: { userId: req.userId } }
+      where: { id: id, project: { userId: req.userId } }
     });
 
     if (!taskTypeToDelete) {
-        return res.status(404).json({ message: 'Tipo de tarefa não encontrado ou não pertence ao usuário.' });
+      return res.status(404).json({ message: 'Tipo de tarefa não encontrado ou não pertence ao usuário.' });
     }
 
     await prisma.taskType.delete({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
     res.status(204).send();
   } catch (error) {
