@@ -18,7 +18,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.origin !== window.location.origin) {
+      const apiOrigin = new URL(api.defaults.baseURL).origin;
+      if (event.origin !== apiOrigin) {
         return;
       }
 

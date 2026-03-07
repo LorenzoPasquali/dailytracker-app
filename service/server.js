@@ -26,7 +26,10 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
 
 app.use(
   session({
@@ -169,8 +172,10 @@ app.get(
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+    // Relax CSP just for this response to allow the inline script that delivers the token.
+    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'unsafe-inline';");
+
     // Deliver token via postMessage to the opener window instead of exposing it in the URL.
-    // The frontend LoginPage already listens for 'message' events from the popup.
     res.send(`
       <!DOCTYPE html>
       <html>
@@ -179,8 +184,12 @@ app.get(
         <script>
           if (window.opener) {
             window.opener.postMessage({ token: '${token}' }, '${frontendOrigin}');
+            setTimeout(() => window.close(), 100);
+          } else {
+            console.error('Window opener not found.');
+            // Fallback for cases where opener is lost
+            window.location.href = '${frontendOrigin}/login/success?token=${token}';
           }
-          window.close();
         </script>
         <p>Autenticação concluída. Esta janela será fechada automaticamente.</p>
       </body>
