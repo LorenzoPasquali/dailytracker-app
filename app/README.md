@@ -1,12 +1,47 @@
-# React + Vite
+# dailytracker-app
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend da aplicação Daily Tracker, um gerenciador de tarefas no estilo Kanban com foco em acompanhamento diário de atividades (daily scrum).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19
+- Vite 7
+- React Bootstrap
+- React Router
+- Axios
+- dnd-kit (drag and drop)
+- date-fns
 
-## Expanding the ESLint configuration
+## Funcionalidades
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Cadastro e login com email/senha
+- Login com Google (OAuth2)
+- Criação e gerenciamento de projetos com cores customizáveis
+- Board Kanban com tarefas organizadas por status (Planned, In Progress, Done)
+- Drag and drop para mover tarefas entre colunas
+- Tipos de tarefa por projeto
+- Filtro por data
+
+## Rodando localmente
+
+```bash
+cd app
+npm install
+npm run dev
+```
+
+O app sobe em `http://localhost:5173` por padrão.
+
+Crie um arquivo `.env` na pasta `app`:
+
+```
+VITE_API_URL=http://localhost:3000
+```
+
+## Estrutura
+
+O frontend consome a API REST fornecida pelo backend em Java (Spring Boot), hospedado em repositório separado: [dailytracker-service](https://github.com/LorenzoPasquali/dailytracker-service).
+
+## Deploy
+
+O frontend é hospedado na Vercel. O build é feito automaticamente a cada push. A variável `VITE_API_URL` é configurada nas environment variables da Vercel apontando para o backend no Render.
