@@ -1,31 +1,47 @@
-# Daily Tracker 
+# dailytracker-app
 
-https://dailytracker.com.br/
+Frontend da aplicação Daily Tracker, um gerenciador de tarefas no estilo Kanban com foco em acompanhamento diário de atividades (daily scrum).
 
-Um monitor de tarefas diárias (daily scrum) no estilo Kanban, projetado para ajudar desenvolvedores e equipes a organizar suas atividades de forma simples e visual. A aplicação permite o gerenciamento de tarefas através de colunas de status, com funcionalidades de arrastar e soltar e uma interface responsiva para desktop e mobile.
+## Stack
 
-## ✨ Funcionalidades
+- React 19
+- Vite 7
+- React Bootstrap
+- React Router
+- Axios
+- dnd-kit (drag and drop)
+- date-fns
 
--   **Autenticação de Usuários:** Cadastro e login com e-mail/senha e também via Google OAuth.
--   **Dashboard Kanban:** Interface visual com colunas para "Planejado", "Em Progresso" e "Feito".
--   **Gerenciamento de Tarefas (CRUD):** Crie, edite e exclua tarefas através de um modal intuitivo.
--   **Arrastar e Soltar (Drag-and-Drop):** Mude o status e reordene tarefas facilmente.
--   **Projetos e Tipos de Tarefa:** Categorize suas tarefas com projetos customizáveis (com cores) e tipos de tarefa.
--   **Design Responsivo:** A interface se adapta perfeitamente a desktops e dispositivos móveis, transformando colunas em linhas roláveis em telas menores.
+## Funcionalidades
 
-## 🛠️ Tecnologias Utilizadas
+- Cadastro e login com email/senha
+- Login com Google (OAuth2)
+- Criação e gerenciamento de projetos com cores customizáveis
+- Board Kanban com tarefas organizadas por status (Planned, In Progress, Done)
+- Drag and drop para mover tarefas entre colunas
+- Tipos de tarefa por projeto
+- Filtro por data
 
-#### **Frontend (Pasta `/app`)**
+## Rodando localmente
 
--   **React** (com **Vite**)
--   **React Bootstrap** & **Bootstrap Icons** para componentes de UI
--   **@dnd-kit** para a funcionalidade de Arrastar e Soltar
--   **Axios** para chamadas à API
+```bash
+cd app
+npm install
+npm run dev
+```
 
-#### **Backend (Pasta `/service`)**
+O app sobe em `http://localhost:5173` por padrão.
 
--   **Node.js**
--   **Express**
--   **Prisma ORM** para interação com o banco de dados
--   **PostgreSQL** como banco de dados
--   Autenticação com **JWT (Tokens)** e **Passport.js** (para Google OAuth)
+Crie um arquivo `.env` na pasta `app`:
+
+```
+VITE_API_URL=http://localhost:3000
+```
+
+## Estrutura
+
+O frontend consome a API REST fornecida pelo backend em Java (Spring Boot), hospedado em repositório separado: [dailytracker-service](https://github.com/LorenzoPasquali/dailytracker-service).
+
+## Deploy
+
+O frontend é hospedado na Vercel. O build é feito automaticamente a cada push. A variável `VITE_API_URL` é configurada nas environment variables da Vercel apontando para o backend no Render.
