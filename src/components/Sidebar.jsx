@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Nav, Accordion, useAccordionButton, AccordionContext, Tooltip, OverlayTrigger } from 'react-bootstrap';
-import { HouseDoorFill, CollectionFill, BarChartFill, Folder, TagFill, ChevronDown, ChevronUp } from 'react-bootstrap-icons';
+import { HouseDoorFill, CollectionFill, BarChartFill, Folder, TagFill, ChevronDown, ChevronUp, ChatDotsFill } from 'react-bootstrap-icons';
 
 function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
   const { activeEventKey } = useContext(AccordionContext);
@@ -41,7 +41,7 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
   );
 }
 
-export default function Sidebar({ onProjectsClick, onTaskTypesClick, isCollapsed, onToggleCollapse, isMobile }) {
+export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, isCollapsed, onToggleCollapse, isMobile }) {
   const sidebarStyle = {
     width: isCollapsed ? '60px' : '260px',
     backgroundColor: 'rgba(13, 17, 23, 0.65)',
@@ -104,6 +104,15 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, isCollapsed
             {!isCollapsed && "Relatórios"}
           </div>
         </OverlayTrigger>
+
+        <Nav.Link
+          onClick={isCollapsed ? () => { onToggleCollapse(); onAiClick(); } : onAiClick}
+          className="text-secondary d-flex align-items-center p-3"
+          role="button"
+        >
+          <ChatDotsFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
+          {!isCollapsed && "Assistente IA"}
+        </Nav.Link>
       </Nav>
     </div>
   );

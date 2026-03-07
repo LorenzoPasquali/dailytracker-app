@@ -18,6 +18,7 @@ import TaskTypesModal from '../components/TaskTypesModal';
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
 import { ArrowLeftSquare, Calendar } from 'react-bootstrap-icons';
 import DateFilterModal from '../components/DateFilterModal';
+import AiChatModal from '../components/AiChatModal';
 import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } from 'date-fns';
 
 export default function DashboardPage() {
@@ -39,6 +40,7 @@ export default function DashboardPage() {
   const [showTaskTypesModal, setShowTaskTypesModal] = useState(false);
   const [showDateFilterModal, setShowDateFilterModal] = useState(false);
   const [dateRange, setDateRange] = useState([null, null]);
+  const [showAiChat, setShowAiChat] = useState(false);
 
   const isMobile = useMediaQuery('(max-width: 992px)');
   const navigate = useNavigate();
@@ -112,7 +114,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const handleKeyPress = (event) => {
       if (event.key !== 'Enter') return;
-      if (showTaskFormModal || showDeleteModal || showProjectsModal || showTaskTypesModal || showLogoutConfirm) return;
+      if (showTaskFormModal || showDeleteModal || showProjectsModal || showTaskTypesModal || showLogoutConfirm || showAiChat) return;
       const activeElement = document.activeElement;
       const isTyping = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable);
       if (isTyping) return;
@@ -120,7 +122,7 @@ export default function DashboardPage() {
     };
     document.addEventListener('keydown', handleKeyPress);
     return () => { document.removeEventListener('keydown', handleKeyPress); };
-  }, [showTaskFormModal, showDeleteModal, showProjectsModal, showTaskTypesModal, showLogoutConfirm]);
+  }, [showTaskFormModal, showDeleteModal, showProjectsModal, showTaskTypesModal, showLogoutConfirm, showAiChat]);
 
   const handleOpenCreateModal = () => { setTaskToEdit(null); setShowTaskFormModal(true); };
   const handleOpenEditModal = (task) => { setTaskToEdit(task); setShowTaskFormModal(true); };
@@ -256,6 +258,7 @@ export default function DashboardPage() {
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onProjectsClick={() => setShowProjectsModal(true)}
             onTaskTypesClick={() => setShowTaskTypesModal(true)}
+            onAiClick={() => setShowAiChat(true)}
           />
         )}
         <main className="flex-grow-1 p-3 d-flex flex-column" style={{ overflow: isMobile ? 'auto' : 'hidden' }}>
@@ -366,6 +369,7 @@ export default function DashboardPage() {
             onToggleCollapse={() => setShowMobileSidebar(false)}
             onProjectsClick={() => { setShowProjectsModal(true); setShowMobileSidebar(false); }}
             onTaskTypesClick={() => { setShowTaskTypesModal(true); setShowMobileSidebar(false); }}
+            onAiClick={() => { setShowAiChat(true); setShowMobileSidebar(false); }}
           />
         </Offcanvas.Body>
       </Offcanvas>
@@ -396,6 +400,13 @@ export default function DashboardPage() {
         onApplyFilter={handleDateFilterApply}
         initialDateRange={dateRange}
       />
+      {showAiChat && (
+        <AiChatModal
+          show={showAiChat}
+          onClose={() => setShowAiChat(false)}
+          isMobile={isMobile}
+        />
+      )}
     </div>
   );
 }
