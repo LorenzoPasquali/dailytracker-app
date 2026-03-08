@@ -20,10 +20,6 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
 
   useEffect(() => {
     if (show) {
-      if (!taskToEdit && titleInputRef.current) {
-        setTimeout(() => titleInputRef.current.focus(), 100);
-      }
-      
       setLoading(true);
       api.get('/api/projects')
         .then(response => {
@@ -63,6 +59,12 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
     }
   }, [selectedProjectId, projects, selectedTaskTypeId]);
 
+  const onModalEntered = () => {
+    if (titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  };
+
   const handleSave = async () => {
     if (!title.trim()) {
       toast.error('O título da tarefa é obrigatório.');
@@ -92,7 +94,6 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       handleClose();
     } catch (error) {
       console.error("Erro ao salvar tarefa:", error);
-      // O interceptor de API já cuidará da mensagem de erro
     }
   };
 
@@ -130,7 +131,14 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   };
 
   return (
-    <Modal show={show} onHide={handleClose} centered size="lg" dialogClassName="modal-transparent">
+    <Modal 
+      show={show} 
+      onHide={handleClose} 
+      onEntered={onModalEntered}
+      centered 
+      size="lg" 
+      dialogClassName="modal-transparent"
+    >
         <div style={modalStyle}>
             <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
                 <Modal.Title>{taskToEdit ? 'Editar Tarefa' : 'Criar Nova Tarefa'}</Modal.Title>

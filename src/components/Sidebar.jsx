@@ -18,7 +18,7 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
       <div
         onClick={handleClick}
         role="button"
-        style={{ padding: '0.75rem', display: 'flex', justifyContent: 'center', color: 'var(--text-muted)' }}
+        style={{ padding: '0.75rem', display: 'flex', justifyContent: 'center', color: 'var(--text-secondary)' }}
       >
         {children}
       </div>
@@ -32,14 +32,20 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '0.75rem 1.1rem',
-        color: 'var(--text-muted)',
+        color: 'var(--text-secondary)',
         cursor: 'pointer',
         borderRadius: 'var(--radius-sm)',
-        transition: 'background-color var(--transition)'
+        transition: 'all var(--transition)'
       }}
       onClick={handleClick}
-      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
-      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+      onMouseEnter={e => {
+        e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+        e.currentTarget.style.color = 'var(--text-primary)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.backgroundColor = 'transparent';
+        e.currentTarget.style.color = 'var(--text-secondary)';
+      }}
       role="button"
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.9rem' }}>
@@ -74,11 +80,11 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
     padding: isCollapsed ? '0.75rem' : '0.75rem 1.1rem',
     justifyContent: isCollapsed ? 'center' : 'flex-start',
     fontSize: '0.9rem',
-    color: 'var(--text-muted)',
+    color: 'var(--text-secondary)',
     cursor: 'pointer',
     textDecoration: 'none',
     borderRadius: 0,
-    transition: 'background-color var(--transition), color var(--transition)',
+    transition: 'all var(--transition)',
     whiteSpace: 'nowrap',
     borderLeft: '2px solid transparent'
   };
@@ -90,6 +96,12 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
           href="#"
           style={{ ...linkStyle, ...activeLinkStyle }}
           onClick={isCollapsed ? onToggleCollapse : null}
+          onMouseEnter={e => {
+            if (!activeLinkStyle.color) e.currentTarget.style.color = 'var(--text-primary)';
+          }}
+          onMouseLeave={e => {
+            if (!activeLinkStyle.color) e.currentTarget.style.color = 'var(--text-secondary)';
+          }}
         >
           <HouseDoorFill size={16} className="flex-shrink-0" />
           {!isCollapsed && "Monitor"}
@@ -106,8 +118,14 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
                 <Nav.Link
                   onClick={onProjectsClick}
                   style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }}
                   role="button"
                 >
                   <Folder size={14} /> Projetos
@@ -115,8 +133,14 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
                 <Nav.Link
                   onClick={onTaskTypesClick}
                   style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }}
                   role="button"
                 >
                   <TagFill size={14} /> Tipos de Tarefa
@@ -140,8 +164,14 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
         <Nav.Link
           onClick={isCollapsed ? () => { onToggleCollapse(); onAiClick(); } : onAiClick}
           style={linkStyle}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+            e.currentTarget.style.color = 'var(--text-primary)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--text-secondary)';
+          }}
           role="button"
         >
           <ChatDotsFill size={16} className="flex-shrink-0" />
