@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import Alert from 'react-bootstrap/Alert';
 
 import googleLogo from '../assets/google-icon.svg';
 import CssParticles from '../components/CssParticles';
@@ -12,7 +12,6 @@ import CssParticles from '../components/CssParticles';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,12 +19,16 @@ export default function LoginPage() {
       const apiOrigin = new URL(api.defaults.baseURL).origin;
       if (event.origin !== apiOrigin) return;
 
-      const { token, error } = event.data;
+      const { token, refreshToken, error } = event.data;
       if (token) {
         localStorage.setItem('authToken', token);
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+        toast.success('Login realizado com sucesso!');
         navigate('/dashboard');
       } else if (error) {
-        setError('Falha na autenticacao com o Google.');
+        toast.error('Falha na autenticação com o Google.');
       }
     };
     window.addEventListener('message', handleMessage);
@@ -34,17 +37,19 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
     if (!email || !password) {
-      setError('Por favor, preencha o email e a senha.');
+      toast.error('Por favor, preencha o email e a senha.');
       return;
     }
     try {
       const response = await api.post('/auth/login', { email, password });
       localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+      toast.success('Bem-vindo de volta!');
       navigate('/dashboard');
     } catch (err) {
-      setError('Credenciais invalidas. Por favor, tente novamente.');
+      const msg = err.response?.data?.error || 'Credenciais inválidas. Por favor, tente novamente.';
+      toast.error(msg);
     }
   };
 
@@ -126,7 +131,6 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Form.Group>
-            {error && <Alert variant="danger" className="py-2" style={{ fontSize: '0.85rem' }}>{error}</Alert>}
             <Button
               type="submit"
               className="w-100 py-2"

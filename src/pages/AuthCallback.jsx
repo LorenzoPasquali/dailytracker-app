@@ -6,14 +6,18 @@ export default function AuthCallback() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
+    const refreshToken = params.get('refreshToken');
     const error = params.get('error');
 
     if (window.opener) {
-      window.opener.postMessage({ token, error }, window.location.origin);
+      window.opener.postMessage({ token, refreshToken, error }, window.location.origin);
       window.close();
     } else {
       if (token) {
         localStorage.setItem('authToken', token);
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
         window.location.href = '/dashboard';
       } else {
         window.location.href = '/login?error=auth_failed';

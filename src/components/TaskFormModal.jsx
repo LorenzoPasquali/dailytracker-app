@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Form, Spinner } from 'react-bootstrap';
+import { toast } from 'sonner';
 import api from '../services/api';
 
 const TITLE_LIMIT = 100;
@@ -64,7 +65,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
 
   const handleSave = async () => {
     if (!title.trim()) {
-      alert('O título da tarefa é obrigatório.');
+      toast.error('O título da tarefa é obrigatório.');
       return;
     }
 
@@ -82,14 +83,16 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       if (taskToEdit) {
         const response = await api.put(`/api/tasks/${taskToEdit.id}`, taskData);
         onTaskUpdated(response.data);
+        toast.success('Tarefa atualizada!');
       } else {
         const response = await api.post('/api/tasks', taskData);
         onTaskCreated(response.data);
+        toast.success('Tarefa criada!');
       }
       handleClose();
     } catch (error) {
       console.error("Erro ao salvar tarefa:", error);
-      alert('Não foi possível salvar a tarefa.');
+      // O interceptor de API já cuidará da mensagem de erro
     }
   };
 

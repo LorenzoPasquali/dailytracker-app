@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DndContext, DragOverlay, rectIntersection, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { toast } from 'sonner';
 import api from '../services/api';
 
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -83,7 +84,7 @@ export default function DashboardPage() {
     return tasks;
   }, [allTasks, selectedProjectIds, dateRange]);
 
-  const handleLogout = () => { localStorage.removeItem('authToken'); navigate('/'); };
+  const handleLogout = () => { localStorage.removeItem('authToken'); localStorage.removeItem('refreshToken'); navigate('/'); };
 
   const fetchData = async () => {
     setLoading(true);
@@ -148,7 +149,10 @@ export default function DashboardPage() {
         return newColumns;
       });
       handleCloseDeleteModal();
-    } catch (error) { console.error("Erro ao deletar tarefa:", error); alert('Nao foi possivel deletar a tarefa.'); }
+    } catch (error) { 
+      console.error("Erro ao deletar tarefa:", error); 
+      toast.error('Não foi possível deletar a tarefa.'); 
+    }
   };
   const findContainer = (taskId) => {
     if (!taskId) return null;
@@ -177,7 +181,9 @@ export default function DashboardPage() {
       const activeIndex = sourceTasks.findIndex(t => t.id === active.id);
       if (activeIndex > -1) { [movedTask] = sourceTasks.splice(activeIndex, 1); } else return;
       const updatedTask = { ...movedTask, status: destContainer };
-      api.put(`/api/tasks/${active.id}`, { status: destContainer }).catch(() => { fetchData(); alert('Nao foi possivel mover a tarefa.'); });
+      api.put(`/api/tasks/${active.id}`, { status: destContainer })
+        .then(() => toast.success('Tarefa movida!'))
+        .catch(() => { fetchData(); toast.error('Não foi possível mover a tarefa.'); });
       setTaskColumns(prev => {
         const destTasks = [...prev[destContainer]];
         const overIndex = destTasks.findIndex(t => t.id === over.id);
@@ -400,8 +406,8 @@ export default function DashboardPage() {
         confirmButtonText="Sair"
         confirmButtonVariant="primary"
       />
-      <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} />
-      <TaskTypesModal show={showTaskTypesModal} handleClose={() => setShowTaskTypesModal(false)} />
+      <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} onProjectsChange={fetchData} />
+      <TaskTypesModal show={showTaskTypesModal} handleClose={() => setShowTaskTypesModal(false)} onTaskTypesChange={fetchData} />
       <DateFilterModal
         show={showDateFilterModal}
         handleClose={() => setShowDateFilterModal(false)}

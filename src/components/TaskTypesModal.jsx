@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Table, Form, InputGroup, Spinner, Alert } from 'react-bootstrap';
+import { Modal, Button, Table, Form, InputGroup, Spinner } from 'react-bootstrap';
 import { Check, PencilFill, TrashFill, X } from 'react-bootstrap-icons';
+import { toast } from 'sonner';
 import api from '../services/api';
 import ConfirmationModal from './ConfirmationModal';
 
-export default function TaskTypesModal({ show, handleClose }) {
+export default function TaskTypesModal({ show, handleClose, onTaskTypesChange }) {
   const [taskTypes, setTaskTypes] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   const [newTypeName, setNewTypeName] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -21,7 +21,6 @@ export default function TaskTypesModal({ show, handleClose }) {
 
   const fetchData = async () => {
     setLoading(true);
-    setError('');
     try {
       const projectsResponse = await api.get('/api/projects');
       setProjects(projectsResponse.data);
@@ -32,7 +31,6 @@ export default function TaskTypesModal({ show, handleClose }) {
       setTaskTypes(allTypes);
     } catch (err) {
       console.error("Erro ao buscar dados", err);
-      setError('Não foi possível carregar os dados. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -46,10 +44,9 @@ export default function TaskTypesModal({ show, handleClose }) {
 
   const handleCreateTaskType = async () => {
     if (!newTypeName.trim() || !selectedProjectId) {
-      setError('Por favor, preencha o nome e selecione um projeto.');
+      toast.error('Por favor, preencha o nome e selecione um projeto.');
       return;
     }
-    setError('');
     try {
       await api.post('/api/task-types', { 
         name: newTypeName, 
@@ -58,9 +55,10 @@ export default function TaskTypesModal({ show, handleClose }) {
       fetchData();
       setNewTypeName('');
       setSelectedProjectId('');
+      toast.success('Tipo de tarefa criado!');
+      if (onTaskTypesChange) onTaskTypesChange();
     } catch (error) {
       console.error("Erro ao criar tipo de tarefa", error);
-      setError(error.response?.data?.message || 'Não foi possível criar o tipo de tarefa.');
     }
   };
 
@@ -79,9 +77,10 @@ export default function TaskTypesModal({ show, handleClose }) {
     try {
       await api.put(`/api/task-types/${type.id}`, { name: editingTypeName, projectId: type.projectId });
       fetchData();
+      toast.success('Tipo de tarefa atualizado!');
+      if (onTaskTypesChange) onTaskTypesChange();
     } catch (error) {
       console.error("Erro ao atualizar tipo de tarefa", error);
-      setError(error.response?.data?.message || 'Não foi possível atualizar o tipo de tarefa.');
     } finally {
       cancelEditing();
     }
@@ -97,9 +96,10 @@ export default function TaskTypesModal({ show, handleClose }) {
     try {
       await api.delete(`/api/task-types/${typeToDelete.id}`);
       fetchData();
+      toast.success('Tipo de tarefa excluído!');
+      if (onTaskTypesChange) onTaskTypesChange();
     } catch (error) {
       console.error("Erro ao deletar tipo de tarefa", error);
-      setError(error.response?.data?.message || 'Não foi possível deletar o tipo de tarefa.');
     } finally {
       setShowDeleteConfirm(false);
       setTypeToDelete(null);
@@ -133,8 +133,6 @@ export default function TaskTypesModal({ show, handleClose }) {
           <Modal.Title>Gerenciar Tipos de Tarefa</Modal.Title>
         </Modal.Header>
         <Modal.Body style={modalStyle}>
-          {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
-          
           <h6 className="mb-3">Novo Tipo de Tarefa</h6>
           <Form onSubmit={handleCreateSubmit}>
             <InputGroup className="mb-4">

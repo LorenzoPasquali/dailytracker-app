@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Spinner } from 'react-bootstrap';
 import { ChatDotsFill, XLg, SendFill, KeyFill, GearFill, TrashFill } from 'react-bootstrap-icons';
+import { toast } from 'sonner';
 import api from '../services/api';
 
 export default function AiChatModal({ show, onClose, isMobile }) {
@@ -77,8 +78,9 @@ export default function AiChatModal({ show, onClose, isMobile }) {
       setHasKey(true);
       setKeyInput('');
       setShowSettings(false);
+      toast.success('Chave salva com sucesso!');
     } catch (err) {
-      alert(err.response?.data?.message || 'Erro ao salvar a chave.');
+      toast.error(err.response?.data?.message || 'Erro ao salvar a chave.');
     } finally {
       setSavingKey(false);
     }
@@ -92,8 +94,9 @@ export default function AiChatModal({ show, onClose, isMobile }) {
       setHasKey(false);
       setMessages([]);
       setShowSettings(false);
+      toast.success('Chave removida.');
     } catch {
-      alert('Erro ao remover a chave.');
+      toast.error('Erro ao remover a chave.');
     } finally {
       setSavingKey(false);
     }
