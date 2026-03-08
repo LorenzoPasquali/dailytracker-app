@@ -327,28 +327,6 @@ export default function DashboardPage() {
                 );
               })}
 
-              {(selectedProjectIds.length > 0 || dateRange[0]) && (
-                <button
-                  onClick={() => { setSelectedProjectIds([]); setDateRange([null, null]); localStorage.removeItem("dashboardDateRange"); }}
-                  style={{
-                    padding: isMobile ? "0.25rem 0.6rem" : "0.35rem 0.75rem",
-                    fontSize: isMobile ? "0.8rem" : "0.85rem",
-                    fontWeight: 600,
-                    color: "var(--danger)",
-                    backgroundColor: "transparent",
-                    border: "1px solid var(--danger)",
-                    borderRadius: "var(--radius-sm)",
-                    cursor: "pointer",
-                    transition: "all var(--transition)",
-                    outline: "none",
-                    fontFamily: "inherit",
-                    marginLeft: "0.5rem"
-                  }}
-                >
-                  Limpar Filtros
-                </button>
-              )}
-
               <button
                 onClick={() => setShowDateFilterModal(true)}
                 title="Filtrar por data"
@@ -380,27 +358,6 @@ export default function DashboardPage() {
                   </span>
                 )}
               </button>
-              {(selectedProjectIds.length > 0 || dateRange[0]) && (
-                <button
-                  onClick={() => { setSelectedProjectIds([]); setDateRange([null, null]); localStorage.removeItem("dashboardDateRange"); }}
-                  style={{
-                    padding: isMobile ? "0.25rem 0.6rem" : "0.35rem 0.75rem",
-                    fontSize: isMobile ? "0.8rem" : "0.85rem",
-                    fontWeight: 600,
-                    color: "var(--danger)",
-                    backgroundColor: "transparent",
-                    border: "1px solid var(--danger)",
-                    borderRadius: "var(--radius-sm)",
-                    cursor: "pointer",
-                    transition: "all var(--transition)",
-                    outline: "none",
-                    fontFamily: "inherit",
-                    marginLeft: "0.5rem"
-                  }}
-                >
-                  Limpar Filtros
-                </button>
-              )}
             </div>
           </header>
 
