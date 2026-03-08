@@ -1,13 +1,13 @@
 :root {
-  --bg-base: #09090b;
-  --bg-surface: #111113;
-  --bg-elevated: #161618;
-  --bg-hover: #1c1c20;
-  --bg-active: #222226;
+  --bg-base: #050505;
+  --bg-surface: #0e0e10;
+  --bg-elevated: #111113;
+  --bg-hover: #161618;
+  --bg-active: #1c1c1e;
 
-  --border-subtle: #1e1e22;
-  --border-default: #27272a;
-  --border-strong: #3f3f46;
+  --border-subtle: #1a1a1c;
+  --border-default: #222225;
+  --border-strong: #333336;
 
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;

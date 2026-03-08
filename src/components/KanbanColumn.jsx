@@ -14,15 +14,17 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
 
   const columnStyle = {
     backgroundColor: 'var(--bg-elevated)',
-    border: `1px solid ${isOver ? 'var(--accent-border)' : 'var(--border-subtle)'}`,
+    backgroundImage: 'linear-gradient(to bottom, var(--bg-hover) 0%, var(--bg-elevated) 100%)',
+    border: `1px solid ${isOver ? 'var(--accent)' : 'var(--border-subtle)'}`,
+    boxShadow: isOver ? '0 0 15px var(--accent-subtle)' : 'none',
     minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
-    borderRadius: 'var(--radius-md)',
+    borderRadius: 'var(--radius-lg)',
     overflow: 'hidden',
     outline: 'none',
-    transition: 'border-color var(--transition), background-color var(--transition)',
-    ...(isOver && { backgroundColor: 'var(--accent-subtle)' })
+    transition: 'all 200ms ease',
+    ...(isOver && { backgroundColor: 'var(--bg-active)' })
   };
 
   const tasksContainerStyle = {
@@ -35,6 +37,7 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
     paddingBottom: isMobile ? '0.75rem' : '0',
     minHeight: isMobile ? '160px' : 'auto',
     alignItems: isMobile ? 'center' : 'stretch',
+    scrollBehavior: 'smooth'
   };
 
   const taskIds = tasks.map(task => task.id);
@@ -43,12 +46,13 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
   return (
     <div ref={setNodeRef} style={columnStyle} className={`d-flex flex-column ${isMobile ? '' : 'h-100'}`}>
       <div style={{
-        padding: '0.85rem 1.1rem',
+        padding: '1rem 1.25rem',
         borderBottom: '1px solid var(--border-subtle)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        flexShrink: 0
+        flexShrink: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.02)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <div style={{
