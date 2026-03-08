@@ -1,34 +1,28 @@
 import React from 'react';
-import { Badge } from 'react-bootstrap';
 import { SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
+
+const statusColors = {
+  PLANNED: 'var(--text-muted)',
+  DOING: '#f59e0b',
+  DONE: 'var(--accent)'
+};
 
 export default function KanbanColumn({ title, status, tasks = [], projects = [], onEdit, isMobile }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   const columnStyle = {
-    backgroundColor: 'rgba(22, 27, 34, 0.4)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    border: '1px solid rgba(48, 54, 61, 0.5)',
+    backgroundColor: 'var(--bg-elevated)',
+    border: `1px solid ${isOver ? 'var(--accent-border)' : 'var(--border-subtle)'}`,
     minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
-    borderRadius: isMobile ? '0.375rem' : '0.5rem',
+    borderRadius: 'var(--radius-md)',
     overflow: 'hidden',
-    outline: 'none', // Prevent focus outlines after drop
-  };
-
-  const desktopStyle = {
-    ...columnStyle,
-    transition: 'all 0.3s ease-in-out',
-    // Explicitly define the base border color when not over so it resets
-    borderColor: isOver ? 'rgba(59, 130, 246, 0.4)' : 'rgba(48, 54, 61, 0.5)',
-    ...(isOver && {
-      backgroundColor: 'rgba(59, 130, 246, 0.10)',
-      boxShadow: '0 0 15px rgba(59, 130, 246, 0.15), inset 0 0 10px rgba(59, 130, 246, 0.1)',
-    }),
+    outline: 'none',
+    transition: 'border-color var(--transition), background-color var(--transition)',
+    ...(isOver && { backgroundColor: 'var(--accent-subtle)' })
   };
 
   const tasksContainerStyle = {
@@ -37,22 +31,56 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
     flexGrow: 1,
     display: isMobile ? 'flex' : 'block',
     flexDirection: isMobile ? 'row' : 'column',
-    gap: isMobile ? '1rem' : '0',
-    paddingBottom: isMobile ? '1rem' : '0',
-    minHeight: isMobile ? '170px' : 'auto',
+    gap: isMobile ? '0.75rem' : '0',
+    paddingBottom: isMobile ? '0.75rem' : '0',
+    minHeight: isMobile ? '160px' : 'auto',
     alignItems: isMobile ? 'center' : 'stretch',
   };
 
   const taskIds = tasks.map(task => task.id);
+  const dotColor = statusColors[status] || 'var(--text-muted)';
 
   return (
-    <div ref={setNodeRef} style={isMobile ? columnStyle : desktopStyle} className={`d-flex flex-column ${isMobile ? '' : 'h-100'}`}>
-      <div className="p-3 border-bottom d-flex justify-content-between align-items-center flex-shrink-0" style={{ borderColor: 'rgba(48, 54, 61, 0.5)' }}>
-        <h6 className="mb-0 text-light fw-semibold" style={{ letterSpacing: '0.5px' }}>{title}</h6>
-        <Badge pill bg="transparent" className="text-secondary border border-secondary fw-normal">{tasks.length}</Badge>
+    <div ref={setNodeRef} style={columnStyle} className={`d-flex flex-column ${isMobile ? '' : 'h-100'}`}>
+      <div style={{
+        padding: '0.85rem 1.1rem',
+        borderBottom: '1px solid var(--border-subtle)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexShrink: 0
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{
+            width: '7px',
+            height: '7px',
+            borderRadius: '50%',
+            backgroundColor: dotColor,
+            flexShrink: 0
+          }} />
+          <span style={{
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            letterSpacing: '-0.01em',
+            textTransform: 'uppercase'
+          }}>
+            {title}
+          </span>
+        </div>
+        <span style={{
+          fontSize: '0.75rem',
+          color: 'var(--text-muted)',
+          backgroundColor: 'var(--bg-hover)',
+          padding: '0.15rem 0.55rem',
+          borderRadius: '100px',
+          fontWeight: 500
+        }}>
+          {tasks.length}
+        </span>
       </div>
 
-      <div className="p-2" style={tasksContainerStyle}>
+      <div style={{ padding: '0.6rem', ...tasksContainerStyle }}>
         <SortableContext items={taskIds}>
           {tasks.length > 0 ? (
             tasks.map(task => (
@@ -61,8 +89,17 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
               </div>
             ))
           ) : (
-            <div className="d-flex align-items-center justify-content-center h-100 w-100">
-              <p className="text-secondary text-center small">Nenhuma tarefa</p>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              width: '100%',
+              padding: '2rem 0'
+            }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, opacity: 0.6 }}>
+                Nenhuma tarefa
+              </p>
             </div>
           )}
         </SortableContext>

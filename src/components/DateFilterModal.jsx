@@ -39,59 +39,70 @@ export default function DateFilterModal({ show, handleClose, onApplyFilter, init
     };
 
     const modalStyle = {
-        backgroundColor: 'rgba(13, 17, 23, 0.95)',
-        backdropFilter: 'blur(10px)',
-        color: '#c9d1d9',
-        borderRadius: '16px',
-        border: '1px solid #30363d',
+        backgroundColor: 'var(--bg-surface)',
+        color: 'var(--text-secondary)',
+        borderRadius: 'var(--radius-lg)',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
     };
 
     return (
         <Modal show={show} onHide={handleClose} centered contentClassName="bg-transparent border-0">
             <div style={modalStyle}>
-                <Modal.Header closeButton closeVariant="white" className="border-secondary">
-                    <Modal.Title>Filtrar por Data</Modal.Title>
+                <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>Filtrar por Data</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="d-flex justify-content-center">
                     <style>
                         {`
               .react-datepicker {
                 background-color: transparent;
-                color: #c9d1d9;
+                color: var(--text-secondary);
                 border: none;
-                font-family: inherit;
-                font-size: 1.1rem;
+                font-family: var(--font-body);
+                font-size: 1rem;
               }
               .react-datepicker__header {
                 background-color: transparent;
-                border-bottom: 1px solid #30363d;
+                border-bottom: 1px solid var(--border-subtle);
               }
               .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker__year-header {
-                color: #c9d1d9;
-                font-size: 1.2rem;
-                padding-bottom: 1rem;
+                color: var(--text-primary);
+                font-size: 1.05rem;
+                font-weight: 600;
+                padding-bottom: 0.75rem;
               }
               .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
-                color: #c9d1d9;
-                width: 3rem;
-                line-height: 3rem;
-                margin: 0.2rem;
+                color: var(--text-secondary);
+                width: 2.8rem;
+                line-height: 2.8rem;
+                margin: 0.15rem;
+                font-size: 0.85rem;
+              }
+              .react-datepicker__day-name {
+                color: var(--text-muted);
+                font-weight: 500;
+                font-size: 0.75rem;
               }
               .react-datepicker__day:hover {
-                background-color: #30363d;
+                background-color: var(--bg-hover);
                 border-radius: 50%;
               }
               .react-datepicker__day--selected, .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range {
-                background-color: #238636;
-                color: white;
+                background-color: var(--accent) !important;
+                color: var(--bg-base) !important;
                 border-radius: 50%;
+                font-weight: 600;
               }
               .react-datepicker__day--keyboard-selected {
-                background-color: #1f6feb;
+                background-color: var(--accent-subtle);
                 border-radius: 50%;
               }
               .react-datepicker__month-container {
                   float: none;
+              }
+              .react-datepicker__navigation-icon::before {
+                border-color: var(--text-muted);
               }
             `}
                     </style>
@@ -105,11 +116,29 @@ export default function DateFilterModal({ show, handleClose, onApplyFilter, init
                         locale="pt-BR"
                     />
                 </Modal.Body>
-                <Modal.Footer className="border-secondary">
-                    <Button variant="outline-danger" onClick={handleReset}>
+                <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }}>
+                    <Button
+                        onClick={handleReset}
+                        style={{
+                            backgroundColor: 'var(--danger-subtle)',
+                            border: 'none',
+                            color: 'var(--danger)',
+                            fontSize: '0.85rem',
+                            fontWeight: 500
+                        }}
+                    >
                         Resetar
                     </Button>
-                    <Button variant="success" onClick={handleApply}>
+                    <Button
+                        onClick={handleApply}
+                        style={{
+                            backgroundColor: 'var(--accent)',
+                            border: 'none',
+                            color: 'var(--bg-base)',
+                            fontWeight: 600,
+                            fontSize: '0.85rem'
+                        }}
+                    >
                         Filtrar
                     </Button>
                 </Modal.Footer>

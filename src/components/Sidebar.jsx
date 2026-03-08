@@ -9,9 +9,7 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
 
   const handleClick = (e) => {
     e.preventDefault();
-    if (isCollapsed) {
-      onToggleCollapse();
-    }
+    if (isCollapsed) onToggleCollapse();
     decoratedOnClick();
   };
 
@@ -20,7 +18,7 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
       <div
         onClick={handleClick}
         role="button"
-        className="p-3 d-flex justify-content-center align-items-center text-secondary"
+        style={{ padding: '0.75rem', display: 'flex', justifyContent: 'center', color: 'var(--text-muted)' }}
       >
         {children}
       </div>
@@ -29,61 +27,99 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
 
   return (
     <div
-      className="d-flex justify-content-between align-items-center p-3 text-secondary"
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '0.75rem 1.1rem',
+        color: 'var(--text-muted)',
+        cursor: 'pointer',
+        borderRadius: 'var(--radius-sm)',
+        transition: 'background-color var(--transition)'
+      }}
       onClick={handleClick}
+      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
+      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
       role="button"
     >
-      <div className="d-flex align-items-center">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.9rem' }}>
         {children}
       </div>
-      {isCurrentEventKey ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      {isCurrentEventKey ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
     </div>
   );
 }
 
 export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, isCollapsed, onToggleCollapse, isMobile }) {
   const sidebarStyle = {
-    width: isCollapsed ? '60px' : '260px',
-    backgroundColor: 'rgba(13, 17, 23, 0.65)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
+    width: isCollapsed ? '56px' : '240px',
+    backgroundColor: 'var(--bg-surface)',
     zIndex: 2,
-    transition: 'width 0.3s ease-in-out',
+    transition: 'width 0.2s ease',
     overflowX: 'hidden',
+    borderRight: '1px solid var(--border-subtle)',
+    flexShrink: 0
   };
 
   const activeLinkStyle = {
-    borderLeft: '3px solid #3b82f6',
-    background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(13, 17, 23, 0) 100%)',
-    boxShadow: 'inset 4px 0 8px -4px rgba(59, 130, 246, 0.5)',
+    borderLeft: '2px solid var(--accent)',
+    background: 'var(--accent-subtle)',
+    color: 'var(--text-primary)',
+  };
+
+  const linkStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.6rem',
+    padding: isCollapsed ? '0.75rem' : '0.75rem 1.1rem',
+    justifyContent: isCollapsed ? 'center' : 'flex-start',
+    fontSize: '0.9rem',
+    color: 'var(--text-muted)',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    borderRadius: 0,
+    transition: 'background-color var(--transition), color var(--transition)',
+    whiteSpace: 'nowrap',
+    borderLeft: '2px solid transparent'
   };
 
   return (
-    <div style={sidebarStyle} className={`h-100 d-flex flex-column flex-shrink-0 ${!isMobile ? 'border-end border-secondary' : ''}`}>
-      <Nav className="flex-column nav-pills flex-grow-1" style={{ whiteSpace: 'nowrap', paddingTop: '1rem' }}>
+    <div style={sidebarStyle} className="h-100 d-flex flex-column">
+      <Nav className="flex-column flex-grow-1" style={{ paddingTop: '0.5rem' }}>
         <Nav.Link
           href="#"
-          className="text-light d-flex align-items-center p-3"
-          style={activeLinkStyle}
+          style={{ ...linkStyle, ...activeLinkStyle }}
           onClick={isCollapsed ? onToggleCollapse : null}
         >
-          <HouseDoorFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
-          {!isCollapsed && "Monitor de Tarefas"}
+          <HouseDoorFill size={16} className="flex-shrink-0" />
+          {!isCollapsed && "Monitor"}
         </Nav.Link>
 
         <Accordion>
           <CustomToggle eventKey="0" isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse}>
-            <CollectionFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
+            <CollectionFill size={16} className="flex-shrink-0" />
             {!isCollapsed && "Cadastros"}
           </CustomToggle>
           {!isCollapsed && (
             <Accordion.Collapse eventKey="0">
               <div>
-                <Nav.Link onClick={onProjectsClick} className="text-secondary d-flex align-items-center py-2 ps-5" role="button">
-                  <Folder className="me-2" /> Projetos
+                <Nav.Link
+                  onClick={onProjectsClick}
+                  style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  role="button"
+                >
+                  <Folder size={14} /> Projetos
                 </Nav.Link>
-                <Nav.Link onClick={onTaskTypesClick} className="text-secondary d-flex align-items-center py-2 ps-5" role="button">
-                  <TagFill className="me-2" /> Tipos de Tarefa
+                <Nav.Link
+                  onClick={onTaskTypesClick}
+                  style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  role="button"
+                >
+                  <TagFill size={14} /> Tipos de Tarefa
                 </Nav.Link>
               </div>
             </Accordion.Collapse>
@@ -93,24 +129,22 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
         <OverlayTrigger
           placement="right"
           delay={{ show: 250, hide: 400 }}
-          overlay={
-            <Tooltip id="tooltip-reports">
-              Módulo de Relatórios ainda não implementado
-            </Tooltip>
-          }
+          overlay={<Tooltip id="tooltip-reports">Modulo de Relatorios ainda nao implementado</Tooltip>}
         >
-          <div className="nav-link text-secondary d-flex align-items-center p-3 nav-link-no-action">
-            <BarChartFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
-            {!isCollapsed && "Relatórios"}
+          <div style={{ ...linkStyle, cursor: 'not-allowed', opacity: 0.5 }}>
+            <BarChartFill size={16} className="flex-shrink-0" />
+            {!isCollapsed && "Relatorios"}
           </div>
         </OverlayTrigger>
 
         <Nav.Link
           onClick={isCollapsed ? () => { onToggleCollapse(); onAiClick(); } : onAiClick}
-          className="text-secondary d-flex align-items-center p-3"
+          style={linkStyle}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
           role="button"
         >
-          <ChatDotsFill className={`flex-shrink-0 ${!isCollapsed ? 'me-2' : ''}`} />
+          <ChatDotsFill size={16} className="flex-shrink-0" />
           {!isCollapsed && "Assistente IA"}
         </Nav.Link>
       </Nav>

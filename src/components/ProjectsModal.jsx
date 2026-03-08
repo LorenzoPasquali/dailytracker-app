@@ -104,38 +104,15 @@ export default function ProjectsModal({ show, handleClose }) {
     }
   }
 
-  const modalStyle = { backgroundColor: '#0d1117', color: '#c9d1d9' };
-
-  const darkInputStyle = {
-    backgroundColor: '#21262d',
-    color: 'white',
-    borderColor: '#30363d',
-    boxShadow: 'none',
-    '&:focus': {
-      borderColor: '#3b82f6',
-      boxShadow: '0 0 0 0.1rem rgba(59, 130, 246, 0.25)',
-      outline: 'none',
-    }
-  };
-
-  const customThStyle = {
-    backgroundColor: '#161b22',
-    borderColor: '#30363d',
-    color: '#8b949e',
-    padding: '12px 10px',
-  };
-
-  const customTdStyle = {
-    backgroundColor: '#0d1117',
-    borderColor: '#30363d',
-    color: '#c9d1d9',
-    padding: '12px 10px',
-  };
+  const modalStyle = { backgroundColor: 'var(--bg-surface)', color: 'var(--text-secondary)' };
+  const darkInputStyle = { backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', borderColor: 'var(--border-default)', boxShadow: 'none' };
+  const customThStyle = { backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)', color: 'var(--text-muted)', padding: '10px', fontSize: '0.8rem', fontWeight: 600 };
+  const customTdStyle = { backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', padding: '10px', fontSize: '0.85rem' };
 
   return (
     <>
       <Modal show={show} onHide={handleClose} centered size="lg">
-        <Modal.Header closeButton closeVariant="white" className="border-secondary" style={modalStyle}>
+        <Modal.Header closeButton closeVariant="white" style={{ ...modalStyle, borderColor: 'var(--border-subtle)' }}>
           <Modal.Title>Gerenciar Projetos</Modal.Title>
         </Modal.Header>
         <Modal.Body style={modalStyle}>
@@ -149,10 +126,10 @@ export default function ProjectsModal({ show, handleClose }) {
                 style={darkInputStyle}
                 className="custom-form-control"
               />
-              <div className="d-flex align-items-center px-2" style={{ backgroundColor: '#21262d', border: '1px solid #30363d', borderRadius: '0 5px 5px 0' }}>
+              <div className="d-flex align-items-center px-2" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-default)', borderRadius: '0 5px 5px 0' }}>
                 <ColorPicker currentColor={newProjectColor} onColorSelect={setNewProjectColor} />
               </div>
-              <Button variant="primary" type="submit">Criar</Button>
+              <Button type="submit" style={{ backgroundColor: 'var(--accent)', border: 'none', color: 'var(--bg-base)', fontWeight: 600, fontSize: '0.85rem' }}>Criar</Button>
             </InputGroup>
           </Form>
           <hr className="text-secondary" />
@@ -187,7 +164,7 @@ export default function ProjectsModal({ show, handleClose }) {
                         </InputGroup>
                       ) : (
                         <div className="d-flex align-items-center">
-                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: project.color, marginRight: '8px', border: '1px solid #30363d' }}></div>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: project.color, marginRight: '8px' }}></div>
                           {project.name}
                         </div>
                       )}

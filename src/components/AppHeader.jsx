@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navbar, Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { List, PersonCircle, BoxArrowRight, ArrowLeftSquare, ArrowRightSquare } from 'react-bootstrap-icons';
 
 const CustomToggle = React.forwardRef(({ onClick }, ref) => (
@@ -7,9 +7,12 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
     href=""
     ref={ref}
     onClick={(e) => { e.preventDefault(); onClick(e); }}
-    className="p-0 text-light user-menu-btn"
+    className="p-0 user-menu-btn"
+    style={{ color: 'var(--text-muted)', transition: 'color var(--transition)' }}
+    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
   >
-    <PersonCircle size={28} />
+    <PersonCircle size={26} />
   </a>
 ));
 
@@ -22,17 +25,26 @@ export default function AppHeader({
   currentUser,
   onLogoutClick
 }) {
-
   return (
-    <Navbar variant="dark" className="py-1 px-3 border-bottom border-secondary" style={{ backgroundColor: 'rgba(13, 17, 23, 0.65)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
-      <div className="d-flex align-items-center">
+    <header style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: isMobile ? '0.5rem 0.75rem' : '0.6rem 1.25rem',
+      backgroundColor: 'var(--bg-surface)',
+      borderBottom: '1px solid var(--border-subtle)',
+      height: '54px',
+      flexShrink: 0
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {isMobile ? (
           <Button
             variant="link"
             onClick={onToggleMobileSidebar}
-            className="text-secondary p-2 sidebar-toggle-btn"
+            className="sidebar-toggle-btn"
+            style={{ color: 'var(--text-muted)', padding: '0.25rem' }}
           >
-            <List size={22} />
+            <List size={20} />
           </Button>
         ) : (
           <OverlayTrigger
@@ -44,52 +56,94 @@ export default function AppHeader({
               </Tooltip>
             }
           >
-            <Button variant="link" onClick={onToggleCollapse} className="text-secondary p-2 sidebar-toggle-btn">
-              {isSidebarCollapsed ? <ArrowRightSquare size={16} /> : <ArrowLeftSquare size={16} />}
+            <Button
+              variant="link"
+              onClick={onToggleCollapse}
+              className="sidebar-toggle-btn"
+              style={{ color: 'var(--text-muted)', padding: '0.25rem' }}
+            >
+              {isSidebarCollapsed ? <ArrowRightSquare size={15} /> : <ArrowLeftSquare size={15} />}
             </Button>
           </OverlayTrigger>
         )}
-        <Navbar.Brand href="#" className="ms-2 fs-4">Daily Tracker</Navbar.Brand>
+        <span style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '1.1rem',
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.3px'
+        }}>
+          DailyTracker
+        </span>
       </div>
-      <div className="d-flex align-items-center ms-auto">
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <Button
-          variant="primary"
-          className="me-3"
-          size={isMobile ? "sm" : undefined}
-          style={isMobile ? { fontSize: '0.85rem', padding: '0.25rem 0.75rem' } : {}}
           onClick={onNewTaskClick}
+          size="sm"
+          style={{
+            backgroundColor: 'var(--accent)',
+            border: 'none',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            padding: '0.4rem 1rem',
+            borderRadius: 'var(--radius-sm)',
+            color: 'var(--bg-base)',
+            letterSpacing: '-0.01em'
+          }}
         >
           {isMobile ? '+ Tarefa' : '+ Nova Tarefa'}
         </Button>
 
         <Dropdown align="end">
           <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components" />
-
           <Dropdown.Menu
             variant="dark"
             className="p-2"
-            style={{ width: 'max-content', marginTop: '10px', border: '1px solid #30363d' }}
+            style={{
+              minWidth: '200px',
+              marginTop: '8px',
+              border: '1px solid var(--border-default)',
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)'
+            }}
           >
-            <div className="text-center px-2 py-1">
-              <div className="fw-bold">{currentUser?.email}</div>
-              <div className="mb-2 mt-1">
-                <Badge bg="success" pill>Plano Básico</Badge>
+            <div style={{ padding: '0.5rem', textAlign: 'center' }}>
+              <div style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                {currentUser?.email}
               </div>
+              <Badge style={{
+                marginTop: '0.35rem',
+                backgroundColor: 'var(--accent-subtle)',
+                color: 'var(--accent)',
+                fontWeight: 500,
+                fontSize: '0.7rem'
+              }}>
+                Plano Basico
+              </Badge>
             </div>
-            <Dropdown.Divider />
+            <Dropdown.Divider style={{ borderColor: 'var(--border-subtle)' }} />
             <Dropdown.Item as="div" className="p-0">
               <Button
-                variant="danger"
                 size="sm"
                 className="w-100 d-flex align-items-center justify-content-center"
                 onClick={onLogoutClick}
+                style={{
+                  backgroundColor: 'var(--danger-subtle)',
+                  border: 'none',
+                  color: 'var(--danger)',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  borderRadius: 'var(--radius-sm)'
+                }}
               >
-                <BoxArrowRight className="me-2" /> Sair
+                <BoxArrowRight className="me-2" size={14} /> Sair
               </Button>
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </div>
-    </Navbar>
+    </header>
   );
 }

@@ -6,7 +6,6 @@ import api from '../services/api';
 
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import AppHeader from '../components/AppHeader';
-import ParticlesBackground from '../components/ParticlesBackground';
 import Sidebar from '../components/Sidebar';
 import KanbanColumn from '../components/KanbanColumn';
 import TaskCard from '../components/TaskCard';
@@ -16,7 +15,7 @@ import ProjectsModal from '../components/ProjectsModal';
 import TaskTypesModal from '../components/TaskTypesModal';
 
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
-import { ArrowLeftSquare, Calendar } from 'react-bootstrap-icons';
+import { Calendar } from 'react-bootstrap-icons';
 import DateFilterModal from '../components/DateFilterModal';
 import AiChatModal from '../components/AiChatModal';
 import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } from 'date-fns';
@@ -149,7 +148,7 @@ export default function DashboardPage() {
         return newColumns;
       });
       handleCloseDeleteModal();
-    } catch (error) { console.error("Erro ao deletar tarefa:", error); alert('Não foi possível deletar a tarefa.'); }
+    } catch (error) { console.error("Erro ao deletar tarefa:", error); alert('Nao foi possivel deletar a tarefa.'); }
   };
   const findContainer = (taskId) => {
     if (!taskId) return null;
@@ -178,7 +177,7 @@ export default function DashboardPage() {
       const activeIndex = sourceTasks.findIndex(t => t.id === active.id);
       if (activeIndex > -1) { [movedTask] = sourceTasks.splice(activeIndex, 1); } else return;
       const updatedTask = { ...movedTask, status: destContainer };
-      api.put(`/api/tasks/${active.id}`, { status: destContainer }).catch(() => { fetchData(); alert('Não foi possível mover a tarefa.'); });
+      api.put(`/api/tasks/${active.id}`, { status: destContainer }).catch(() => { fetchData(); alert('Nao foi possivel mover a tarefa.'); });
       setTaskColumns(prev => {
         const destTasks = [...prev[destContainer]];
         const overIndex = destTasks.findIndex(t => t.id === over.id);
@@ -189,17 +188,8 @@ export default function DashboardPage() {
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
   const handleProjectToggle = (projectId) => {
@@ -216,7 +206,7 @@ export default function DashboardPage() {
     const filteredDone = filteredTasks.filter(t => t.status === 'DONE');
 
     if (loading) {
-      return <div className="w-100 text-center mt-5"><Spinner animation="border" variant="light" /></div>;
+      return <div className="w-100 text-center mt-5"><Spinner animation="border" style={{ color: 'var(--accent)' }} /></div>;
     }
     if (isMobile) {
       return (
@@ -236,21 +226,20 @@ export default function DashboardPage() {
     );
   };
 
+  const isDateFilterActive = dateRange[0] !== null;
+
   return (
-    <div className="vh-100 vw-100 d-flex flex-column" style={{ backgroundColor: '#0d1117', overflow: 'hidden' }}>
-      <ParticlesBackground variant="subtle" />
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <AppHeader
-          isMobile={isMobile}
-          isSidebarCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          onToggleMobileSidebar={() => setShowMobileSidebar(true)}
-          onNewTaskClick={handleOpenCreateModal}
-          currentUser={currentUser}
-          onLogoutClick={() => setShowLogoutConfirm(true)}
-        />
-      </div>
-      <div className="d-flex flex-grow-1" style={{ overflow: 'hidden', position: 'relative', zIndex: 1, minHeight: 0 }}>
+    <div className="vh-100 vw-100 d-flex flex-column" style={{ backgroundColor: 'var(--bg-base)', overflow: 'hidden' }}>
+      <AppHeader
+        isMobile={isMobile}
+        isSidebarCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        onToggleMobileSidebar={() => setShowMobileSidebar(true)}
+        onNewTaskClick={handleOpenCreateModal}
+        currentUser={currentUser}
+        onLogoutClick={() => setShowLogoutConfirm(true)}
+      />
+      <div className="d-flex flex-grow-1" style={{ overflow: 'hidden', minHeight: 0 }}>
         {!isMobile && (
           <Sidebar
             isMobile={isMobile}
@@ -261,96 +250,115 @@ export default function DashboardPage() {
             onAiClick={() => setShowAiChat(true)}
           />
         )}
-        <main className="flex-grow-1 p-3 d-flex flex-column" style={{ overflow: isMobile ? 'auto' : 'hidden' }}>
-          <header className={`d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-2 ${isMobile ? 'mb-4' : 'mb-3'}`}>
-            <h1 className="fs-3 text-light mb-0 d-none d-lg-block">Monitor de Tarefas</h1>
-            <div className="d-flex align-items-center gap-2" style={{ width: isMobile ? '100%' : 'auto', overflowX: 'auto', paddingBottom: '4px' }}>
+        <main className="flex-grow-1 d-flex flex-column" style={{
+          overflow: isMobile ? 'auto' : 'hidden',
+          padding: isMobile ? '0.75rem' : '1.25rem'
+        }}>
+          <header style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            gap: '0.5rem',
+            marginBottom: isMobile ? '1rem' : '0.75rem',
+            flexShrink: 0
+          }}>
+            <h1 className="d-none d-lg-block" style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.25rem',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
+              margin: 0,
+              letterSpacing: '-0.3px'
+            }}>
+              Monitor de Tarefas
+            </h1>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              width: isMobile ? '100%' : 'auto',
+              overflowX: 'auto',
+              paddingBottom: '2px'
+            }}>
               {projects.map(project => {
                 const isSelected = selectedProjectIds.includes(project.id);
                 const anyFilterActive = selectedProjectIds.length > 0;
 
-                let buttonStyle = {
-                  borderRadius: '8px',
-                  border: '1px solid transparent',
-                  transition: 'all 0.2s ease-in-out',
-                  color: '#fff',
-                  outline: 'none',
-                  boxShadow: 'none',
-                  padding: isMobile ? '0.25rem 0.8rem' : '0.35rem 1.2rem',
-                  fontSize: isMobile ? '0.8rem' : '0.95rem',
-                  whiteSpace: 'nowrap',
-                };
-
-                if (anyFilterActive && !isSelected) {
-                  buttonStyle = {
-                    ...buttonStyle,
-                    textDecoration: 'line-through',
-                    opacity: 0.5,
-                    backgroundColor: 'rgba(80, 80, 80, 0.2)',
-                  };
-                } else {
-                  buttonStyle = {
-                    ...buttonStyle,
-                    backgroundColor: `${project.color}40`,
-                    backdropFilter: 'blur(8px)',
-                    border: `1px solid ${project.color}80`,
-                  };
-
-                  if (isSelected) {
-                    buttonStyle = {
-                      ...buttonStyle,
-                      fontWeight: 'bold',
-                      backgroundColor: `${project.color}70`,
-                      boxShadow: `0 0 10px ${project.color}B3`,
-                      border: `1px solid ${project.color}CC`,
-                    };
-                  }
-                }
-
                 return (
-                  <Button
+                  <button
                     key={project.id}
-                    variant="dark"
-                    className="no-focus-override"
-                    style={buttonStyle}
                     onClick={() => handleProjectToggle(project.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: isMobile ? '0.25rem 0.7rem' : '0.35rem 0.95rem',
+                      fontSize: isMobile ? '0.8rem' : '0.85rem',
+                      fontWeight: 500,
+                      color: anyFilterActive && !isSelected ? 'var(--text-muted)' : 'var(--text-secondary)',
+                      backgroundColor: isSelected ? 'var(--bg-active)' : 'transparent',
+                      border: `1px solid ${isSelected ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      opacity: anyFilterActive && !isSelected ? 0.5 : 1,
+                      transition: 'all var(--transition)',
+                      textDecoration: anyFilterActive && !isSelected ? 'line-through' : 'none',
+                      outline: 'none',
+                      fontFamily: 'inherit'
+                    }}
                   >
+                    <span style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: project.color,
+                      flexShrink: 0
+                    }} />
                     {project.name}
-                  </Button>
+                  </button>
                 );
               })}
-              <Button
-                variant="dark"
-                className="no-focus-override ms-2"
-                style={{
-                  borderRadius: '8px',
-                  border: dateRange[0] ? '1px solid #238636' : '1px solid #30363d',
-                  backgroundColor: dateRange[0] ? 'rgba(35, 134, 54, 0.2)' : 'transparent',
-                  color: dateRange[0] ? '#fff' : '#c9d1d9',
-                  padding: isMobile ? '0.25rem 0.6rem' : '0.35rem 0.8rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: dateRange[0] ? 'auto' : '40px',
-                  gap: '0.5rem'
-                }}
+
+              <button
                 onClick={() => setShowDateFilterModal(true)}
                 title="Filtrar por data"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: isMobile ? '0.25rem 0.6rem' : '0.35rem 0.75rem',
+                  fontSize: isMobile ? '0.8rem' : '0.85rem',
+                  fontWeight: 500,
+                  color: isDateFilterActive ? 'var(--accent)' : 'var(--text-muted)',
+                  backgroundColor: isDateFilterActive ? 'var(--accent-subtle)' : 'transparent',
+                  border: `1px solid ${isDateFilterActive ? 'var(--accent-border)' : 'var(--border-subtle)'}`,
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all var(--transition)',
+                  outline: 'none',
+                  fontFamily: 'inherit'
+                }}
               >
-                <Calendar size={isMobile ? 14 : 18} />
+                <Calendar size={isMobile ? 12 : 14} />
                 {dateRange[0] && (
-                  <span style={{ fontSize: isMobile ? '0.8rem' : '0.9rem' }}>
+                  <span>
                     {dateRange[1]
                       ? `${format(dateRange[0], 'dd/MM')} - ${format(dateRange[1], 'dd/MM')}`
                       : format(dateRange[0], 'dd/MM/yyyy')
                     }
                   </span>
                 )}
-              </Button>
+              </button>
             </div>
           </header>
+
           <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            {renderDashboardContent()}
+            <div style={{ flex: 1, minHeight: 0 }}>
+              {renderDashboardContent()}
+            </div>
             <DragOverlay>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} /> : null}</DragOverlay>
           </DndContext>
         </main>
@@ -359,7 +367,7 @@ export default function DashboardPage() {
       <Offcanvas
         show={showMobileSidebar}
         onHide={() => setShowMobileSidebar(false)}
-        style={{ backgroundColor: '#0d1117', color: 'white', width: '260px' }}
+        style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', width: '240px' }}
       >
         <Offcanvas.Header closeButton closeVariant="white" />
         <Offcanvas.Body className="p-0">
@@ -379,16 +387,16 @@ export default function DashboardPage() {
         show={showDeleteModal}
         handleClose={handleCloseDeleteModal}
         handleConfirm={handleConfirmDelete}
-        title="Confirmar Exclusão"
-        body="Você tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita."
-        confirmButtonText="Confirmar Exclusão"
+        title="Confirmar Exclusao"
+        body="Voce tem certeza que deseja excluir esta tarefa? Esta acao nao pode ser desfeita."
+        confirmButtonText="Confirmar Exclusao"
       />
       <ConfirmationModal
         show={showLogoutConfirm}
         handleClose={() => setShowLogoutConfirm(false)}
         handleConfirm={handleLogout}
-        title="Confirmar Saída"
-        body="Você tem certeza que deseja sair da sua conta?"
+        title="Confirmar Saida"
+        body="Voce tem certeza que deseja sair da sua conta?"
         confirmButtonText="Sair"
         confirmButtonVariant="primary"
       />

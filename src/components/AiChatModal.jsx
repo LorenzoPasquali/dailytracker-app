@@ -19,8 +19,8 @@ export default function AiChatModal({ show, onClose, isMobile }) {
   const inputRef = useRef(null);
   const modalRef = useRef(null);
 
-  const MODAL_WIDTH = isMobile ? window.innerWidth : 420;
-  const MODAL_HEIGHT = isMobile ? window.innerHeight * 0.7 : 520;
+  const MODAL_WIDTH = isMobile ? window.innerWidth : 400;
+  const MODAL_HEIGHT = isMobile ? window.innerHeight * 0.7 : 500;
 
   useEffect(() => {
     if (show) {
@@ -41,9 +41,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
   }, [messages]);
 
   useEffect(() => {
-    if (hasKey && !loading) {
-      inputRef.current?.focus();
-    }
+    if (hasKey && !loading) inputRef.current?.focus();
   }, [hasKey, loading, messages]);
 
   const handleMouseDown = useCallback((e) => {
@@ -87,7 +85,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
   };
 
   const handleDeleteKey = async () => {
-    if (!window.confirm('Tem certeza que deseja remover sua API Key? Isso encerrará a sessão de chat.')) return;
+    if (!window.confirm('Tem certeza que deseja remover sua API Key?')) return;
     setSavingKey(true);
     try {
       await api.delete('/api/ai/key');
@@ -119,7 +117,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
       setMessages(prev => [...prev, { role: 'model', text: res.data.reply }]);
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Erro ao comunicar com a IA.';
-      setMessages(prev => [...prev, { role: 'model', text: `⚠️ ${errorMsg}` }]);
+      setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
     } finally {
       setLoading(false);
     }
@@ -134,41 +132,35 @@ export default function AiChatModal({ show, onClose, isMobile }) {
 
   if (!show) return null;
 
-  const modalStyle = {
-    position: 'fixed',
-    left: position.x,
-    top: position.y,
-    width: MODAL_WIDTH,
-    height: MODAL_HEIGHT,
-    zIndex: 9999,
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: 'rgba(13, 17, 23, 0.95)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid #30363d',
-    borderRadius: isMobile ? '12px 12px 0 0' : 12,
-    boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-    overflow: 'hidden',
+  const inputStyle = {
+    width: '100%',
+    padding: '0.6rem 0.75rem',
+    backgroundColor: 'var(--bg-base)',
+    border: '1px solid var(--border-default)',
+    borderRadius: 'var(--radius-md)',
+    color: 'var(--text-primary)',
+    fontSize: '0.85rem',
+    outline: 'none',
   };
 
-  const headerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '10px 14px',
-    borderBottom: '1px solid #30363d',
-    cursor: isMobile ? 'default' : 'grab',
-    userSelect: 'none',
-    background: 'linear-gradient(180deg, rgba(22, 27, 34, 0.8) 0%, rgba(13, 17, 23, 0) 100%)',
+  const btnPrimary = {
+    width: '100%',
+    padding: '0.6rem',
+    backgroundColor: 'var(--accent)',
+    color: 'var(--bg-base)',
+    border: 'none',
+    borderRadius: 'var(--radius-md)',
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    cursor: 'pointer',
   };
 
   const renderKeySetup = () => (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 }}>
-      <KeyFill size={40} style={{ color: '#3b82f6', opacity: 0.7 }} />
-      <h6 style={{ color: '#c9d1d9', textAlign: 'center', margin: 0 }}>Configure sua API Key do Gemini</h6>
-      <p style={{ color: '#8b949e', fontSize: '0.85rem', textAlign: 'center', margin: 0 }}>
-        Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>Google AI Studio</a> para obter sua chave.
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', gap: '1rem' }}>
+      <KeyFill size={36} style={{ color: 'var(--accent)', opacity: 0.6 }} />
+      <h6 style={{ color: 'var(--text-primary)', textAlign: 'center', margin: 0, fontSize: '0.9rem' }}>Configure sua API Key do Gemini</h6>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', margin: 0 }}>
+        Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Google AI Studio</a> para obter sua chave.
       </p>
       <input
         type="password"
@@ -176,44 +168,23 @@ export default function AiChatModal({ show, onClose, isMobile }) {
         onChange={(e) => setKeyInput(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
         placeholder="Cole sua API Key aqui"
-        style={{
-          width: '100%',
-          padding: '10px 12px',
-          backgroundColor: '#21262d',
-          border: '1px solid #30363d',
-          borderRadius: 8,
-          color: '#c9d1d9',
-          fontSize: '0.9rem',
-          outline: 'none',
-        }}
+        style={inputStyle}
       />
       <button
         onClick={handleSaveKey}
         disabled={savingKey || !keyInput.trim()}
-        style={{
-          width: '100%',
-          padding: '10px',
-          backgroundColor: '#3b82f6',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 8,
-          fontSize: '0.9rem',
-          fontWeight: 500,
-          cursor: savingKey ? 'wait' : 'pointer',
-          opacity: savingKey || !keyInput.trim() ? 0.6 : 1,
-        }}
+        style={{ ...btnPrimary, opacity: savingKey || !keyInput.trim() ? 0.5 : 1 }}
       >
-        {savingKey ? <Spinner animation="border" size="sm" /> : 'Salvar e Começar'}
+        {savingKey ? <Spinner animation="border" size="sm" /> : 'Salvar e Comecar'}
       </button>
     </div>
   );
 
   const renderSettings = () => (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 24, gap: 16 }}>
-      <h6 style={{ color: '#c9d1d9', margin: 0 }}>Configurações da IA</h6>
-
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1.5rem', gap: '1rem' }}>
+      <h6 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '0.9rem' }}>Configuracoes da IA</h6>
       <div>
-        <label style={{ color: '#8b949e', fontSize: '0.85rem', marginBottom: 6, display: 'block' }}>
+        <label style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.35rem', display: 'block' }}>
           Atualizar API Key do Gemini
         </label>
         <input
@@ -222,69 +193,40 @@ export default function AiChatModal({ show, onClose, isMobile }) {
           onChange={(e) => setKeyInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
           placeholder="Nova API Key"
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            backgroundColor: '#21262d',
-            border: '1px solid #30363d',
-            borderRadius: 8,
-            color: '#c9d1d9',
-            fontSize: '0.9rem',
-            outline: 'none',
-          }}
+          style={inputStyle}
         />
       </div>
-
       <button
         onClick={handleSaveKey}
         disabled={savingKey || !keyInput.trim()}
-        style={{
-          width: '100%',
-          padding: '10px',
-          backgroundColor: '#3b82f6',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 8,
-          fontSize: '0.9rem',
-          cursor: 'pointer',
-          opacity: savingKey || !keyInput.trim() ? 0.6 : 1,
-        }}
+        style={{ ...btnPrimary, opacity: savingKey || !keyInput.trim() ? 0.5 : 1 }}
       >
         {savingKey ? <Spinner animation="border" size="sm" /> : 'Atualizar Chave'}
       </button>
-
       <button
         onClick={handleDeleteKey}
         disabled={savingKey}
         style={{
-          width: '100%',
-          padding: '10px',
+          ...btnPrimary,
           backgroundColor: 'transparent',
-          color: '#f85149',
-          border: '1px solid #f8514933',
-          borderRadius: 8,
-          fontSize: '0.9rem',
-          cursor: 'pointer',
+          color: 'var(--danger)',
+          border: '1px solid var(--danger-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 8,
+          gap: '0.5rem',
         }}
       >
-        <TrashFill size={14} /> Remover Chave
+        <TrashFill size={13} /> Remover Chave
       </button>
-
       <button
         onClick={() => { setShowSettings(false); setKeyInput(''); }}
         style={{
+          ...btnPrimary,
           marginTop: 'auto',
-          padding: '10px',
-          backgroundColor: '#21262d',
-          color: '#c9d1d9',
-          border: '1px solid #30363d',
-          borderRadius: 8,
-          fontSize: '0.9rem',
-          cursor: 'pointer',
+          backgroundColor: 'var(--bg-hover)',
+          color: 'var(--text-secondary)',
+          border: '1px solid var(--border-default)',
         }}
       >
         Voltar ao Chat
@@ -297,10 +239,10 @@ export default function AiChatModal({ show, onClose, isMobile }) {
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '12px 14px',
+        padding: '0.75rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: '0.5rem',
       }}>
         {messages.length === 0 && (
           <div style={{
@@ -309,12 +251,12 @@ export default function AiChatModal({ show, onClose, isMobile }) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#8b949e',
-            fontSize: '0.85rem',
+            color: 'var(--text-muted)',
+            fontSize: '0.8rem',
             textAlign: 'center',
-            gap: 8,
+            gap: '0.5rem',
           }}>
-            <ChatDotsFill size={32} style={{ opacity: 0.4 }} />
+            <ChatDotsFill size={28} style={{ opacity: 0.3 }} />
             <p style={{ margin: 0 }}>Pergunte sobre suas tarefas, projetos ou produtividade.</p>
           </div>
         )}
@@ -324,12 +266,12 @@ export default function AiChatModal({ show, onClose, isMobile }) {
             style={{
               alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
               maxWidth: '85%',
-              padding: '8px 12px',
-              borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-              backgroundColor: msg.role === 'user' ? 'rgba(59, 130, 246, 0.2)' : '#161b22',
-              border: msg.role === 'user' ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid #30363d',
-              color: '#c9d1d9',
-              fontSize: '0.88rem',
+              padding: '0.5rem 0.75rem',
+              borderRadius: msg.role === 'user' ? '10px 10px 2px 10px' : '10px 10px 10px 2px',
+              backgroundColor: msg.role === 'user' ? 'var(--accent-subtle)' : 'var(--bg-elevated)',
+              border: `1px solid ${msg.role === 'user' ? 'var(--accent-border)' : 'var(--border-subtle)'}`,
+              color: 'var(--text-secondary)',
+              fontSize: '0.83rem',
               lineHeight: 1.5,
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
@@ -341,22 +283,22 @@ export default function AiChatModal({ show, onClose, isMobile }) {
         {loading && (
           <div style={{
             alignSelf: 'flex-start',
-            padding: '8px 16px',
-            borderRadius: '12px 12px 12px 2px',
-            backgroundColor: '#161b22',
-            border: '1px solid #30363d',
+            padding: '0.5rem 1rem',
+            borderRadius: '10px 10px 10px 2px',
+            backgroundColor: 'var(--bg-elevated)',
+            border: '1px solid var(--border-subtle)',
           }}>
-            <Spinner animation="border" size="sm" variant="secondary" />
+            <Spinner animation="border" size="sm" style={{ color: 'var(--text-muted)' }} />
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       <div style={{
-        padding: '10px 14px',
-        borderTop: '1px solid #30363d',
+        padding: '0.6rem 0.75rem',
+        borderTop: '1px solid var(--border-subtle)',
         display: 'flex',
-        gap: 8,
+        gap: '0.5rem',
         alignItems: 'flex-end',
       }}>
         <textarea
@@ -367,14 +309,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
           placeholder="Digite sua pergunta..."
           rows={1}
           style={{
-            flex: 1,
-            padding: '10px 12px',
-            backgroundColor: '#21262d',
-            border: '1px solid #30363d',
-            borderRadius: 8,
-            color: '#c9d1d9',
-            fontSize: '0.9rem',
-            outline: 'none',
+            ...inputStyle,
             resize: 'none',
             maxHeight: 80,
             lineHeight: 1.4,
@@ -388,48 +323,73 @@ export default function AiChatModal({ show, onClose, isMobile }) {
           onClick={handleSend}
           disabled={loading || !input.trim()}
           style={{
-            padding: '10px 12px',
-            backgroundColor: '#3b82f6',
-            color: '#fff',
+            padding: '0.6rem 0.7rem',
+            backgroundColor: 'var(--accent)',
+            color: 'var(--bg-base)',
             border: 'none',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-md)',
             cursor: loading || !input.trim() ? 'default' : 'pointer',
-            opacity: loading || !input.trim() ? 0.5 : 1,
+            opacity: loading || !input.trim() ? 0.4 : 1,
             display: 'flex',
             alignItems: 'center',
             flexShrink: 0,
+            transition: 'opacity var(--transition)',
           }}
         >
-          <SendFill size={16} />
+          <SendFill size={14} />
         </button>
       </div>
     </>
   );
 
   return (
-    <div ref={modalRef} style={modalStyle}>
-      <div style={headerStyle} onMouseDown={handleMouseDown}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ChatDotsFill size={18} style={{ color: '#3b82f6' }} />
-          <span style={{ color: '#c9d1d9', fontWeight: 600, fontSize: '0.95rem' }}>
+    <div ref={modalRef} style={{
+      position: 'fixed',
+      left: position.x,
+      top: position.y,
+      width: MODAL_WIDTH,
+      height: MODAL_HEIGHT,
+      zIndex: 9999,
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: 'var(--bg-surface)',
+      border: '1px solid var(--border-default)',
+      borderRadius: isMobile ? 'var(--radius-lg) var(--radius-lg) 0 0' : 'var(--radius-lg)',
+      boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
+      overflow: 'hidden',
+    }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0.6rem 0.75rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          cursor: isMobile ? 'default' : 'grab',
+          userSelect: 'none',
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <ChatDotsFill size={15} style={{ color: 'var(--accent)' }} />
+          <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.85rem' }}>
             Assistente IA
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {hasKey && (
             <button
               onClick={() => { setShowSettings(!showSettings); setKeyInput(''); }}
               style={{
                 background: 'none',
                 border: 'none',
-                color: showSettings ? '#3b82f6' : '#8b949e',
+                color: showSettings ? 'var(--accent)' : 'var(--text-muted)',
                 cursor: 'pointer',
                 padding: 4,
                 display: 'flex',
               }}
-              title="Configurações"
             >
-              <GearFill size={16} />
+              <GearFill size={14} />
             </button>
           )}
           <button
@@ -437,20 +397,20 @@ export default function AiChatModal({ show, onClose, isMobile }) {
             style={{
               background: 'none',
               border: 'none',
-              color: '#8b949e',
+              color: 'var(--text-muted)',
               cursor: 'pointer',
               padding: 4,
               display: 'flex',
             }}
           >
-            <XLg size={16} />
+            <XLg size={14} />
           </button>
         </div>
       </div>
 
       {hasKey === null && (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" style={{ color: 'var(--text-muted)' }} />
         </div>
       )}
       {hasKey === false && !showSettings && renderKeySetup()}

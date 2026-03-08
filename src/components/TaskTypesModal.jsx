@@ -121,15 +121,15 @@ export default function TaskTypesModal({ show, handleClose }) {
     }
   };
 
-  const modalStyle = { backgroundColor: '#0d1117', color: '#c9d1d9' };
-  const darkInputStyle = { backgroundColor: '#21262d', color: 'white', borderColor: '#30363d' };
-  const customThStyle = { backgroundColor: '#161b22', borderColor: '#30363d', color: '#8b949e' };
-  const customTdStyle = { backgroundColor: '#0d1117', borderColor: '#30363d', color: '#c9d1d9' };
+  const modalStyle = { backgroundColor: 'var(--bg-surface)', color: 'var(--text-secondary)' };
+  const darkInputStyle = { backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', borderColor: 'var(--border-default)' };
+  const customThStyle = { backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 };
+  const customTdStyle = { backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', fontSize: '0.85rem' };
 
   return (
     <>
       <Modal show={show} onHide={handleClose} centered size="lg">
-        <Modal.Header closeButton closeVariant="white" className="border-secondary" style={modalStyle}>
+        <Modal.Header closeButton closeVariant="white" style={{ ...modalStyle, borderColor: 'var(--border-subtle)' }}>
           <Modal.Title>Gerenciar Tipos de Tarefa</Modal.Title>
         </Modal.Header>
         <Modal.Body style={modalStyle}>
@@ -156,7 +156,7 @@ export default function TaskTypesModal({ show, handleClose }) {
                   <option key={project.id} value={project.id}>{project.name}</option>
                 ))}
               </Form.Select>
-              <Button variant="primary" type="submit">Criar</Button>
+              <Button type="submit" style={{ backgroundColor: 'var(--accent)', border: 'none', color: 'var(--bg-base)', fontWeight: 600, fontSize: '0.85rem' }}>Criar</Button>
             </InputGroup>
           </Form>
 

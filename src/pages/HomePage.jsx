@@ -1,130 +1,267 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import Particles from "react-tsparticles";
-import { loadSlim } from "tsparticles-slim";
+import { KanbanFill, CalendarCheck, ChatDotsFill, ArrowRight } from 'react-bootstrap-icons';
+import CssParticles from '../components/CssParticles';
 
-import Button from 'react-bootstrap/Button';
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
+const features = [
+  {
+    icon: KanbanFill,
+    title: 'Kanban Visual',
+    description: 'Organize tarefas em colunas Planejado, Em Progresso e Feito com drag & drop intuitivo.'
+  },
+  {
+    icon: CalendarCheck,
+    title: 'Filtros Inteligentes',
+    description: 'Filtre por projeto, tipo de tarefa e intervalo de datas para encontrar exatamente o que precisa.'
+  },
+  {
+    icon: ChatDotsFill,
+    title: 'Assistente IA',
+    description: 'Analise sua produtividade, gere resumos de daily e identifique gargalos com IA integrada.'
+  }
+];
 
 export default function HomePage() {
-  const particlesInit = useCallback(async (engine) => {
-    await loadSlim(engine);
-  }, []);
-
-  const particlesOptions = {
-    background: {
-      color: { value: "#0d1117" },
-    },
-    fpsLimit: 144,
-    interactivity: {
-      events: {
-        onHover: { enable: true, mode: "repulse" },
-        resize: true,
-      },
-      modes: {
-        repulse: { distance: 100, duration: 0.4 },
-      },
-    },
-    particles: {
-      color: { value: "#475569" },
-      links: {
-        color: "#94a3b8",
-        distance: 150,
-        enable: true,
-        opacity: 0.2,
-        width: 1,
-      },
-      move: {
-        direction: "none",
-        enable: true,
-        outModes: { default: "bounce" },
-        random: false,
-        speed: 1,
-        straight: false,
-      },
-      number: {
-        density: { enable: true, area: 800 },
-        value: 80,
-      },
-      opacity: { value: 0.3 },
-      shape: { type: "circle" },
-      size: { value: { min: 1, max: 3 } },
-    },
-    detectRetina: true,
-  };
-
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        options={particlesOptions}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 0
-        }}
-      />
+    <div style={{
+      position: 'relative',
+      width: '100vw',
+      minHeight: '100vh',
+      backgroundColor: 'var(--bg-base)',
+      overflow: 'auto'
+    }}>
+      <CssParticles />
 
+      {/* Subtle gradient orb */}
       <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        height: '60%',
-        zIndex: 0.5,
-        background: 'linear-gradient(to top, rgba(59, 130, 246, 0.15) 0%, rgba(13, 17, 23, 0) 100%)',
-        pointerEvents: 'none'
+        position: 'fixed',
+        top: '-20%',
+        right: '-10%',
+        width: '600px',
+        height: '600px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'fixed',
+        bottom: '-30%',
+        left: '-10%',
+        width: '800px',
+        height: '800px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.04) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        zIndex: 0
       }} />
 
-      <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Navbar variant="dark" expand="lg" style={{ backgroundColor: 'transparent' }}>
-          <Container fluid className="px-4">
-            <Navbar.Brand as={Link} to="/" className="fw-bold fs-4">DailyTracker</Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="ms-auto">
-                <Nav.Link as={Link} to="/login">Entrar</Nav.Link>
-                <Button as={Link} to="/register" variant="outline-light" className="ms-2">Cadastrar</Button>
-              </Nav>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-
-        <Container
-          className="d-flex flex-column justify-content-center align-items-center text-center text-light flex-grow-1"
-        >
-          <h1 className="display-3 fw-bold mb-3" style={{
-            fontFamily: '"Outfit", sans-serif',
-            letterSpacing: '-1px',
-            maxWidth: '800px',
-            background: 'linear-gradient(90deg, #93c5fd 0%, #3b82f6 50%, #0ea5e9 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.4))'
+      {/* Nav */}
+      <nav className="animate-fade-in" style={{
+        position: 'relative',
+        zIndex: 10,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '1.25rem 2rem',
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
+        <Link to="/" style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '1.25rem',
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          textDecoration: 'none',
+          letterSpacing: '-0.5px'
+        }}>
+          DailyTracker
+        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Link to="/login" style={{
+            color: 'var(--text-secondary)',
+            textDecoration: 'none',
+            padding: '0.5rem 1rem',
+            fontSize: '0.9rem',
+            borderRadius: 'var(--radius-md)',
+            transition: 'color var(--transition)'
           }}>
-            Organize suas Dailies. Simplifique seu dia.
-          </h1>
-          <p className="lead mt-3 mb-4" style={{ fontFamily: '"Outfit", sans-serif', maxWidth: '700px', color: '#adb5bd' }}>
-            O Daily Scrum Tracker ajuda você a registrar suas tarefas diárias de forma rápida e objetiva, para que você esteja sempre preparado para a próxima reunião.
-          </p>
+            Entrar
+          </Link>
+          <Link to="/register" style={{
+            color: 'var(--bg-base)',
+            backgroundColor: 'var(--accent)',
+            textDecoration: 'none',
+            padding: '0.5rem 1.25rem',
+            fontSize: '0.9rem',
+            fontWeight: 500,
+            borderRadius: 'var(--radius-md)',
+            transition: 'background-color var(--transition)'
+          }}>
+            Cadastrar
+          </Link>
+        </div>
+      </nav>
 
-          <div className="d-flex justify-content-center mb-2">
-            <Button as={Link} to="/register" variant="outline-light">
-              Cadastrar-se
-            </Button>
-          </div>
+      {/* Hero */}
+      <section style={{
+        position: 'relative',
+        zIndex: 1,
+        maxWidth: '800px',
+        margin: '0 auto',
+        padding: '6rem 2rem 4rem',
+        textAlign: 'center'
+      }}>
+        <div className="animate-fade-in-up delay-1" style={{
+          display: 'inline-block',
+          padding: '0.35rem 1rem',
+          borderRadius: '100px',
+          border: '1px solid var(--accent-border)',
+          backgroundColor: 'var(--accent-subtle)',
+          color: 'var(--accent)',
+          fontSize: '0.8rem',
+          fontWeight: 500,
+          marginBottom: '1.5rem',
+          letterSpacing: '0.02em'
+        }}>
+          Organize suas dailies com simplicidade
+        </div>
 
-          <Button as={Link} to="/login" variant="link" className="text-decoration-none text-light" style={{ fontSize: '0.8em', opacity: 0.5 }}>
-            Já tenho uma conta
-          </Button>
-        </Container>
-      </div>
+        <h1 className="animate-fade-in-up delay-2" style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
+          fontWeight: 800,
+          color: 'var(--text-primary)',
+          lineHeight: 1.1,
+          letterSpacing: '-1.5px',
+          marginBottom: '1.5rem'
+        }}>
+          Simplifique seu dia.{' '}
+          <span style={{ color: 'var(--accent)' }}>
+            Domine suas tarefas.
+          </span>
+        </h1>
+
+        <p className="animate-fade-in-up delay-3" style={{
+          fontSize: '1.1rem',
+          color: 'var(--text-muted)',
+          maxWidth: '560px',
+          margin: '0 auto 2.5rem',
+          lineHeight: 1.7
+        }}>
+          Registre tarefas de forma rapida e objetiva, gerencie projetos com Kanban
+          e esteja sempre preparado para a proxima reuniao.
+        </p>
+
+        <div className="animate-fade-in-up delay-4" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <Link to="/register" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            color: 'var(--bg-base)',
+            backgroundColor: 'var(--accent)',
+            textDecoration: 'none',
+            padding: '0.75rem 1.75rem',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            borderRadius: 'var(--radius-md)',
+            transition: 'background-color var(--transition)'
+          }}>
+            Comecar agora
+            <ArrowRight size={16} />
+          </Link>
+          <Link to="/login" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            color: 'var(--text-secondary)',
+            textDecoration: 'none',
+            padding: '0.75rem 1.75rem',
+            fontSize: '0.95rem',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-md)',
+            transition: 'border-color var(--transition)'
+          }}>
+            Ja tenho conta
+          </Link>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section style={{
+        position: 'relative',
+        zIndex: 1,
+        maxWidth: '1000px',
+        margin: '0 auto',
+        padding: '2rem 2rem 6rem'
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '1px',
+          backgroundColor: 'var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+          border: '1px solid var(--border-subtle)'
+        }}>
+          {features.map((feature, i) => {
+            const Icon = feature.icon;
+            return (
+              <div key={i} className={`animate-fade-in-up delay-${i + 4}`} style={{
+                backgroundColor: 'var(--bg-surface)',
+                padding: '2.5rem 2rem',
+                transition: 'background-color var(--transition)'
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-elevated)'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--bg-surface)'}
+              >
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--accent-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '1.25rem'
+                }}>
+                  <Icon size={18} color="var(--accent)" />
+                </div>
+                <h3 style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.05rem',
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.75rem',
+                  letterSpacing: '-0.3px'
+                }}>
+                  {feature.title}
+                </h3>
+                <p style={{
+                  fontSize: '0.88rem',
+                  color: 'var(--text-muted)',
+                  lineHeight: 1.6,
+                  margin: 0
+                }}>
+                  {feature.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="animate-fade-in delay-6" style={{
+        position: 'relative',
+        zIndex: 1,
+        textAlign: 'center',
+        padding: '2rem',
+        borderTop: '1px solid var(--border-subtle)',
+        color: 'var(--text-muted)',
+        fontSize: '0.8rem'
+      }}>
+        DailyTracker — Feito para simplificar seu fluxo de trabalho.
+      </footer>
     </div>
   );
 }

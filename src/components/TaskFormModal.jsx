@@ -112,23 +112,24 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   };
 
   const modalStyle = {
-    backgroundColor: 'rgba(13, 17, 23, 0.8)',
-    backdropFilter: 'blur(5px)',
-    color: '#c9d1d9',
-    borderRadius: '16px',
+    backgroundColor: 'var(--bg-surface)',
+    border: '1px solid var(--border-subtle)',
+    color: 'var(--text-secondary)',
+    borderRadius: 'var(--radius-lg)',
+    boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
   };
 
-  const darkInputStyle = { 
-    backgroundColor: '#21262d', 
-    color: 'white', 
-    borderColor: '#30363d',
+  const darkInputStyle = {
+    backgroundColor: 'var(--bg-base)',
+    color: 'var(--text-primary)',
+    borderColor: 'var(--border-default)',
     resize: 'none',
   };
 
   return (
     <Modal show={show} onHide={handleClose} centered size="lg" dialogClassName="modal-transparent">
         <div style={modalStyle}>
-            <Modal.Header closeButton closeVariant="white" className="border-secondary">
+            <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
                 <Modal.Title>{taskToEdit ? 'Editar Tarefa' : 'Criar Nova Tarefa'}</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleFormSubmit}>
@@ -138,8 +139,8 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       <Form.Group className="mb-3">
                         <div className="d-flex justify-content-between align-items-center">
                           <Form.Label>
-                              Título
-                              <span style={{ color: '#ef4444' }}>*</span>
+                              Titulo
+                              <span style={{ color: 'var(--danger)' }}>*</span>
                           </Form.Label>
                           <Form.Text className="text-secondary">
                             {title.length} / {TITLE_LIMIT}
@@ -200,14 +201,36 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                   </>
                   )}
               </Modal.Body>
-              <Modal.Footer className="border-secondary d-flex justify-content-between">
+              <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }} className="d-flex justify-content-between">
                 <div>
                   {taskToEdit && (
-                    <Button variant="outline-danger" onClick={handleDelete}>Excluir Tarefa</Button>
+                    <Button
+                      onClick={handleDelete}
+                      style={{
+                        backgroundColor: 'var(--danger-subtle)',
+                        border: 'none',
+                        color: 'var(--danger)',
+                        fontSize: '0.85rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      Excluir Tarefa
+                    </Button>
                   )}
                 </div>
                 <div>
-                  <Button variant="primary" type="submit">{taskToEdit ? 'Salvar Alterações' : 'Salvar Tarefa'}</Button>
+                  <Button
+                    type="submit"
+                    style={{
+                      backgroundColor: 'var(--accent)',
+                      border: 'none',
+                      color: 'var(--bg-base)',
+                      fontWeight: 600,
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    {taskToEdit ? 'Salvar Alteracoes' : 'Salvar Tarefa'}
+                  </Button>
                 </div>
               </Modal.Footer>
             </Form>

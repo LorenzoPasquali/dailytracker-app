@@ -3,8 +3,8 @@ import { Modal, Button } from 'react-bootstrap';
 
 export default function ConfirmationModal({ show, handleClose, handleConfirm, title, body, confirmButtonText, confirmButtonVariant }) {
   const modalBodyStyle = {
-    backgroundColor: '#0d1117',
-    color: '#c9d1d9'
+    backgroundColor: 'var(--bg-surface)',
+    color: 'var(--text-secondary)',
   };
 
   useEffect(() => {
@@ -21,19 +21,39 @@ export default function ConfirmationModal({ show, handleClose, handleConfirm, ti
     };
   }, [show, handleConfirm]);
 
+  const isDanger = !confirmButtonVariant || confirmButtonVariant === 'danger';
+
   return (
     <Modal show={show} onHide={handleClose} centered>
-      <Modal.Header closeButton closeVariant="white" className="border-secondary" style={modalBodyStyle}>
-        <Modal.Title>{title || 'Confirmar Ação'}</Modal.Title>
+      <Modal.Header closeButton closeVariant="white" style={{ ...modalBodyStyle, borderColor: 'var(--border-subtle)' }}>
+        <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>{title || 'Confirmar Acao'}</Modal.Title>
       </Modal.Header>
       <Modal.Body style={modalBodyStyle}>
-        <p>{body || 'Você tem certeza que deseja continuar?'}</p>
+        <p style={{ margin: 0, fontSize: '0.9rem' }}>{body || 'Voce tem certeza que deseja continuar?'}</p>
       </Modal.Body>
-      <Modal.Footer className="border-secondary" style={modalBodyStyle}>
-        <Button variant="secondary" onClick={handleClose}>
+      <Modal.Footer style={{ ...modalBodyStyle, borderColor: 'var(--border-subtle)' }}>
+        <Button
+          onClick={handleClose}
+          style={{
+            backgroundColor: 'var(--bg-hover)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-secondary)',
+            fontSize: '0.85rem'
+          }}
+        >
           Cancelar
         </Button>
-        <Button variant={confirmButtonVariant || 'danger'} onClick={handleConfirm} autoFocus>
+        <Button
+          onClick={handleConfirm}
+          autoFocus
+          style={{
+            backgroundColor: isDanger ? 'var(--danger)' : 'var(--accent)',
+            border: 'none',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: '0.85rem'
+          }}
+        >
           {confirmButtonText || 'Confirmar'}
         </Button>
       </Modal.Footer>

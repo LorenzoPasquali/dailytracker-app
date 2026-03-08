@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import ParticlesBackground from '../components/ParticlesBackground';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
 
 import googleLogo from '../assets/google-icon.svg';
+import CssParticles from '../components/CssParticles';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -19,25 +18,18 @@ export default function LoginPage() {
   useEffect(() => {
     const handleMessage = (event) => {
       const apiOrigin = new URL(api.defaults.baseURL).origin;
-      if (event.origin !== apiOrigin) {
-        return;
-      }
+      if (event.origin !== apiOrigin) return;
 
       const { token, error } = event.data;
-
       if (token) {
         localStorage.setItem('authToken', token);
         navigate('/dashboard');
       } else if (error) {
-        setError('Falha na autenticação com o Google.');
+        setError('Falha na autenticacao com o Google.');
       }
     };
-
     window.addEventListener('message', handleMessage);
-
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
+    return () => window.removeEventListener('message', handleMessage);
   }, [navigate]);
 
   const handleLogin = async (e) => {
@@ -49,11 +41,10 @@ export default function LoginPage() {
     }
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token } = response.data;
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('authToken', response.data.token);
       navigate('/dashboard');
     } catch (err) {
-      setError('Credenciais inválidas. Por favor, tente novamente.');
+      setError('Credenciais invalidas. Por favor, tente novamente.');
     }
   };
 
@@ -62,61 +53,130 @@ export default function LoginPage() {
     const height = 700;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
-    const url = `${api.defaults.baseURL}/auth/google`;
-
     window.open(
-      url,
+      `${api.defaults.baseURL}/auth/google`,
       'googleLogin',
       `width=${width},height=${height},top=${top},left=${left}`
     );
   };
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <ParticlesBackground variant="login" />
-      <Container fluid className="d-flex flex-column align-items-center justify-content-center text-light" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+    <div style={{
+      position: 'relative',
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: 'var(--bg-base)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden'
+    }}>
+      <CssParticles />
 
-        <h1 className="text-center mb-4 fs-3 fw-normal">Entrar no DailyTracker</h1>
+      {/* Subtle gradient orb */}
+      <div style={{
+        position: 'absolute',
+        top: '-20%',
+        right: '-15%',
+        width: '500px',
+        height: '500px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }} />
 
-        <div style={{ width: '100%', maxWidth: '350px', padding: '2rem', backgroundColor: 'rgba(22, 27, 34, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(59, 130, 246, 0.2)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)', borderRadius: '12px' }}>
+      <div className="animate-fade-in-up delay-1" style={{ width: '100%', maxWidth: '380px', padding: '0 1.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <Link to="/" style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            textDecoration: 'none',
+            letterSpacing: '-0.5px'
+          }}>
+            DailyTracker
+          </Link>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+            Entre na sua conta
+          </p>
+        </div>
+
+        <div style={{
+          padding: '2rem',
+          backgroundColor: 'var(--bg-surface)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)'
+        }}>
           <Form onSubmit={handleLogin}>
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Nome de usuário ou email</Form.Label>
-              <Form.Control type="email" placeholder="" value={email} onChange={(e) => setEmail(e.target.value)} style={{ backgroundColor: '#0d1117', color: 'white', borderColor: '#252b31ff' }} />
+            <Form.Group className="mb-3">
+              <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</Form.Label>
+              <Form.Control
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </Form.Group>
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <div className="d-flex justify-content-between align-items-center">
-                <Form.Label className="mb-0">Senha</Form.Label>
-              </div>
-              <Form.Control type="password" placeholder="" value={password} onChange={(e) => setPassword(e.target.value)} style={{ backgroundColor: '#0d1117', color: 'white', borderColor: '#252b31ff' }} />
+            <Form.Group className="mb-3">
+              <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Senha</Form.Label>
+              <Form.Control
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </Form.Group>
-            {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
-            <div className="d-grid gap-2">
-              <Button variant="success" type="submit" className="py-2">Entrar</Button>
-            </div>
+            {error && <Alert variant="danger" className="py-2" style={{ fontSize: '0.85rem' }}>{error}</Alert>}
+            <Button
+              type="submit"
+              className="w-100 py-2"
+              style={{
+                backgroundColor: 'var(--accent)',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                borderRadius: 'var(--radius-md)'
+              }}
+            >
+              Entrar
+            </Button>
           </Form>
         </div>
 
-        <div className="text-center mt-3" style={{ maxWidth: '350px', width: '100%' }}>
-          <div className="d-flex align-items-center my-3">
-            <hr className="flex-grow-1 border-secondary" />
-            <span className="mx-2 text-secondary">ou</span>
-            <hr className="flex-grow-1 border-secondary" />
+        <div style={{ margin: '1.25rem 0' }}>
+          <div className="d-flex align-items-center">
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
+            <span style={{ margin: '0 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>ou</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
           </div>
-          <Button
-            variant="outline-light"
-            onClick={handleGoogleLogin}
-            className="w-100 py-2 d-flex align-items-center justify-content-center"
-          >
-            <img src={googleLogo} alt="Google" style={{ width: 18, marginRight: 8 }} />
-            Continuar com Google
-          </Button>
         </div>
 
-        <div className="text-center mt-4 p-3 border border-secondary" style={{ maxWidth: '350px', width: '100%', backgroundColor: 'transparent', borderRadius: '6px' }}>
-          Novo no DailyTracker? <Link to="/register" className="text-primary text-decoration-none">Crie uma conta</Link>
-        </div>
-      </Container>
+        <Button
+          variant="outline-light"
+          onClick={handleGoogleLogin}
+          className="w-100 py-2 d-flex align-items-center justify-content-center"
+          style={{
+            border: '1px solid var(--border-default)',
+            backgroundColor: 'transparent',
+            color: 'var(--text-secondary)',
+            fontSize: '0.9rem',
+            borderRadius: 'var(--radius-md)'
+          }}
+        >
+          <img src={googleLogo} alt="Google" style={{ width: 16, marginRight: 8 }} />
+          Continuar com Google
+        </Button>
+
+        <p style={{
+          textAlign: 'center',
+          marginTop: '1.5rem',
+          fontSize: '0.85rem',
+          color: 'var(--text-muted)'
+        }}>
+          Novo no DailyTracker?{' '}
+          <Link to="/register" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Crie uma conta</Link>
+        </p>
+      </div>
     </div>
   );
 }

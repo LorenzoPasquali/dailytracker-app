@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { Google } from 'react-bootstrap-icons';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
-import Container from 'react-bootstrap/Container';
 
-import ParticlesBackground from '../components/ParticlesBackground';
 import googleLogo from '../assets/google-icon.svg';
+import CssParticles from '../components/CssParticles';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -29,7 +27,7 @@ export default function RegisterPage() {
       return;
     }
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem.');
+      setError('As senhas nao coincidem.');
       return;
     }
 
@@ -40,11 +38,9 @@ export default function RegisterPage() {
         localStorage.setItem('authToken', loginResponse.data.token);
       }
       setSuccess('Conta criada com sucesso! Redirecionando...');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+      setTimeout(() => navigate('/dashboard'), 2000);
     } catch (err) {
-      setError('Erro ao registrar. O email pode já estar em uso.');
+      setError('Erro ao registrar. O email pode ja estar em uso.');
     }
   };
 
@@ -52,107 +48,234 @@ export default function RegisterPage() {
     window.location.href = `${api.defaults.baseURL}/auth/google`;
   };
 
-  const darkInputStyle = {
-    backgroundColor: '#0d1117',
-    color: 'white',
-    borderColor: '#252b31ff'
-  };
-
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
-      <ParticlesBackground variant="home" />
+    <div style={{
+      position: 'relative',
+      width: '100vw',
+      minHeight: '100vh',
+      backgroundColor: 'var(--bg-base)',
+      overflow: 'hidden'
+    }}>
+      <CssParticles />
 
-      <div className="d-block d-md-none">
-        <Container fluid className="d-flex flex-column align-items-center justify-content-center text-light" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
-          <h1 className="text-center mb-4 fs-3 fw-normal">Criar conta no DailyTracker</h1>
-          <div style={{ width: '100%', maxWidth: '350px', padding: '2rem', backgroundColor: 'rgba(22, 27, 34, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(59, 130, 246, 0.2)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)', borderRadius: '12px' }}>
+      {/* Subtle gradient orb */}
+      <div style={{
+        position: 'absolute',
+        bottom: '-20%',
+        left: '-10%',
+        width: '600px',
+        height: '600px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }} />
+
+      {/* Mobile layout */}
+      <div className="d-block d-md-none" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        padding: '2rem 1.5rem',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        <div style={{ width: '100%', maxWidth: '380px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <Link to="/" style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              textDecoration: 'none'
+            }}>
+              DailyTracker
+            </Link>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+              Crie sua conta
+            </p>
+          </div>
+
+          <div style={{
+            padding: '2rem',
+            backgroundColor: 'var(--bg-surface)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-lg)'
+          }}>
             <Form onSubmit={handleRegister}>
               <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={darkInputStyle} />
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</Form.Label>
+                <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Senha</Form.Label>
-                <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={darkInputStyle} />
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Senha</Form.Label>
+                <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Confirmar Senha</Form.Label>
-                <Form.Control type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} style={darkInputStyle} />
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Confirmar Senha</Form.Label>
+                <Form.Control type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </Form.Group>
-
-              {error && <Alert variant="danger">{error}</Alert>}
-              {success && <Alert variant="success">{success}</Alert>}
-
-              <div className="d-grid gap-2">
-                <Button variant="success" type="submit">Criar conta</Button>
-              </div>
+              {error && <Alert variant="danger" className="py-2" style={{ fontSize: '0.85rem' }}>{error}</Alert>}
+              {success && <Alert variant="success" className="py-2" style={{ fontSize: '0.85rem' }}>{success}</Alert>}
+              <Button type="submit" className="w-100 py-2" style={{
+                backgroundColor: 'var(--accent)',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                borderRadius: 'var(--radius-md)'
+              }}>
+                Criar conta
+              </Button>
             </Form>
           </div>
 
-          <div className="text-center mt-3" style={{ maxWidth: '350px', width: '100%' }}>
-            <div className="d-flex align-items-center my-3">
-              <hr className="flex-grow-1 border-secondary" />
-              <span className="mx-2 text-secondary">ou</span>
-              <hr className="flex-grow-1 border-secondary" />
+          <div style={{ margin: '1.25rem 0' }}>
+            <div className="d-flex align-items-center">
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
+              <span style={{ margin: '0 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>ou</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
             </div>
-            <Button variant="outline-light" onClick={handleGoogleLogin} className="w-100 py-2 d-flex align-items-center justify-content-center">
-              <img src={googleLogo} alt="Google" style={{ width: 18, marginRight: 8 }} />
-              Registrar com Google
-            </Button>
           </div>
 
-          <div className="text-center mt-4 p-3 border border-secondary" style={{ maxWidth: '350px', width: '100%', borderRadius: '6px' }}>
-            Já tem uma conta? <Link to="/login" className="text-primary text-decoration-none">Entrar</Link>
-          </div>
-        </Container>
-      </div>
+          <Button variant="outline-light" onClick={handleGoogleLogin} className="w-100 py-2 d-flex align-items-center justify-content-center" style={{
+            border: '1px solid var(--border-default)',
+            backgroundColor: 'transparent',
+            color: 'var(--text-secondary)',
+            fontSize: '0.9rem',
+            borderRadius: 'var(--radius-md)'
+          }}>
+            <img src={googleLogo} alt="Google" style={{ width: 16, marginRight: 8 }} />
+            Registrar com Google
+          </Button>
 
-      <div className="d-none d-md-flex" style={{ position: 'relative', zIndex: 1, height: '100vh', width: '100%' }}>
-        <div className="flex-column text-start text-light" style={{ flex: 1, padding: '3rem', justifyContent: 'flex-center', paddingTop: '10rem' }}>
-          <h1 className="fw-bold fs-2 mb-2">Crie sua conta de graça</h1>
-          <p className="fs-6 mb-0" style={{ color: '#b0b0b0' }}>
-            Organize suas Dailies, simplifique seu dia e mantenha tudo sob controle.
+          <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Ja tem uma conta? <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Entrar</Link>
           </p>
         </div>
+      </div>
 
-        <div className="d-flex flex-column justify-content-center align-items-center" style={{ flex: 1, background: 'rgba(13, 17, 23, 0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderLeft: '1px solid rgba(59, 130, 246, 0.2)', minHeight: '100vh', padding: '2rem' }}>
-          <div style={{ width: '100%', maxWidth: 420 }}>
-            <Form onSubmit={handleRegister}>
-              <div className="text-center mb-3">
-                <p className="fw-semibold text-light text-start mb-1 fs-5">Inscreva-se no DailyTracker</p>
-              </div>
-              <Button variant="outline-light" onClick={handleGoogleLogin} className="w-100 d-flex align-items-center justify-content-center mb-3" style={{ padding: '0.6rem' }}>
-                <img src={googleLogo} alt="Google" style={{ width: 18, marginRight: 8 }} />
-                Registrar com Google
-              </Button>
-              <div className="d-flex align-items-center my-3">
-                <hr className="flex-grow-1 border-secondary" />
-                <span className="mx-2 text-secondary" style={{ fontSize: '0.8em' }}>ou</span>
-                <hr className="flex-grow-1 border-secondary" />
-              </div>
-              <Form.Group className="mb-3">
-                <Form.Label className="text-light fw-semibold" style={{ fontSize: '0.9em' }}>Email*</Form.Label>
-                <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={darkInputStyle} />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="text-light fw-semibold" style={{ fontSize: '0.9em' }}>Senha*</Form.Label>
-                <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={darkInputStyle} />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="text-light fw-semibold" style={{ fontSize: '0.9em' }}>Confirmar Senha</Form.Label>
-                <Form.Control type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} style={darkInputStyle} />
-              </Form.Group>
+      {/* Desktop layout — split screen */}
+      <div className="d-none d-md-flex" style={{ position: 'relative', zIndex: 1, height: '100vh', width: '100%' }}>
+        {/* Left side — branding */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '4rem',
+          position: 'relative'
+        }}>
+          <Link to="/" style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            textDecoration: 'none',
+            position: 'absolute',
+            top: '2rem',
+            left: '2rem',
+            letterSpacing: '-0.5px'
+          }}>
+            DailyTracker
+          </Link>
+          <div className="animate-fade-in-up delay-1">
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '2.5rem',
+              fontWeight: 800,
+              color: 'var(--text-primary)',
+              letterSpacing: '-1px',
+              lineHeight: 1.15,
+              marginBottom: '1rem'
+            }}>
+              Crie sua conta{' '}
+              <span style={{ color: 'var(--accent)' }}>gratuitamente</span>
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', maxWidth: '400px', lineHeight: 1.7 }}>
+              Organize suas dailies, simplifique seu dia e mantenha tudo sob controle.
+            </p>
+          </div>
+        </div>
 
-              {error && <Alert variant="danger" className="mt-3 p-2 text-center" style={{ fontSize: '0.9em' }}>{error}</Alert>}
-              {success && <Alert variant="success" className="mt-3 p-2 text-center" style={{ fontSize: '0.9em' }}>{success}</Alert>}
+        {/* Right side — form */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'var(--bg-surface)',
+          borderLeft: '1px solid var(--border-subtle)',
+          padding: '2rem'
+        }}>
+          <div className="animate-fade-in-up delay-2" style={{ width: '100%', maxWidth: '400px' }}>
+            <p style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.15rem',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
+              marginBottom: '1.5rem',
+              letterSpacing: '-0.3px'
+            }}>
+              Inscreva-se no DailyTracker
+            </p>
 
-              <div className="d-grid gap-2 mt-4">
-                <Button variant="success" type="submit" className="py-2">Criar conta</Button>
-              </div>
-            </Form>
-            <div className="mt-4 p-3 rounded" style={{ border: '1px solid rgba(48, 54, 61, 0.5)', fontSize: '0.9em', background: 'rgba(33, 38, 45, 0.6)', backdropFilter: 'blur(8px)' }}>
-              <p className="text-secondary mb-0 text-center">Já tem uma conta? <Link to="/login" className="text-primary text-decoration-none">Entrar</Link></p>
+            <Button variant="outline-light" onClick={handleGoogleLogin} className="w-100 d-flex align-items-center justify-content-center mb-3" style={{
+              padding: '0.65rem',
+              border: '1px solid var(--border-default)',
+              backgroundColor: 'transparent',
+              color: 'var(--text-secondary)',
+              fontSize: '0.9rem',
+              borderRadius: 'var(--radius-md)'
+            }}>
+              <img src={googleLogo} alt="Google" style={{ width: 16, marginRight: 8 }} />
+              Registrar com Google
+            </Button>
+
+            <div className="d-flex align-items-center my-3">
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
+              <span style={{ margin: '0 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>ou</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
             </div>
+
+            <Form onSubmit={handleRegister}>
+              <Form.Group className="mb-3">
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</Form.Label>
+                <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Senha</Form.Label>
+                <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Confirmar Senha</Form.Label>
+                <Form.Control type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              </Form.Group>
+              {error && <Alert variant="danger" className="py-2" style={{ fontSize: '0.85rem' }}>{error}</Alert>}
+              {success && <Alert variant="success" className="py-2" style={{ fontSize: '0.85rem' }}>{success}</Alert>}
+              <Button type="submit" className="w-100 py-2 mt-1" style={{
+                backgroundColor: 'var(--accent)',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                borderRadius: 'var(--radius-md)'
+              }}>
+                Criar conta
+              </Button>
+            </Form>
+
+            <p style={{
+              textAlign: 'center',
+              marginTop: '1.5rem',
+              fontSize: '0.85rem',
+              color: 'var(--text-muted)',
+              padding: '1rem',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)'
+            }}>
+              Ja tem uma conta? <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Entrar</Link>
+            </p>
           </div>
         </div>
       </div>
