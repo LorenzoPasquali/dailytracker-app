@@ -49,7 +49,7 @@ api.interceptors.response.use(
     const { status, data } = error.response;
     const backendMessage = data?.message || data?.error || (typeof data === 'string' ? data : null);
 
-    if (status !== 401) {
+    if (status !== 401 && !originalRequest._silent) {
       const msg = backendMessage || (status === 500 ? i18n.t('api.serverError') : i18n.t('api.unexpectedError'));
       toast.error(msg);
     }

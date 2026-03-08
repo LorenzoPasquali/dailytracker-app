@@ -64,7 +64,7 @@ export default function DashboardPage() {
 
   const handleLanguageChange = async (lang) => {
     try {
-      await api.put('/api/user/language', { language: lang });
+      await api.put('/api/user/language', { language: lang }, { _silent: true });
     } catch (error) {
       console.error("Erro ao salvar idioma no perfil:", error);
     }
