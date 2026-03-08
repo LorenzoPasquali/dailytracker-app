@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DndContext, DragOverlay, rectIntersection, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { toast } from 'sonner';
@@ -22,6 +23,7 @@ import AiChatModal from '../components/AiChatModal';
 import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } from 'date-fns';
 
 export default function DashboardPage() {
+  const { t, i18n } = useTranslation();
   const [taskColumns, setTaskColumns] = useState({ PLANNED: [], DOING: [], DONE: [] });
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
@@ -60,6 +62,14 @@ export default function DashboardPage() {
     localStorage.setItem('dashboardDateRange', JSON.stringify(range));
   };
 
+  const handleLanguageChange = async (lang) => {
+    try {
+      await api.put('/api/user/language', { language: lang });
+    } catch (error) {
+      console.error("Erro ao salvar idioma no perfil:", error);
+    }
+  };
+
   const filteredTasks = useMemo(() => {
     let tasks = allTasks;
 
@@ -94,13 +104,23 @@ export default function DashboardPage() {
         api.get('/api/tasks', { signal }),
         api.get('/api/projects', { signal }),
       ]);
-      setCurrentUser(userResponse.data);
+      
+      const user = userResponse.data;
+      if (user && user.language && user.language !== i18n.language) {
+        localStorage.setItem('language', user.language);
+        i18n.changeLanguage(user.language);
+      }
+      
+      if (user) setCurrentUser(user);
+      
       const newColumns = { PLANNED: [], DOING: [], DONE: [] };
-      tasksResponse.data.forEach(task => {
-        if (newColumns[task.status]) newColumns[task.status].push(task);
-      });
+      if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
+        tasksResponse.data.forEach(task => {
+          if (newColumns[task.status]) newColumns[task.status].push(task);
+        });
+      }
       setTaskColumns(newColumns);
-      setProjects(projectsResponse.data);
+      setProjects(projectsResponse.data || []);
     } catch (error) {
       if (error.name === 'CanceledError') return;
       console.error("Erro ao buscar dados:", error);
@@ -222,17 +242,17 @@ export default function DashboardPage() {
     if (isMobile) {
       return (
         <div className="d-flex flex-column gap-3 h-100">
-          <KanbanColumn title="Planejado" status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} isMobile />
-          <KanbanColumn title="Em progresso" status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} isMobile />
-          <KanbanColumn title="Feito" status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} isMobile />
+          <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} isMobile />
+          <KanbanColumn title={t('kanban.doing')} status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} isMobile />
+          <KanbanColumn title={t('kanban.done')} status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} isMobile />
         </div>
       );
     }
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', height: '100%' }}>
-        <KanbanColumn title="Planejado" status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} />
-        <KanbanColumn title="Em progresso" status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} />
-        <KanbanColumn title="Feito" status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} />
+        <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} />
+        <KanbanColumn title={t('kanban.doing')} status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} />
+        <KanbanColumn title={t('kanban.done')} status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} />
       </div>
     );
   };
@@ -249,6 +269,7 @@ export default function DashboardPage() {
         onNewTaskClick={handleOpenCreateModal}
         currentUser={currentUser}
         onLogoutClick={() => setShowLogoutConfirm(true)}
+        onLanguageChange={handleLanguageChange}
       />
       <div className="d-flex flex-grow-1" style={{ overflow: 'hidden', minHeight: 0 }}>
         {!isMobile && (
@@ -283,10 +304,10 @@ export default function DashboardPage() {
               letterSpacing: '-0.3px',
               display: isMobile ? 'none' : 'block'
             }}>
-              Monitor de Tarefas
+              {t('dashboard.title')}
             </h1>
             {/* SEO and Accessibility H1 for Mobile */}
-            {isMobile && <h1 className="visually-hidden">Monitor de Tarefas</h1>}
+            {isMobile && <h1 className="visually-hidden">{t('dashboard.title')}</h1>}
             
             <div style={{
               display: 'flex',
@@ -338,8 +359,8 @@ export default function DashboardPage() {
 
               <button
                 onClick={() => setShowDateFilterModal(true)}
-                title="Filtrar por data"
-                aria-label="Filtrar tarefas por intervalo de datas"
+                title={t('dashboard.filterByDate')}
+                aria-label={t('dashboard.filterByDate')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -373,7 +394,7 @@ export default function DashboardPage() {
 
           <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div style={{ flex: 1, minHeight: 0 }}>
-              <h2 className="visually-hidden">Quadro Kanban de Tarefas</h2>
+              <h2 className="visually-hidden">{t('dashboard.title')}</h2>
               {renderDashboardContent()}
             </div>
             <DragOverlay>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} /> : null}</DragOverlay>
@@ -404,17 +425,17 @@ export default function DashboardPage() {
         show={showDeleteModal}
         handleClose={handleCloseDeleteModal}
         handleConfirm={handleConfirmDelete}
-        title="Confirmar Exclusao"
-        body="Voce tem certeza que deseja excluir esta tarefa? Esta acao nao pode ser desfeita."
-        confirmButtonText="Confirmar Exclusao"
+        title={t('confirmModal.deleteTaskTitle')}
+        body={t('confirmModal.deleteTaskBody')}
+        confirmButtonText={t('confirmModal.deleteTaskConfirm')}
       />
       <ConfirmationModal
         show={showLogoutConfirm}
         handleClose={() => setShowLogoutConfirm(false)}
         handleConfirm={handleLogout}
-        title="Confirmar Saida"
-        body="Voce tem certeza que deseja sair da sua conta?"
-        confirmButtonText="Sair"
+        title={t('confirmModal.logoutTitle')}
+        body={t('confirmModal.logoutBody')}
+        confirmButtonText={t('confirmModal.logoutConfirm')}
         confirmButtonVariant="primary"
       />
       <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} onProjectsChange={fetchData} projects={projects} />

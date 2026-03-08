@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Nav, Accordion, useAccordionButton, AccordionContext, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import HouseDoorFill from 'react-bootstrap-icons/dist/icons/house-door-fill';
 import CollectionFill from 'react-bootstrap-icons/dist/icons/collection-fill';
@@ -64,6 +65,7 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
 }
 
 export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, isCollapsed, onToggleCollapse, isMobile }) {
+  const { t } = useTranslation();
   const sidebarStyle = {
     width: isCollapsed ? '56px' : '240px',
     backgroundColor: 'var(--bg-surface)',
@@ -111,13 +113,13 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
           }}
         >
           <HouseDoorFill size={16} className="flex-shrink-0" />
-          {!isCollapsed && "Monitor"}
+          {!isCollapsed && t('sidebar.monitor')}
         </Nav.Link>
 
         <Accordion>
           <CustomToggle eventKey="0" isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse}>
             <CollectionFill size={16} className="flex-shrink-0" />
-            {!isCollapsed && "Cadastros"}
+            {!isCollapsed && t('sidebar.registrations')}
           </CustomToggle>
           {!isCollapsed && (
             <Accordion.Collapse eventKey="0">
@@ -135,7 +137,7 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
                   }}
                   role="button"
                 >
-                  <Folder size={14} /> Projetos
+                  <Folder size={14} /> {t('sidebar.projects')}
                 </Nav.Link>
                 <Nav.Link
                   onClick={onTaskTypesClick}
@@ -150,7 +152,7 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
                   }}
                   role="button"
                 >
-                  <TagFill size={14} /> Tipos de Tarefa
+                  <TagFill size={14} /> {t('sidebar.taskTypes')}
                 </Nav.Link>
               </div>
             </Accordion.Collapse>
@@ -160,11 +162,11 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
         <OverlayTrigger
           placement="right"
           delay={{ show: 250, hide: 400 }}
-          overlay={<Tooltip id="tooltip-reports">Modulo de Relatorios ainda nao implementado</Tooltip>}
+          overlay={<Tooltip id="tooltip-reports">{t('sidebar.reportsTooltip')}</Tooltip>}
         >
           <div style={{ ...linkStyle, cursor: 'not-allowed', opacity: 0.5 }}>
             <BarChartFill size={16} className="flex-shrink-0" />
-            {!isCollapsed && "Relatorios"}
+            {!isCollapsed && t('sidebar.reports')}
           </div>
         </OverlayTrigger>
 
@@ -182,7 +184,7 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
           role="button"
         >
           <ChatDotsFill size={16} className="flex-shrink-0" />
-          {!isCollapsed && "Assistente IA"}
+          {!isCollapsed && t('sidebar.aiAssistant')}
         </Nav.Link>
       </Nav>
     </div>

@@ -1,0 +1,197 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "create": "Create",
+    "delete": "Delete",
+    "or": "or",
+    "actions": "Actions",
+    "name": "Name",
+    "languageLabel": "Language",
+    "authenticating": "Authenticating"
+  },
+  "nav": {
+    "login": "Sign in",
+    "register": "Sign up"
+  },
+  "home": {
+    "tagline": "Organize your dailies with simplicity",
+    "heroTitle": "Simplify your day.",
+    "heroAccent": "Master your tasks.",
+    "heroBody": "Register tasks quickly and objectively, manage projects with Kanban and always be prepared for the next meeting.",
+    "ctaStart": "Get started",
+    "ctaLogin": "I already have an account",
+    "footer": "DailyTracker — Built to simplify your workflow.",
+    "features": {
+      "kanban": {
+        "title": "Visual Kanban",
+        "description": "Organize tasks in Planned, In Progress and Done columns with intuitive drag & drop."
+      },
+      "filters": {
+        "title": "Smart Filters",
+        "description": "Filter by project, task type and date range to find exactly what you need."
+      },
+      "ai": {
+        "title": "AI Assistant",
+        "description": "Analyze your productivity, generate daily summaries and identify bottlenecks with integrated AI."
+      }
+    }
+  },
+  "login": {
+    "subtitle": "Sign in to your account",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "submitButton": "Sign in",
+    "googleButton": "Continue with Google",
+    "noAccount": "New to DailyTracker?",
+    "createAccount": "Create an account",
+    "successToast": "Welcome back!",
+    "googleSuccessToast": "Login successful!",
+    "googleErrorToast": "Google authentication failed.",
+    "emptyFieldsError": "Please fill in email and password.",
+    "invalidCredentials": "Invalid credentials. Please try again."
+  },
+  "register": {
+    "subtitle": "Create your account",
+    "heroTitle": "Create your account",
+    "heroAccent": "for free",
+    "heroBody": "Organize your dailies, simplify your day and keep everything under control.",
+    "pageHeading": "Sign up for DailyTracker",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "submitButton": "Create account",
+    "googleButton": "Sign up with Google",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "successMessage": "Account created successfully! Redirecting...",
+    "emptyFieldsError": "Please fill in all fields.",
+    "passwordMismatch": "Passwords do not match.",
+    "registerError": "Registration error. The email may already be in use."
+  },
+  "header": {
+    "newTask": "+ New Task",
+    "newTaskMobile": "+ Task",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "basicPlan": "Basic Plan",
+    "logout": "Log out"
+  },
+  "sidebar": {
+    "monitor": "Monitor",
+    "registrations": "Records",
+    "projects": "Projects",
+    "taskTypes": "Task Types",
+    "reports": "Reports",
+    "reportsTooltip": "Reports module not yet implemented",
+    "aiAssistant": "AI Assistant"
+  },
+  "dashboard": {
+    "title": "Task Monitor",
+    "filterByDate": "Filter by date"
+  },
+  "kanban": {
+    "planned": "Planned",
+    "doing": "In Progress",
+    "done": "Done",
+    "noTasks": "No tasks",
+    "tasksCount_one": "{{count}} task in this column",
+    "tasksCount_other": "{{count}} tasks in this column",
+    "taskMoved": "Task moved!",
+    "taskMoveError": "Could not move the task.",
+    "taskDeleteError": "Could not delete the task."
+  },
+  "taskForm": {
+    "createTitle": "Create New Task",
+    "editTitle": "Edit Task",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "projectLabel": "Project",
+    "noProject": "No project",
+    "taskTypeLabel": "Task Type",
+    "noTaskType": "No type",
+    "statusLabel": "Status",
+    "statusPlanned": "Planned",
+    "statusDoing": "In progress",
+    "statusDone": "Done",
+    "saveCreate": "Save Task",
+    "saveEdit": "Save Changes",
+    "deleteButton": "Delete Task",
+    "titleRequired": "Task title is required.",
+    "createdToast": "Task created!",
+    "updatedToast": "Task updated!"
+  },
+  "confirmModal": {
+    "defaultTitle": "Confirm Action",
+    "defaultBody": "Are you sure you want to continue?",
+    "deleteTaskTitle": "Confirm Deletion",
+    "deleteTaskBody": "Are you sure you want to delete this task? This action cannot be undone.",
+    "deleteTaskConfirm": "Confirm Deletion",
+    "logoutTitle": "Confirm Logout",
+    "logoutBody": "Are you sure you want to log out?",
+    "logoutConfirm": "Log out"
+  },
+  "dateFilter": {
+    "title": "Filter by Date",
+    "reset": "Reset",
+    "apply": "Filter"
+  },
+  "projects": {
+    "modalTitle": "Manage Projects",
+    "newProject": "New Project",
+    "existingProjects": "Existing Projects",
+    "namePlaceholder": "New project name",
+    "nameHeader": "Project Name",
+    "colorHeader": "Color",
+    "createdToast": "Project created!",
+    "updatedToast": "Project updated!",
+    "deletedToast": "Project deleted!",
+    "deleteTitle": "Confirm Project Deletion",
+    "deleteBody": "Are you sure you want to delete the project \"{{name}}\"? All tasks and types associated with it will need to be reassigned or will be lost."
+  },
+  "taskTypes": {
+    "modalTitle": "Manage Task Types",
+    "newType": "New Task Type",
+    "existingTypes": "Existing Types",
+    "namePlaceholder": "New type name (e.g.: Bug, Meeting)",
+    "selectProject": "Select a Project",
+    "nameHeader": "Type Name",
+    "projectHeader": "Associated Project",
+    "emptyFieldsError": "Please fill in the name and select a project.",
+    "createdToast": "Task type created!",
+    "updatedToast": "Task type updated!",
+    "deletedToast": "Task type deleted!",
+    "deleteTitle": "Confirm Deletion",
+    "deleteBody": "Are you sure you want to delete the type \"{{name}}\"? Tasks using this type will not be deleted, but will lose the association."
+  },
+  "aiChat": {
+    "title": "AI Assistant",
+    "setupTitle": "Set up your Gemini API Key",
+    "setupBody": "Visit Google AI Studio to get your key.",
+    "setupLinkText": "Google AI Studio",
+    "keyPlaceholder": "Paste your API Key here",
+    "saveKey": "Save and Start",
+    "settingsTitle": "AI Settings",
+    "updateKeyLabel": "Update Gemini API Key",
+    "newKeyPlaceholder": "New API Key",
+    "updateKey": "Update Key",
+    "removeKey": "Remove Key",
+    "removeKeyConfirm": "Are you sure you want to remove your API Key?",
+    "backToChat": "Back to Chat",
+    "chatEmpty": "Ask about your tasks, projects or productivity.",
+    "inputPlaceholder": "Type your question...",
+    "keySavedToast": "Key saved successfully!",
+    "keyRemovedToast": "Key removed.",
+    "keySaveError": "Error saving the key.",
+    "keyRemoveError": "Error removing the key.",
+    "chatError": "Error communicating with AI."
+  },
+  "api": {
+    "networkError": "Could not connect to the server. Check your internet.",
+    "serverError": "Internal server error.",
+    "unexpectedError": "An unexpected error occurred.",
+    "sessionExpired": "Session expired. Please log in again.",
+    "internalServerError": "Internal server error. Please try again later."
+  }
+}

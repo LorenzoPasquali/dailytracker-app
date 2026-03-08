@@ -1,5 +1,7 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import LanguageSelector from './LanguageSelector';
 import List from 'react-bootstrap-icons/dist/icons/list';
 import PersonCircle from 'react-bootstrap-icons/dist/icons/person-circle';
 import BoxArrowRight from 'react-bootstrap-icons/dist/icons/box-arrow-right';
@@ -28,8 +30,10 @@ export default function AppHeader({
   onToggleMobileSidebar,
   onNewTaskClick,
   currentUser,
-  onLogoutClick
+  onLogoutClick,
+  onLanguageChange
 }) {
+  const { t } = useTranslation();
   return (
     <header style={{
       display: 'flex',
@@ -46,7 +50,7 @@ export default function AppHeader({
           <Button
             variant="link"
             onClick={onToggleMobileSidebar}
-            className="sidebar-toggle-btn"
+            className="sidebar-toggle-btn no-focus-override"
             aria-label="Abrir menu lateral"
             style={{ color: 'var(--text-muted)', padding: '0.25rem' }}
           >
@@ -58,15 +62,15 @@ export default function AppHeader({
             delay={{ show: 250, hide: 400 }}
             overlay={
               <Tooltip id="tooltip-collapse">
-                {isSidebarCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
+                {isSidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')}
               </Tooltip>
             }
           >
             <Button
               variant="link"
               onClick={onToggleCollapse}
-              className="sidebar-toggle-btn"
-              aria-label={isSidebarCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
+              className="sidebar-toggle-btn no-focus-override"
+              aria-label={isSidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')}
               style={{ color: 'var(--text-muted)', padding: '0.25rem' }}
             >
               {isSidebarCollapsed ? <ArrowRightSquare size={15} /> : <ArrowLeftSquare size={15} />}
@@ -99,7 +103,7 @@ export default function AppHeader({
             letterSpacing: '-0.01em'
           }}
         >
-          {isMobile ? '+ Tarefa' : '+ Nova Tarefa'}
+          {isMobile ? t('header.newTaskMobile') : t('header.newTask')}
         </Button>
 
         <Dropdown align="end">
@@ -127,9 +131,19 @@ export default function AppHeader({
                 fontWeight: 500,
                 fontSize: '0.7rem'
               }}>
-                Plano Basico
+                {t('header.basicPlan')}
               </Badge>
             </div>
+            <Dropdown.Divider style={{ borderColor: 'var(--border-subtle)' }} />
+            
+            {/* Language Selection inside Dropdown */}
+            <div style={{ padding: '0.25rem 0.5rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.5rem', paddingLeft: '0.25rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                {t('common.languageLabel')}
+              </div>
+              <LanguageSelector variant="dropdown" onSaveToServer={onLanguageChange} />
+            </div>
+
             <Dropdown.Divider style={{ borderColor: 'var(--border-subtle)' }} />
             <Dropdown.Item as="div" className="p-0">
               <Button
@@ -145,7 +159,7 @@ export default function AppHeader({
                   borderRadius: 'var(--radius-sm)'
                 }}
               >
-                <BoxArrowRight className="me-2" size={14} /> Sair
+                <BoxArrowRight className="me-2" size={14} /> {t('header.logout')}
               </Button>
             </Dropdown.Item>
           </Dropdown.Menu>

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { toast } from 'sonner';
+import i18n from '../i18n/index.js';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
@@ -25,6 +26,8 @@ api.interceptors.request.use(async (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const lang = localStorage.getItem('language') || i18n.language || 'pt-BR';
+  config.headers['Accept-Language'] = lang;
   return config;
 });
 
@@ -33,24 +36,25 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Erro de rede ou sem resposta do servidor
+    // Ignore cancelled requests to avoid toast spam
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
     if (!error.response) {
-      toast.error('Não foi possível conectar ao servidor. Verifique sua internet.');
+      toast.error(i18n.t('api.networkError'));
       return Promise.reject(error);
     }
 
     const { status, data } = error.response;
     const backendMessage = data?.message || data?.error || (typeof data === 'string' ? data : null);
 
-    // Exibe toast para erros (exceto 401 que é tratado pelo refresh logic abaixo)
     if (status !== 401) {
-      const msg = backendMessage || (status === 500 ? 'Erro interno no servidor.' : 'Ocorreu um erro inesperado.');
+      const msg = backendMessage || (status === 500 ? i18n.t('api.serverError') : i18n.t('api.unexpectedError'));
       toast.error(msg);
     }
 
-    // Tratamento de erros específicos (401 Refresh Token)
     if (status === 401 && !originalRequest._retry) {
-      // Don't try to refresh if it's the login or refresh endpoint itself
       if (originalRequest.url.includes('/auth/login') || originalRequest.url.includes('/auth/refresh')) {
         return Promise.reject(error);
       }
@@ -89,7 +93,7 @@ api.interceptors.response.use(
           return api(originalRequest);
         } catch (refreshError) {
           processQueue(refreshError, null);
-          toast.error('Sessão expirada. Por favor, faça login novamente.');
+          toast.error(i18n.t('api.sessionExpired'));
           localStorage.removeItem('authToken');
           localStorage.removeItem('refreshToken');
           window.location.href = '/login';
@@ -98,16 +102,15 @@ api.interceptors.response.use(
           isRefreshing = false;
         }
       } else {
-        // Only redirect if not already on login page
         if (!window.location.pathname.includes('/login')) {
-          toast.error('Sessão expirada. Por favor, faça login novamente.');
+          toast.error(i18n.t('api.sessionExpired'));
           localStorage.removeItem('authToken');
           localStorage.removeItem('refreshToken');
           window.location.href = '/login';
         }
       }
     } else if (status === 500) {
-      toast.error('Erro interno no servidor. Tente novamente mais tarde.');
+      toast.error(i18n.t('api.internalServerError'));
     }
 
     return Promise.reject(error);

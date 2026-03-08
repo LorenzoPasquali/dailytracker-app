@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Table, Form, InputGroup } from 'react-bootstrap';
 import Check from 'react-bootstrap-icons/dist/icons/check';
 import PencilFill from 'react-bootstrap-icons/dist/icons/pencil-fill';
@@ -10,6 +11,7 @@ import ColorPicker from './ColorPicker';
 import ConfirmationModal from './ConfirmationModal';
 
 export default function ProjectsModal({ show, handleClose, onProjectsChange, projects = [] }) {
+  const { t } = useTranslation();
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectColor, setNewProjectColor] = useState('#ef4444');
 
@@ -25,7 +27,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
       const response = await api.post('/api/projects', { name: newProjectName, color: newProjectColor });
       setNewProjectName('');
       setNewProjectColor('#ef4444');
-      toast.success('Projeto criado!');
+      toast.success(t('projects.createdToast'));
       if (onProjectsChange) onProjectsChange();
     } catch (error) {
       console.error("Erro ao criar projeto", error);
@@ -35,7 +37,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
   const handleUpdateProject = async (project, dataToUpdate) => {
     try {
       await api.put(`/api/projects/${project.id}`, { ...project, ...dataToUpdate });
-      toast.success('Projeto atualizado!');
+      toast.success(t('projects.updatedToast'));
       if (onProjectsChange) onProjectsChange();
     } catch (error) {
       console.error("Erro ao atualizar projeto", error);
@@ -66,8 +68,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
     if (!projectToDelete) return;
     try {
       await api.delete(`/api/projects/${projectToDelete.id}`);
-      setProjects(projects.filter(p => p.id !== projectToDelete.id));
-      toast.success('Projeto excluído!');
+      toast.success(t('projects.deletedToast'));
       if (onProjectsChange) onProjectsChange();
     } catch (error) {
       // O interceptor já trata o erro visualmente
@@ -101,14 +102,14 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
       <Modal show={show} onHide={handleClose} centered size="lg" contentClassName="bg-transparent border-0">
         <div className="custom-modal-content">
           <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
-            <Modal.Title>Gerenciar Projetos</Modal.Title>
+            <Modal.Title>{t('projects.modalTitle')}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-          <h6 className="mb-3">Novo Projeto</h6>
+          <h6 className="mb-3">{t('projects.newProject')}</h6>
           <Form onSubmit={handleCreateSubmit}>
             <InputGroup className="mb-4">
               <Form.Control
-                placeholder="Nome do novo projeto"
+                placeholder={t('projects.namePlaceholder')}
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
                 style={darkInputStyle}
@@ -117,17 +118,17 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
               <div className="d-flex align-items-center px-2" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-default)', borderRadius: '0 5px 5px 0' }}>
                 <ColorPicker currentColor={newProjectColor} onColorSelect={setNewProjectColor} />
               </div>
-              <Button type="submit" style={{ backgroundColor: 'var(--accent)', border: 'none', color: 'var(--bg-base)', fontWeight: 600, fontSize: '0.85rem' }}>Criar</Button>
+              <Button type="submit" style={{ backgroundColor: 'var(--accent)', border: 'none', color: 'var(--bg-base)', fontWeight: 600, fontSize: '0.85rem' }}>{t('common.create')}</Button>
             </InputGroup>
           </Form>
           <hr className="text-secondary" />
-          <h6 className="mb-3 mt-4">Projetos Existentes</h6>
+          <h6 className="mb-3 mt-4">{t('projects.existingProjects')}</h6>
           <Table variant="dark" responsive className="border-secondary" style={{ borderRadius: '8px', overflow: 'hidden' }}>
             <thead>
                 <tr>
-                  <th style={customThStyle}>Nome do Projeto</th>
-                  <th className="text-center" style={customThStyle}>Cor</th>
-                  <th className="text-center" style={customThStyle}>Ações</th>
+                  <th style={customThStyle}>{t('projects.nameHeader')}</th>
+                  <th className="text-center" style={customThStyle}>{t('projects.colorHeader')}</th>
+                  <th className="text-center" style={customThStyle}>{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -144,8 +145,8 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
                             style={darkInputStyle}
                             className="custom-form-control"
                           />
-                          <Button variant="outline-success" onClick={() => saveEditing(project)} aria-label="Salvar alteração"><Check /></Button>
-                          <Button variant="outline-secondary" onClick={cancelEditing} aria-label="Cancelar edição"><X /></Button>
+                          <Button variant="outline-success" onClick={() => saveEditing(project)} aria-label={t('common.save')}><Check /></Button>
+                          <Button variant="outline-secondary" onClick={cancelEditing} aria-label={t('common.cancel')}><X /></Button>
                         </InputGroup>
                       ) : (
                         <div className="d-flex align-items-center">
@@ -161,8 +162,8 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
                       />
                     </td>
                     <td className="text-center align-middle" style={customTdStyle}>
-                      <Button variant="link" size="sm" className="text-light me-2" onClick={() => startEditing(project)} aria-label="Editar projeto"><PencilFill /></Button>
-                      <Button variant="link" size="sm" className="text-danger" onClick={() => openDeleteConfirm(project)} aria-label="Excluir projeto"><TrashFill /></Button>
+                      <Button variant="link" size="sm" className="text-light me-2" onClick={() => startEditing(project)} aria-label={t('common.actions')}><PencilFill /></Button>
+                      <Button variant="link" size="sm" className="text-danger" onClick={() => openDeleteConfirm(project)} aria-label={t('common.delete')}><TrashFill /></Button>
                     </td>
                   </tr>
                 ))}
@@ -176,8 +177,8 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
         show={showDeleteConfirm}
         handleClose={() => setShowDeleteConfirm(false)}
         handleConfirm={confirmDelete}
-        title="Confirmar Exclusão de Projeto"
-        body={`Tem certeza que deseja excluir o projeto "${projectToDelete?.name}"? Todas as tarefas e tipos associados a ele precisarão ser reatribuídos ou serão perdidos.`}
+        title={t('projects.deleteTitle')}
+        body={t('projects.deleteBody', { name: projectToDelete?.name })}
       />
     </>
   );

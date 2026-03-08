@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button } from 'react-bootstrap';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { ptBR } from 'date-fns/locale';
+import { datepickerLocales } from '../i18n/datepicker-locales';
 
-registerLocale('pt-BR', ptBR);
+// Register all supported locales
+Object.entries(datepickerLocales).forEach(([key, locale]) => {
+    registerLocale(key, locale);
+});
 
 export default function DateFilterModal({ show, handleClose, onApplyFilter, initialDateRange }) {
+    const { t, i18n } = useTranslation();
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
 
@@ -42,7 +47,7 @@ export default function DateFilterModal({ show, handleClose, onApplyFilter, init
         <Modal show={show} onHide={handleClose} centered contentClassName="bg-transparent border-0">
             <div className="custom-modal-content">
                 <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>Filtrar por Data</Modal.Title>
+                    <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>{t('dateFilter.title')}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="d-flex justify-content-center">
                     <style>
@@ -105,7 +110,7 @@ export default function DateFilterModal({ show, handleClose, onApplyFilter, init
                         endDate={endDate}
                         selectsRange
                         inline
-                        locale="pt-BR"
+                        locale={i18n.language}
                     />
                 </Modal.Body>
                 <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }}>
@@ -119,7 +124,7 @@ export default function DateFilterModal({ show, handleClose, onApplyFilter, init
                             fontWeight: 500
                         }}
                     >
-                        Resetar
+                        {t('dateFilter.reset')}
                     </Button>
                     <Button
                         onClick={handleApply}
@@ -131,7 +136,7 @@ export default function DateFilterModal({ show, handleClose, onApplyFilter, init
                             fontSize: '0.85rem'
                         }}
                     >
-                        Filtrar
+                        {t('dateFilter.apply')}
                     </Button>
                 </Modal.Footer>
             </div>

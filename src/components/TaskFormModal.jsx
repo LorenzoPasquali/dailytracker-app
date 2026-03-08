@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { toast } from 'sonner';
 import api from '../services/api';
@@ -7,6 +8,7 @@ const TITLE_LIMIT = 100;
 const DESCRIPTION_LIMIT = 500;
 
 export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [] }) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('PLANNED');
@@ -65,7 +67,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
 
   const handleSave = async () => {
     if (!title.trim()) {
-      toast.error('O título da tarefa é obrigatório.');
+      toast.error(t('taskForm.titleRequired'));
       return;
     }
 
@@ -83,11 +85,11 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       if (taskToEdit) {
         const response = await api.put(`/api/tasks/${taskToEdit.id}`, taskData);
         onTaskUpdated(response.data);
-        toast.success('Tarefa atualizada!');
+        toast.success(t('taskForm.updatedToast'));
       } else {
         const response = await api.post('/api/tasks', taskData);
         onTaskCreated(response.data);
-        toast.success('Tarefa criada!');
+        toast.success(t('taskForm.createdToast'));
       }
       handleClose();
     } catch (error) {
@@ -132,14 +134,14 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
     >
         <div className="custom-modal-content">
             <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
-                <Modal.Title>{taskToEdit ? 'Editar Tarefa' : 'Criar Nova Tarefa'}</Modal.Title>
+                <Modal.Title>{taskToEdit ? t('taskForm.editTitle') : t('taskForm.createTitle')}</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleFormSubmit}>
               <Modal.Body>
                   <Form.Group className="mb-3">
                     <div className="d-flex justify-content-between align-items-center">
                       <Form.Label>
-                          Titulo
+                          {t('taskForm.titleLabel')}
                           <span style={{ color: 'var(--danger)' }}>*</span>
                       </Form.Label>
                       <Form.Text className="text-secondary">
@@ -159,7 +161,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                   </Form.Group>
                   <Form.Group className="mb-3">
                     <div className="d-flex justify-content-between align-items-center">
-                      <Form.Label>Descrição</Form.Label>
+                      <Form.Label>{t('taskForm.descriptionLabel')}</Form.Label>
                       <Form.Text className="text-secondary">
                         {description.length} / {DESCRIPTION_LIMIT}
                       </Form.Text>
@@ -176,27 +178,27 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                     />
                   </Form.Group>
                   <Form.Group className="mb-3">
-                    <Form.Label>Projeto</Form.Label>
+                    <Form.Label>{t('taskForm.projectLabel')}</Form.Label>
                     <Form.Select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} style={darkInputStyle} className="custom-form-control">
-                        <option value="">Nenhum projeto</option>
+                        <option value="">{t('taskForm.noProject')}</option>
                         {projects.map(project => (<option key={project.id} value={project.id}>{project.name}</option>))}
                     </Form.Select>
                   </Form.Group>
                   {selectedProjectId && (
                     <Form.Group className="mb-3">
-                        <Form.Label>Tipo de Tarefa</Form.Label>
+                        <Form.Label>{t('taskForm.taskTypeLabel')}</Form.Label>
                         <Form.Select value={selectedTaskTypeId} onChange={(e) => setSelectedTaskTypeId(e.target.value)} style={darkInputStyle} className="custom-form-control" disabled={availableTaskTypes.length === 0}>
-                        <option value="">Nenhum tipo</option>
+                        <option value="">{t('taskForm.noTaskType')}</option>
                         {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
                         </Form.Select>
                     </Form.Group>
                   )}
                   <Form.Group className="mb-3">
-                    <Form.Label>Status</Form.Label>
+                    <Form.Label>{t('taskForm.statusLabel')}</Form.Label>
                     <Form.Select value={status} onChange={(e) => setStatus(e.target.value)} style={darkInputStyle} className="custom-form-control">
-                        <option value="PLANNED">Planejado</option>
-                        <option value="DOING">Em progresso</option>
-                        <option value="DONE">Feito</option>
+                        <option value="PLANNED">{t('taskForm.statusPlanned')}</option>
+                        <option value="DOING">{t('taskForm.statusDoing')}</option>
+                        <option value="DONE">{t('taskForm.statusDone')}</option>
                     </Form.Select>
                   </Form.Group>
               </Modal.Body>
@@ -213,7 +215,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                         fontWeight: 500
                       }}
                     >
-                      Excluir Tarefa
+                      {t('taskForm.deleteButton')}
                     </Button>
                   )}
                 </div>
@@ -228,7 +230,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       fontSize: '0.85rem'
                     }}
                   >
-                    {taskToEdit ? 'Salvar Alteracoes' : 'Salvar Tarefa'}
+                    {taskToEdit ? t('taskForm.saveEdit') : t('taskForm.saveCreate')}
                   </Button>
                 </div>
               </Modal.Footer>

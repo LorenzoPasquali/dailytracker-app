@@ -1,0 +1,197 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Salvar",
+    "create": "Criar",
+    "delete": "Excluir",
+    "or": "ou",
+    "actions": "Ações",
+    "name": "Nome",
+    "languageLabel": "Idioma",
+    "authenticating": "Autenticando"
+  },
+  "nav": {
+    "login": "Entrar",
+    "register": "Cadastrar"
+  },
+  "home": {
+    "tagline": "Organize suas dailies com simplicidade",
+    "heroTitle": "Simplifique seu dia.",
+    "heroAccent": "Domine suas tarefas.",
+    "heroBody": "Registre tarefas de forma rápida e objetiva, gerencie projetos com Kanban e esteja sempre preparado para a próxima reunião.",
+    "ctaStart": "Começar agora",
+    "ctaLogin": "Já tenho conta",
+    "footer": "DailyTracker — Feito para simplificar seu fluxo de trabalho.",
+    "features": {
+      "kanban": {
+        "title": "Kanban Visual",
+        "description": "Organize tarefas em colunas Planejado, Em Progresso e Feito com drag & drop intuitivo."
+      },
+      "filters": {
+        "title": "Filtros Inteligentes",
+        "description": "Filtre por projeto, tipo de tarefa e intervalo de datas para encontrar exatamente o que precisa."
+      },
+      "ai": {
+        "title": "Assistente IA",
+        "description": "Analise sua produtividade, gere resumos de daily e identifique gargalos com IA integrada."
+      }
+    }
+  },
+  "login": {
+    "subtitle": "Entre na sua conta",
+    "emailLabel": "Email",
+    "passwordLabel": "Senha",
+    "submitButton": "Entrar",
+    "googleButton": "Continuar com Google",
+    "noAccount": "Novo no DailyTracker?",
+    "createAccount": "Crie uma conta",
+    "successToast": "Bem-vindo de volta!",
+    "googleSuccessToast": "Login realizado com sucesso!",
+    "googleErrorToast": "Falha na autenticação com o Google.",
+    "emptyFieldsError": "Por favor, preencha o email e a senha.",
+    "invalidCredentials": "Credenciais inválidas. Por favor, tente novamente."
+  },
+  "register": {
+    "subtitle": "Crie sua conta",
+    "heroTitle": "Crie sua conta",
+    "heroAccent": "gratuitamente",
+    "heroBody": "Organize suas dailies, simplifique seu dia e mantenha tudo sob controle.",
+    "pageHeading": "Inscreva-se no DailyTracker",
+    "emailLabel": "Email",
+    "passwordLabel": "Senha",
+    "confirmPasswordLabel": "Confirmar Senha",
+    "submitButton": "Criar conta",
+    "googleButton": "Registrar com Google",
+    "hasAccount": "Já tem uma conta?",
+    "loginLink": "Entrar",
+    "successMessage": "Conta criada com sucesso! Redirecionando...",
+    "emptyFieldsError": "Por favor, preencha todos os campos.",
+    "passwordMismatch": "As senhas não coincidem.",
+    "registerError": "Erro ao registrar. O email pode já estar em uso."
+  },
+  "header": {
+    "newTask": "+ Nova Tarefa",
+    "newTaskMobile": "+ Tarefa",
+    "expandSidebar": "Expandir barra lateral",
+    "collapseSidebar": "Recolher barra lateral",
+    "basicPlan": "Plano Básico",
+    "logout": "Sair"
+  },
+  "sidebar": {
+    "monitor": "Monitor",
+    "registrations": "Cadastros",
+    "projects": "Projetos",
+    "taskTypes": "Tipos de Tarefa",
+    "reports": "Relatórios",
+    "reportsTooltip": "Módulo de Relatórios ainda não implementado",
+    "aiAssistant": "Assistente IA"
+  },
+  "dashboard": {
+    "title": "Monitor de Tarefas",
+    "filterByDate": "Filtrar por data"
+  },
+  "kanban": {
+    "planned": "Planejado",
+    "doing": "Em Progresso",
+    "done": "Feito",
+    "noTasks": "Nenhuma tarefa",
+    "tasksCount_one": "{{count}} tarefa nesta coluna",
+    "tasksCount_other": "{{count}} tarefas nesta coluna",
+    "taskMoved": "Tarefa movida!",
+    "taskMoveError": "Não foi possível mover a tarefa.",
+    "taskDeleteError": "Não foi possível deletar a tarefa."
+  },
+  "taskForm": {
+    "createTitle": "Criar Nova Tarefa",
+    "editTitle": "Editar Tarefa",
+    "titleLabel": "Título",
+    "descriptionLabel": "Descrição",
+    "projectLabel": "Projeto",
+    "noProject": "Nenhum projeto",
+    "taskTypeLabel": "Tipo de Tarefa",
+    "noTaskType": "Nenhum tipo",
+    "statusLabel": "Status",
+    "statusPlanned": "Planejado",
+    "statusDoing": "Em progresso",
+    "statusDone": "Feito",
+    "saveCreate": "Salvar Tarefa",
+    "saveEdit": "Salvar Alterações",
+    "deleteButton": "Excluir Tarefa",
+    "titleRequired": "O título da tarefa é obrigatório.",
+    "createdToast": "Tarefa criada!",
+    "updatedToast": "Tarefa atualizada!"
+  },
+  "confirmModal": {
+    "defaultTitle": "Confirmar Ação",
+    "defaultBody": "Você tem certeza que deseja continuar?",
+    "deleteTaskTitle": "Confirmar Exclusão",
+    "deleteTaskBody": "Você tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.",
+    "deleteTaskConfirm": "Confirmar Exclusão",
+    "logoutTitle": "Confirmar Saída",
+    "logoutBody": "Você tem certeza que deseja sair da sua conta?",
+    "logoutConfirm": "Sair"
+  },
+  "dateFilter": {
+    "title": "Filtrar por Data",
+    "reset": "Resetar",
+    "apply": "Filtrar"
+  },
+  "projects": {
+    "modalTitle": "Gerenciar Projetos",
+    "newProject": "Novo Projeto",
+    "existingProjects": "Projetos Existentes",
+    "namePlaceholder": "Nome do novo projeto",
+    "nameHeader": "Nome do Projeto",
+    "colorHeader": "Cor",
+    "createdToast": "Projeto criado!",
+    "updatedToast": "Projeto atualizado!",
+    "deletedToast": "Projeto excluído!",
+    "deleteTitle": "Confirmar Exclusão de Projeto",
+    "deleteBody": "Tem certeza que deseja excluir o projeto \"{{name}}\"? Todas as tarefas e tipos associados a ele precisarão ser reatribuídos ou serão perdidos."
+  },
+  "taskTypes": {
+    "modalTitle": "Gerenciar Tipos de Tarefa",
+    "newType": "Novo Tipo de Tarefa",
+    "existingTypes": "Tipos Existentes",
+    "namePlaceholder": "Nome do novo tipo (ex: Bug, Reunião)",
+    "selectProject": "Selecione um Projeto",
+    "nameHeader": "Nome do Tipo",
+    "projectHeader": "Projeto Associado",
+    "emptyFieldsError": "Por favor, preencha o nome e selecione um projeto.",
+    "createdToast": "Tipo de tarefa criado!",
+    "updatedToast": "Tipo de tarefa atualizado!",
+    "deletedToast": "Tipo de tarefa excluído!",
+    "deleteTitle": "Confirmar Exclusão",
+    "deleteBody": "Tem certeza que deseja excluir o tipo \"{{name}}\"? As tarefas que usam este tipo não serão excluídas, mas perderão a associação."
+  },
+  "aiChat": {
+    "title": "Assistente IA",
+    "setupTitle": "Configure sua API Key do Gemini",
+    "setupBody": "Acesse o Google AI Studio para obter sua chave.",
+    "setupLinkText": "Google AI Studio",
+    "keyPlaceholder": "Cole sua API Key aqui",
+    "saveKey": "Salvar e Começar",
+    "settingsTitle": "Configurações da IA",
+    "updateKeyLabel": "Atualizar API Key do Gemini",
+    "newKeyPlaceholder": "Nova API Key",
+    "updateKey": "Atualizar Chave",
+    "removeKey": "Remover Chave",
+    "removeKeyConfirm": "Tem certeza que deseja remover sua API Key?",
+    "backToChat": "Voltar ao Chat",
+    "chatEmpty": "Pergunte sobre suas tarefas, projetos ou produtividade.",
+    "inputPlaceholder": "Digite sua pergunta...",
+    "keySavedToast": "Chave salva com sucesso!",
+    "keyRemovedToast": "Chave removida.",
+    "keySaveError": "Erro ao salvar a chave.",
+    "keyRemoveError": "Erro ao remover a chave.",
+    "chatError": "Erro ao comunicar com a IA."
+  },
+  "api": {
+    "networkError": "Não foi possível conectar ao servidor. Verifique sua internet.",
+    "serverError": "Erro interno no servidor.",
+    "unexpectedError": "Ocorreu um erro inesperado.",
+    "sessionExpired": "Sessão expirada. Por favor, faça login novamente.",
+    "internalServerError": "Erro interno no servidor. Tente novamente mais tarde."
+  }
+}

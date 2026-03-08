@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
@@ -10,6 +11,7 @@ const statusColors = {
 };
 
 export default function KanbanColumn({ title, status, tasks = [], projects = [], onEdit, isMobile }) {
+  const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   const columnStyle = {
@@ -74,7 +76,7 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
           </h3>
         </div>
         <span 
-          aria-label={`${tasks.length} tarefas nesta coluna`}
+          aria-label={t('kanban.tasksCount', { count: tasks.length })}
           style={{
           fontSize: '0.75rem',
           color: 'var(--text-muted)',
@@ -105,7 +107,7 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
               padding: '2rem 0'
             }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, opacity: 0.6 }}>
-                Nenhuma tarefa
+                {t('kanban.noTasks')}
               </p>
             </div>
           )}

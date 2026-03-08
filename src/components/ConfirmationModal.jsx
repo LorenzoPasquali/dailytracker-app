@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button } from 'react-bootstrap';
 
 export default function ConfirmationModal({ show, handleClose, handleConfirm, title, body, confirmButtonText, confirmButtonVariant }) {
+  const { t } = useTranslation();
+  
   const modalBodyStyle = {
     backgroundColor: 'var(--bg-surface)',
     color: 'var(--text-secondary)',
@@ -27,10 +30,10 @@ export default function ConfirmationModal({ show, handleClose, handleConfirm, ti
     <Modal show={show} onHide={handleClose} centered contentClassName="bg-transparent border-0">
       <div className="custom-modal-content">
         <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
-          <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>{title || 'Confirmar Acao'}</Modal.Title>
+          <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>{title || t('confirmModal.defaultTitle')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>{body || 'Voce tem certeza que deseja continuar?'}</p>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>{body || t('confirmModal.defaultBody')}</p>
         </Modal.Body>
         <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }}>
           <Button
@@ -42,7 +45,7 @@ export default function ConfirmationModal({ show, handleClose, handleConfirm, ti
               fontSize: '0.85rem'
             }}
           >
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleConfirm}
@@ -55,7 +58,7 @@ export default function ConfirmationModal({ show, handleClose, handleConfirm, ti
               fontSize: '0.85rem'
             }}
           >
-            {confirmButtonText || 'Confirmar'}
+            {confirmButtonText || t('common.confirm')}
           </Button>
         </Modal.Footer>
       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Spinner } from 'react-bootstrap';
 import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
 import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 
 export default function AiChatModal({ show, onClose, isMobile }) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -83,25 +85,25 @@ export default function AiChatModal({ show, onClose, isMobile }) {
       setHasKey(true);
       setKeyInput('');
       setShowSettings(false);
-      toast.success('Chave salva com sucesso!');
+      toast.success(t('aiChat.keySavedToast'));
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erro ao salvar a chave.');
+      toast.error(err.response?.data?.message || t('aiChat.keySaveError'));
     } finally {
       setSavingKey(false);
     }
   };
 
   const handleDeleteKey = async () => {
-    if (!window.confirm('Tem certeza que deseja remover sua API Key?')) return;
+    if (!window.confirm(t('aiChat.removeKeyConfirm'))) return;
     setSavingKey(true);
     try {
       await api.delete('/api/ai/key');
       setHasKey(false);
       setMessages([]);
       setShowSettings(false);
-      toast.success('Chave removida.');
+      toast.success(t('aiChat.keyRemovedToast'));
     } catch {
-      toast.error('Erro ao remover a chave.');
+      toast.error(t('aiChat.keyRemoveError'));
     } finally {
       setSavingKey(false);
     }
@@ -124,7 +126,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
       });
       setMessages(prev => [...prev, { role: 'model', text: res.data.reply }]);
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Erro ao comunicar com a IA.';
+      const errorMsg = err.response?.data?.message || t('aiChat.chatError');
       setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);
     } finally {
       setLoading(false);
@@ -166,16 +168,16 @@ export default function AiChatModal({ show, onClose, isMobile }) {
   const renderKeySetup = () => (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', gap: '1rem' }}>
       <KeyFill size={36} style={{ color: 'var(--accent)', opacity: 0.6 }} />
-      <h6 style={{ color: 'var(--text-primary)', textAlign: 'center', margin: 0, fontSize: '0.9rem' }}>Configure sua API Key do Gemini</h6>
+      <h6 style={{ color: 'var(--text-primary)', textAlign: 'center', margin: 0, fontSize: '0.9rem' }}>{t('aiChat.setupTitle')}</h6>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', margin: 0 }}>
-        Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Google AI Studio</a> para obter sua chave.
+        {t('aiChat.setupBody')} <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>{t('aiChat.setupLinkText')}</a>
       </p>
       <input
         type="password"
         value={keyInput}
         onChange={(e) => setKeyInput(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
-        placeholder="Cole sua API Key aqui"
+        placeholder={t('aiChat.keyPlaceholder')}
         style={inputStyle}
       />
       <button
@@ -183,24 +185,24 @@ export default function AiChatModal({ show, onClose, isMobile }) {
         disabled={savingKey || !keyInput.trim()}
         style={{ ...btnPrimary, opacity: savingKey || !keyInput.trim() ? 0.5 : 1 }}
       >
-        {savingKey ? <Spinner animation="border" size="sm" /> : 'Salvar e Comecar'}
+        {savingKey ? <Spinner animation="border" size="sm" /> : t('aiChat.saveKey')}
       </button>
     </div>
   );
 
   const renderSettings = () => (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1.5rem', gap: '1rem' }}>
-      <h6 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '0.9rem' }}>Configuracoes da IA</h6>
+      <h6 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '0.9rem' }}>{t('aiChat.settingsTitle')}</h6>
       <div>
         <label style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.35rem', display: 'block' }}>
-          Atualizar API Key do Gemini
+          {t('aiChat.updateKeyLabel')}
         </label>
         <input
           type="password"
           value={keyInput}
           onChange={(e) => setKeyInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
-          placeholder="Nova API Key"
+          placeholder={t('aiChat.newKeyPlaceholder')}
           style={inputStyle}
         />
       </div>
@@ -209,7 +211,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
         disabled={savingKey || !keyInput.trim()}
         style={{ ...btnPrimary, opacity: savingKey || !keyInput.trim() ? 0.5 : 1 }}
       >
-        {savingKey ? <Spinner animation="border" size="sm" /> : 'Atualizar Chave'}
+        {savingKey ? <Spinner animation="border" size="sm" /> : t('aiChat.updateKey')}
       </button>
       <button
         onClick={handleDeleteKey}
@@ -225,7 +227,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
           gap: '0.5rem',
         }}
       >
-        <TrashFill size={13} /> Remover Chave
+        <TrashFill size={13} /> {t('aiChat.removeKey')}
       </button>
       <button
         onClick={() => { setShowSettings(false); setKeyInput(''); }}
@@ -237,7 +239,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
           border: '1px solid var(--border-default)',
         }}
       >
-        Voltar ao Chat
+        {t('aiChat.backToChat')}
       </button>
     </div>
   );
@@ -265,7 +267,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
             gap: '0.5rem',
           }}>
             <ChatDotsFill size={28} style={{ opacity: 0.3 }} />
-            <p style={{ margin: 0 }}>Pergunte sobre suas tarefas, projetos ou produtividade.</p>
+            <p style={{ margin: 0 }}>{t('aiChat.chatEmpty')}</p>
           </div>
         )}
         {messages.map((msg, i) => (
@@ -314,7 +316,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Digite sua pergunta..."
+          placeholder={t('aiChat.inputPlaceholder')}
           rows={1}
           style={{
             ...inputStyle,
@@ -381,7 +383,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <ChatDotsFill size={15} style={{ color: 'var(--accent)' }} />
           <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.85rem' }}>
-            Assistente IA
+            {t('aiChat.title')}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>

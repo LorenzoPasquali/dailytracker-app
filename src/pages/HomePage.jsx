@@ -4,27 +4,18 @@ import KanbanFill from 'react-bootstrap-icons/dist/icons/kanban-fill';
 import CalendarCheck from 'react-bootstrap-icons/dist/icons/calendar-check';
 import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
 import ArrowRight from 'react-bootstrap-icons/dist/icons/arrow-right';
+import { useTranslation } from 'react-i18next';
 import CssParticles from '../components/CssParticles';
-
-const features = [
-  {
-    icon: KanbanFill,
-    title: 'Kanban Visual',
-    description: 'Organize tarefas em colunas Planejado, Em Progresso e Feito com drag & drop intuitivo.'
-  },
-  {
-    icon: CalendarCheck,
-    title: 'Filtros Inteligentes',
-    description: 'Filtre por projeto, tipo de tarefa e intervalo de datas para encontrar exatamente o que precisa.'
-  },
-  {
-    icon: ChatDotsFill,
-    title: 'Assistente IA',
-    description: 'Analise sua produtividade, gere resumos de daily e identifique gargalos com IA integrada.'
-  }
-];
+import LanguageSelector from '../components/LanguageSelector';
 
 export default function HomePage() {
+  const { t } = useTranslation();
+
+  const features = [
+    { icon: KanbanFill, title: t('home.features.kanban.title'), description: t('home.features.kanban.description') },
+    { icon: CalendarCheck, title: t('home.features.filters.title'), description: t('home.features.filters.description') },
+    { icon: ChatDotsFill, title: t('home.features.ai.title'), description: t('home.features.ai.description') },
+  ];
   return (
     <div style={{
       position: 'relative',
@@ -80,7 +71,8 @@ export default function HomePage() {
         }}>
           DailyTracker
         </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <LanguageSelector variant="navbar" />
           <Link to="/login" style={{
             color: 'var(--text-secondary)',
             textDecoration: 'none',
@@ -89,7 +81,7 @@ export default function HomePage() {
             borderRadius: 'var(--radius-md)',
             transition: 'color var(--transition)'
           }}>
-            Entrar
+            {t('nav.login')}
           </Link>
           <Link to="/register" style={{
             color: 'var(--bg-base)',
@@ -101,7 +93,7 @@ export default function HomePage() {
             borderRadius: 'var(--radius-md)',
             transition: 'background-color var(--transition)'
           }}>
-            Cadastrar
+            {t('nav.register')}
           </Link>
         </div>
       </nav>
@@ -126,7 +118,7 @@ export default function HomePage() {
             marginBottom: '1.5rem',
             letterSpacing: '0.02em'
           }}>
-            Organize suas dailies com simplicidade
+            {t('home.tagline')}
           </div>
 
           <h1 className="animate-fade-in-up delay-2" style={{
@@ -138,9 +130,9 @@ export default function HomePage() {
             letterSpacing: '-1.5px',
             marginBottom: '1.5rem'
           }}>
-            Simplifique seu dia.{' '}
+            {t('home.heroTitle')}{' '}
             <span style={{ color: 'var(--accent)' }}>
-              Domine suas tarefas.
+              {t('home.heroAccent')}
             </span>
           </h1>
 
@@ -151,8 +143,7 @@ export default function HomePage() {
             margin: '0 auto 2.5rem',
             lineHeight: 1.7
           }}>
-            Registre tarefas de forma rapida e objetiva, gerencie projetos com Kanban
-            e esteja sempre preparado para a proxima reuniao.
+            {t('home.heroBody')}
           </p>
 
           <div className="animate-fade-in-up delay-4" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
@@ -169,7 +160,7 @@ export default function HomePage() {
               borderRadius: 'var(--radius-md)',
               transition: 'background-color var(--transition)'
             }}>
-              Comecar agora
+              {t('home.ctaStart')}
               <ArrowRight size={16} />
             </Link>
             <Link to="/login" style={{
@@ -183,7 +174,7 @@ export default function HomePage() {
               borderRadius: 'var(--radius-md)',
               transition: 'border-color var(--transition)'
             }}>
-              Ja tenho conta
+              {t('home.ctaLogin')}
             </Link>
           </div>
         </section>
@@ -261,7 +252,7 @@ export default function HomePage() {
         color: 'var(--text-muted)',
         fontSize: '0.8rem'
       }}>
-        DailyTracker — Feito para simplificar seu fluxo de trabalho.
+        {t('home.footer')}
       </footer>
     </div>
   );
