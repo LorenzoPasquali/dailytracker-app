@@ -1,5 +1,7 @@
 # dailytracker-app
 
+http://dailytracker.com.br
+
 Frontend da aplicação Daily Tracker, um gerenciador de tarefas no estilo Kanban com foco em acompanhamento diário de atividades (daily scrum).
 
 ## Stack
