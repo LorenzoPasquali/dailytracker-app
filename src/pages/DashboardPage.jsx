@@ -16,7 +16,7 @@ import ProjectsModal from '../components/ProjectsModal';
 import TaskTypesModal from '../components/TaskTypesModal';
 
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
-import { Calendar } from 'react-bootstrap-icons';
+import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
 import DateFilterModal from '../components/DateFilterModal';
 import AiChatModal from '../components/AiChatModal';
 import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } from 'date-fns';
@@ -86,13 +86,13 @@ export default function DashboardPage() {
 
   const handleLogout = () => { localStorage.removeItem('authToken'); localStorage.removeItem('refreshToken'); navigate('/'); };
 
-  const fetchData = async () => {
+  const fetchData = async (signal) => {
     setLoading(true);
     try {
       const [userResponse, tasksResponse, projectsResponse] = await Promise.all([
-        api.get('/api/user/me'),
-        api.get('/api/tasks'),
-        api.get('/api/projects'),
+        api.get('/api/user/me', { signal }),
+        api.get('/api/tasks', { signal }),
+        api.get('/api/projects', { signal }),
       ]);
       setCurrentUser(userResponse.data);
       const newColumns = { PLANNED: [], DOING: [], DONE: [] };
@@ -102,6 +102,7 @@ export default function DashboardPage() {
       setTaskColumns(newColumns);
       setProjects(projectsResponse.data);
     } catch (error) {
+      if (error.name === 'CanceledError') return;
       console.error("Erro ao buscar dados:", error);
       if (error.response?.status === 401) handleLogout();
     } finally {
@@ -109,7 +110,11 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    const controller = new AbortController();
+    fetchData(controller.signal); 
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -269,16 +274,20 @@ export default function DashboardPage() {
             marginBottom: isMobile ? '1rem' : '0.75rem',
             flexShrink: 0
           }}>
-            <h1 className="d-none d-lg-block" style={{
+            <h1 style={{
               fontFamily: 'var(--font-display)',
               fontSize: '1.25rem',
               fontWeight: 600,
               color: 'var(--text-primary)',
               margin: 0,
-              letterSpacing: '-0.3px'
+              letterSpacing: '-0.3px',
+              display: isMobile ? 'none' : 'block'
             }}>
               Monitor de Tarefas
             </h1>
+            {/* SEO and Accessibility H1 for Mobile */}
+            {isMobile && <h1 className="visually-hidden">Monitor de Tarefas</h1>}
+            
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -330,6 +339,7 @@ export default function DashboardPage() {
               <button
                 onClick={() => setShowDateFilterModal(true)}
                 title="Filtrar por data"
+                aria-label="Filtrar tarefas por intervalo de datas"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -363,6 +373,7 @@ export default function DashboardPage() {
 
           <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div style={{ flex: 1, minHeight: 0 }}>
+              <h2 className="visually-hidden">Quadro Kanban de Tarefas</h2>
               {renderDashboardContent()}
             </div>
             <DragOverlay>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} /> : null}</DragOverlay>
@@ -388,7 +399,7 @@ export default function DashboardPage() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} />
+      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} projects={projects} />
       <ConfirmationModal
         show={showDeleteModal}
         handleClose={handleCloseDeleteModal}
@@ -406,8 +417,8 @@ export default function DashboardPage() {
         confirmButtonText="Sair"
         confirmButtonVariant="primary"
       />
-      <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} onProjectsChange={fetchData} />
-      <TaskTypesModal show={showTaskTypesModal} handleClose={() => setShowTaskTypesModal(false)} onTaskTypesChange={fetchData} />
+      <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} onProjectsChange={fetchData} projects={projects} />
+      <TaskTypesModal show={showTaskTypesModal} handleClose={() => setShowTaskTypesModal(false)} onTaskTypesChange={fetchData} projects={projects} />
       <DateFilterModal
         show={showDateFilterModal}
         handleClose={() => setShowDateFilterModal(false)}

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Table, Form, InputGroup, Spinner } from 'react-bootstrap';
-import { Check, PencilFill, TrashFill, X } from 'react-bootstrap-icons';
+import { Modal, Button, Table, Form, InputGroup } from 'react-bootstrap';
+import Check from 'react-bootstrap-icons/dist/icons/check';
+import PencilFill from 'react-bootstrap-icons/dist/icons/pencil-fill';
+import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
+import X from 'react-bootstrap-icons/dist/icons/x';
 import { toast } from 'sonner';
 import api from '../services/api';
 import ConfirmationModal from './ConfirmationModal';
 
-export default function TaskTypesModal({ show, handleClose, onTaskTypesChange }) {
+export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, projects = [] }) {
   const [taskTypes, setTaskTypes] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   const [newTypeName, setNewTypeName] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -19,28 +20,14 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [typeToDelete, setTypeToDelete] = useState(null);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const projectsResponse = await api.get('/api/projects');
-      setProjects(projectsResponse.data);
-      
-      const allTypes = projectsResponse.data.flatMap(p => 
+  useEffect(() => {
+    if (show && projects.length > 0) {
+      const allTypes = projects.flatMap(p => 
         p.taskTypes.map(tt => ({ ...tt, projectName: p.name, projectId: p.id }))
       );
       setTaskTypes(allTypes);
-    } catch (err) {
-      console.error("Erro ao buscar dados", err);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if (show) {
-      fetchData();
-    }
-  }, [show]);
+  }, [show, projects]);
 
   const handleCreateTaskType = async () => {
     if (!newTypeName.trim() || !selectedProjectId) {
@@ -52,7 +39,6 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
         name: newTypeName, 
         projectId: parseInt(selectedProjectId) 
       });
-      fetchData();
       setNewTypeName('');
       setSelectedProjectId('');
       toast.success('Tipo de tarefa criado!');
@@ -76,7 +62,6 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
     if (!editingTypeName.trim()) return;
     try {
       await api.put(`/api/task-types/${type.id}`, { name: editingTypeName, projectId: type.projectId });
-      fetchData();
       toast.success('Tipo de tarefa atualizado!');
       if (onTaskTypesChange) onTaskTypesChange();
     } catch (error) {
@@ -95,7 +80,6 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
     if (!typeToDelete) return;
     try {
       await api.delete(`/api/task-types/${typeToDelete.id}`);
-      fetchData();
       toast.success('Tipo de tarefa excluído!');
       if (onTaskTypesChange) onTaskTypesChange();
     } catch (error) {
@@ -121,18 +105,18 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
     }
   };
 
-  const modalStyle = { backgroundColor: 'var(--bg-surface)', color: 'var(--text-secondary)' };
   const darkInputStyle = { backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', borderColor: 'var(--border-default)' };
   const customThStyle = { backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 };
   const customTdStyle = { backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', fontSize: '0.85rem' };
 
   return (
     <>
-      <Modal show={show} onHide={handleClose} centered size="lg">
-        <Modal.Header closeButton closeVariant="white" style={{ ...modalStyle, borderColor: 'var(--border-subtle)' }}>
-          <Modal.Title>Gerenciar Tipos de Tarefa</Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={modalStyle}>
+      <Modal show={show} onHide={handleClose} centered size="lg" contentClassName="bg-transparent border-0">
+        <div className="custom-modal-content">
+          <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
+            <Modal.Title>Gerenciar Tipos de Tarefa</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
           <h6 className="mb-3">Novo Tipo de Tarefa</h6>
           <Form onSubmit={handleCreateSubmit}>
             <InputGroup className="mb-4">
@@ -161,11 +145,8 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
           <hr className="text-secondary" />
 
           <h6 className="mb-3 mt-4">Tipos Existentes</h6>
-          {loading ? (
-            <div className="text-center"><Spinner animation="border" variant="light" /></div>
-          ) : (
-            <Table variant="dark" responsive className="border-secondary" style={{ borderRadius: '8px', overflow: 'hidden' }}>
-              <thead>
+          <Table variant="dark" responsive className="border-secondary" style={{ borderRadius: '8px', overflow: 'hidden' }}>
+            <thead>
                 <tr>
                   <th style={customThStyle}>Nome do Tipo</th>
                   <th style={customThStyle}>Projeto Associado</th>
@@ -186,8 +167,8 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
                             style={darkInputStyle}
                             className="custom-form-control"
                           />
-                          <Button variant="outline-success" onClick={() => saveEditing(type)}><Check /></Button>
-                          <Button variant="outline-secondary" onClick={cancelEditing}><X /></Button>
+                          <Button variant="outline-success" onClick={() => saveEditing(type)} aria-label="Salvar alteração"><Check /></Button>
+                          <Button variant="outline-secondary" onClick={cancelEditing} aria-label="Cancelar edição"><X /></Button>
                         </InputGroup>
                       ) : (
                         type.name
@@ -195,15 +176,15 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange })
                     </td>
                     <td className="align-middle" style={customTdStyle}>{type.projectName}</td>
                     <td className="text-center align-middle" style={customTdStyle}>
-                      <Button variant="link" size="sm" className="text-light me-2" onClick={() => startEditing(type)}><PencilFill /></Button>
-                      <Button variant="link" size="sm" className="text-danger" onClick={() => openDeleteConfirm(type)}><TrashFill /></Button>
+                      <Button variant="link" size="sm" className="text-light me-2" onClick={() => startEditing(type)} aria-label="Editar tipo de tarefa"><PencilFill /></Button>
+                      <Button variant="link" size="sm" className="text-danger" onClick={() => openDeleteConfirm(type)} aria-label="Excluir tipo de tarefa"><TrashFill /></Button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-          )}
-        </Modal.Body>
+          </Modal.Body>
+        </div>
       </Modal>
 
       <ConfirmationModal 

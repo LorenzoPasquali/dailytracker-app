@@ -62,17 +62,20 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
             backgroundColor: dotColor,
             flexShrink: 0
           }} />
-          <span style={{
+          <h3 style={{
             fontSize: '0.85rem',
             fontWeight: 600,
             color: 'var(--text-primary)',
             letterSpacing: '-0.01em',
-            textTransform: 'uppercase'
+            textTransform: 'uppercase',
+            margin: 0
           }}>
             {title}
-          </span>
+          </h3>
         </div>
-        <span style={{
+        <span 
+          aria-label={`${tasks.length} tarefas nesta coluna`}
+          style={{
           fontSize: '0.75rem',
           color: 'var(--text-muted)',
           backgroundColor: 'var(--bg-hover)',

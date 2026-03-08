@@ -38,17 +38,9 @@ export default function DateFilterModal({ show, handleClose, onApplyFilter, init
         handleClose();
     };
 
-    const modalStyle = {
-        backgroundColor: 'var(--bg-surface)',
-        color: 'var(--text-secondary)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-subtle)',
-        boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
-    };
-
     return (
         <Modal show={show} onHide={handleClose} centered contentClassName="bg-transparent border-0">
-            <div style={modalStyle}>
+            <div className="custom-modal-content">
                 <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
                     <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>Filtrar por Data</Modal.Title>
                 </Modal.Header>

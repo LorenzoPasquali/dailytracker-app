@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Table, Form, InputGroup, Spinner } from 'react-bootstrap';
-import { Check, PencilFill, TrashFill, X } from 'react-bootstrap-icons';
+import { Modal, Button, Table, Form, InputGroup } from 'react-bootstrap';
+import Check from 'react-bootstrap-icons/dist/icons/check';
+import PencilFill from 'react-bootstrap-icons/dist/icons/pencil-fill';
+import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
+import X from 'react-bootstrap-icons/dist/icons/x';
 import { toast } from 'sonner';
 import api from '../services/api';
 import ColorPicker from './ColorPicker';
 import ConfirmationModal from './ConfirmationModal';
 
-export default function ProjectsModal({ show, handleClose, onProjectsChange }) {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ProjectsModal({ show, handleClose, onProjectsChange, projects = [] }) {
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectColor, setNewProjectColor] = useState('#ef4444');
 
@@ -18,29 +19,10 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
 
-  const fetchProjects = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get('/api/projects');
-      setProjects(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar projetos", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (show) {
-      fetchProjects();
-    }
-  }, [show]);
-
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
     try {
       const response = await api.post('/api/projects', { name: newProjectName, color: newProjectColor });
-      setProjects([...projects, response.data]);
       setNewProjectName('');
       setNewProjectColor('#ef4444');
       toast.success('Projeto criado!');
@@ -52,8 +34,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange }) {
 
   const handleUpdateProject = async (project, dataToUpdate) => {
     try {
-      const response = await api.put(`/api/projects/${project.id}`, { ...project, ...dataToUpdate });
-      setProjects(projects.map(p => (p.id === project.id ? response.data : p)));
+      await api.put(`/api/projects/${project.id}`, { ...project, ...dataToUpdate });
       toast.success('Projeto atualizado!');
       if (onProjectsChange) onProjectsChange();
     } catch (error) {
@@ -111,18 +92,18 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange }) {
     }
   }
 
-  const modalStyle = { backgroundColor: 'var(--bg-surface)', color: 'var(--text-secondary)' };
   const darkInputStyle = { backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', borderColor: 'var(--border-default)', boxShadow: 'none' };
   const customThStyle = { backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)', color: 'var(--text-muted)', padding: '10px', fontSize: '0.8rem', fontWeight: 600 };
   const customTdStyle = { backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', padding: '10px', fontSize: '0.85rem' };
 
   return (
     <>
-      <Modal show={show} onHide={handleClose} centered size="lg">
-        <Modal.Header closeButton closeVariant="white" style={{ ...modalStyle, borderColor: 'var(--border-subtle)' }}>
-          <Modal.Title>Gerenciar Projetos</Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={modalStyle}>
+      <Modal show={show} onHide={handleClose} centered size="lg" contentClassName="bg-transparent border-0">
+        <div className="custom-modal-content">
+          <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
+            <Modal.Title>Gerenciar Projetos</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
           <h6 className="mb-3">Novo Projeto</h6>
           <Form onSubmit={handleCreateSubmit}>
             <InputGroup className="mb-4">
@@ -141,11 +122,8 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange }) {
           </Form>
           <hr className="text-secondary" />
           <h6 className="mb-3 mt-4">Projetos Existentes</h6>
-          {loading ? (
-            <div className="text-center"><Spinner animation="border" variant="light" /></div>
-          ) : (
-            <Table variant="dark" responsive className="border-secondary" style={{ borderRadius: '8px', overflow: 'hidden' }}>
-              <thead>
+          <Table variant="dark" responsive className="border-secondary" style={{ borderRadius: '8px', overflow: 'hidden' }}>
+            <thead>
                 <tr>
                   <th style={customThStyle}>Nome do Projeto</th>
                   <th className="text-center" style={customThStyle}>Cor</th>
@@ -166,8 +144,8 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange }) {
                             style={darkInputStyle}
                             className="custom-form-control"
                           />
-                          <Button variant="outline-success" onClick={() => saveEditing(project)}><Check /></Button>
-                          <Button variant="outline-secondary" onClick={cancelEditing}><X /></Button>
+                          <Button variant="outline-success" onClick={() => saveEditing(project)} aria-label="Salvar alteração"><Check /></Button>
+                          <Button variant="outline-secondary" onClick={cancelEditing} aria-label="Cancelar edição"><X /></Button>
                         </InputGroup>
                       ) : (
                         <div className="d-flex align-items-center">
@@ -183,15 +161,15 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange }) {
                       />
                     </td>
                     <td className="text-center align-middle" style={customTdStyle}>
-                      <Button variant="link" size="sm" className="text-light me-2" onClick={() => startEditing(project)}><PencilFill /></Button>
-                      <Button variant="link" size="sm" className="text-danger" onClick={() => openDeleteConfirm(project)}><TrashFill /></Button>
+                      <Button variant="link" size="sm" className="text-light me-2" onClick={() => startEditing(project)} aria-label="Editar projeto"><PencilFill /></Button>
+                      <Button variant="link" size="sm" className="text-danger" onClick={() => openDeleteConfirm(project)} aria-label="Excluir projeto"><TrashFill /></Button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-          )}
-        </Modal.Body>
+          </Modal.Body>
+        </div>
       </Modal>
 
       <ConfirmationModal

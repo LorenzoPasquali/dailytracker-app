@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { ChatDotsFill, XLg, SendFill, KeyFill, GearFill, TrashFill } from 'react-bootstrap-icons';
+import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
+import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
+import SendFill from 'react-bootstrap-icons/dist/icons/send-fill';
+import KeyFill from 'react-bootstrap-icons/dist/icons/key-fill';
+import GearFill from 'react-bootstrap-icons/dist/icons/gear-fill';
+import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
 import { toast } from 'sonner';
 import api from '../services/api';
 
@@ -358,7 +363,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
       backgroundColor: 'var(--bg-surface)',
       border: '1px solid var(--border-default)',
       borderRadius: isMobile ? 'var(--radius-lg) var(--radius-lg) 0 0' : 'var(--radius-lg)',
-      boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
+      boxShadow: 'none',
       overflow: 'hidden',
     }}>
       <div

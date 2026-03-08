@@ -1,6 +1,13 @@
 import React, { useContext } from 'react';
 import { Nav, Accordion, useAccordionButton, AccordionContext, Tooltip, OverlayTrigger } from 'react-bootstrap';
-import { HouseDoorFill, CollectionFill, BarChartFill, Folder, TagFill, ChevronDown, ChevronUp, ChatDotsFill } from 'react-bootstrap-icons';
+import HouseDoorFill from 'react-bootstrap-icons/dist/icons/house-door-fill';
+import CollectionFill from 'react-bootstrap-icons/dist/icons/collection-fill';
+import BarChartFill from 'react-bootstrap-icons/dist/icons/bar-chart-fill';
+import Folder from 'react-bootstrap-icons/dist/icons/folder';
+import TagFill from 'react-bootstrap-icons/dist/icons/tag-fill';
+import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
+import ChevronUp from 'react-bootstrap-icons/dist/icons/chevron-up';
+import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
 
 function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
   const { activeEventKey } = useContext(AccordionContext);

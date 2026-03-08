@@ -1,6 +1,10 @@
 import React from 'react';
 import { Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { List, PersonCircle, BoxArrowRight, ArrowLeftSquare, ArrowRightSquare } from 'react-bootstrap-icons';
+import List from 'react-bootstrap-icons/dist/icons/list';
+import PersonCircle from 'react-bootstrap-icons/dist/icons/person-circle';
+import BoxArrowRight from 'react-bootstrap-icons/dist/icons/box-arrow-right';
+import ArrowLeftSquare from 'react-bootstrap-icons/dist/icons/arrow-left-square';
+import ArrowRightSquare from 'react-bootstrap-icons/dist/icons/arrow-right-square';
 
 const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   <a
@@ -8,6 +12,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
     ref={ref}
     onClick={(e) => { e.preventDefault(); onClick(e); }}
     className="p-0 user-menu-btn"
+    aria-label="Menu do usuário"
     style={{ color: 'var(--text-muted)', transition: 'color var(--transition)' }}
     onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
@@ -42,6 +47,7 @@ export default function AppHeader({
             variant="link"
             onClick={onToggleMobileSidebar}
             className="sidebar-toggle-btn"
+            aria-label="Abrir menu lateral"
             style={{ color: 'var(--text-muted)', padding: '0.25rem' }}
           >
             <List size={20} />
@@ -60,6 +66,7 @@ export default function AppHeader({
               variant="link"
               onClick={onToggleCollapse}
               className="sidebar-toggle-btn"
+              aria-label={isSidebarCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
               style={{ color: 'var(--text-muted)', padding: '0.25rem' }}
             >
               {isSidebarCollapsed ? <ArrowRightSquare size={15} /> : <ArrowLeftSquare size={15} />}

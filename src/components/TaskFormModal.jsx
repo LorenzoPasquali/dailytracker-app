@@ -1,46 +1,37 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Form, Spinner } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 import { toast } from 'sonner';
 import api from '../services/api';
 
 const TITLE_LIMIT = 100;
 const DESCRIPTION_LIMIT = 500;
 
-export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete }) {
+export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [] }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('PLANNED');
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedTaskTypeId, setSelectedTaskTypeId] = useState('');
-  const [projects, setProjects] = useState([]);
   const [availableTaskTypes, setAvailableTaskTypes] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const titleInputRef = useRef(null);
 
   useEffect(() => {
     if (show) {
-      setLoading(true);
-      api.get('/api/projects')
-        .then(response => {
-          setProjects(response.data);
-          if (taskToEdit) {
-            setTitle(taskToEdit.title);
-            setDescription(taskToEdit.description || '');
-            setStatus(taskToEdit.status);
-            setSelectedProjectId(taskToEdit.projectId || '');
-            setSelectedTaskTypeId(taskToEdit.taskTypeId || '');
-          }
-        })
-        .catch(error => console.error("Erro ao buscar projetos", error))
-        .finally(() => setLoading(false));
-    } else {
-      setTitle('');
-      setDescription('');
-      setStatus('PLANNED');
-      setSelectedProjectId('');
-      setSelectedTaskTypeId('');
-      setAvailableTaskTypes([]);
+      if (taskToEdit) {
+        setTitle(taskToEdit.title);
+        setDescription(taskToEdit.description || '');
+        setStatus(taskToEdit.status);
+        setSelectedProjectId(taskToEdit.projectId || '');
+        setSelectedTaskTypeId(taskToEdit.taskTypeId || '');
+      } else {
+        setTitle('');
+        setDescription('');
+        setStatus('PLANNED');
+        setSelectedProjectId('');
+        setSelectedTaskTypeId('');
+        setAvailableTaskTypes([]);
+      }
     }
   }, [show, taskToEdit]);
 
@@ -60,9 +51,16 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   }, [selectedProjectId, projects, selectedTaskTypeId]);
 
   const onModalEntered = () => {
+    // Attempt focus immediately
     if (titleInputRef.current) {
       titleInputRef.current.focus();
     }
+    // Fallback for production environments/slower transitions
+    setTimeout(() => {
+      if (titleInputRef.current) {
+        titleInputRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleSave = async () => {
@@ -115,14 +113,6 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
     }
   };
 
-  const modalStyle = {
-    backgroundColor: 'var(--bg-surface)',
-    border: '1px solid var(--border-subtle)',
-    color: 'var(--text-secondary)',
-    borderRadius: 'var(--radius-lg)',
-    boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
-  };
-
   const darkInputStyle = {
     backgroundColor: 'var(--bg-base)',
     color: 'var(--text-primary)',
@@ -136,81 +126,79 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       onHide={handleClose} 
       onEntered={onModalEntered}
       centered 
-      size="lg" 
-      dialogClassName="modal-transparent"
+      size="lg"
+      contentClassName="border-0 bg-transparent"
+      autoFocus={false}
     >
-        <div style={modalStyle}>
+        <div className="custom-modal-content">
             <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
                 <Modal.Title>{taskToEdit ? 'Editar Tarefa' : 'Criar Nova Tarefa'}</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleFormSubmit}>
               <Modal.Body>
-                  {loading ? <div className="text-center"><Spinner /></div> : (
-                  <>
-                      <Form.Group className="mb-3">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <Form.Label>
-                              Titulo
-                              <span style={{ color: 'var(--danger)' }}>*</span>
-                          </Form.Label>
-                          <Form.Text className="text-secondary">
-                            {title.length} / {TITLE_LIMIT}
-                          </Form.Text>
-                        </div>
-                        <Form.Control 
-                          ref={titleInputRef}
-                          type="text" 
-                          value={title} 
-                          onChange={(e) => setTitle(e.target.value)} 
-                          maxLength={TITLE_LIMIT}
-                          style={{...darkInputStyle, resize: 'auto' }}
-                          className="custom-form-control" 
-                        />
-                      </Form.Group>
-                      <Form.Group className="mb-3">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <Form.Label>Descrição</Form.Label>
-                          <Form.Text className="text-secondary">
-                            {description.length} / {DESCRIPTION_LIMIT}
-                          </Form.Text>
-                        </div>
-                        <Form.Control 
-                          as="textarea" 
-                          rows={6}
-                          value={description} 
-                          onChange={(e) => setDescription(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          maxLength={DESCRIPTION_LIMIT}
-                          style={darkInputStyle}
-                          className="custom-form-control" 
-                        />
-                      </Form.Group>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Projeto</Form.Label>
-                        <Form.Select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} style={darkInputStyle} className="custom-form-control">
-                            <option value="">Nenhum projeto</option>
-                            {projects.map(project => (<option key={project.id} value={project.id}>{project.name}</option>))}
+                  <Form.Group className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <Form.Label>
+                          Titulo
+                          <span style={{ color: 'var(--danger)' }}>*</span>
+                      </Form.Label>
+                      <Form.Text className="text-secondary">
+                        {title.length} / {TITLE_LIMIT}
+                      </Form.Text>
+                    </div>
+                    <Form.Control 
+                      ref={titleInputRef}
+                      type="text" 
+                      value={title} 
+                      onChange={(e) => setTitle(e.target.value)} 
+                      maxLength={TITLE_LIMIT}
+                      style={{...darkInputStyle, resize: 'auto' }}
+                      className="custom-form-control"
+                      autoFocus
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <Form.Label>Descrição</Form.Label>
+                      <Form.Text className="text-secondary">
+                        {description.length} / {DESCRIPTION_LIMIT}
+                      </Form.Text>
+                    </div>
+                    <Form.Control 
+                      as="textarea" 
+                      rows={6}
+                      value={description} 
+                      onChange={(e) => setDescription(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      maxLength={DESCRIPTION_LIMIT}
+                      style={darkInputStyle}
+                      className="custom-form-control" 
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Projeto</Form.Label>
+                    <Form.Select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} style={darkInputStyle} className="custom-form-control">
+                        <option value="">Nenhum projeto</option>
+                        {projects.map(project => (<option key={project.id} value={project.id}>{project.name}</option>))}
+                    </Form.Select>
+                  </Form.Group>
+                  {selectedProjectId && (
+                    <Form.Group className="mb-3">
+                        <Form.Label>Tipo de Tarefa</Form.Label>
+                        <Form.Select value={selectedTaskTypeId} onChange={(e) => setSelectedTaskTypeId(e.target.value)} style={darkInputStyle} className="custom-form-control" disabled={availableTaskTypes.length === 0}>
+                        <option value="">Nenhum tipo</option>
+                        {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
                         </Form.Select>
-                      </Form.Group>
-                      {selectedProjectId && (
-                        <Form.Group className="mb-3">
-                            <Form.Label>Tipo de Tarefa</Form.Label>
-                            <Form.Select value={selectedTaskTypeId} onChange={(e) => setSelectedTaskTypeId(e.target.value)} style={darkInputStyle} className="custom-form-control" disabled={availableTaskTypes.length === 0}>
-                            <option value="">Nenhum tipo</option>
-                            {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
-                            </Form.Select>
-                        </Form.Group>
-                      )}
-                      <Form.Group className="mb-3">
-                        <Form.Label>Status</Form.Label>
-                        <Form.Select value={status} onChange={(e) => setStatus(e.target.value)} style={darkInputStyle} className="custom-form-control">
-                            <option value="PLANNED">Planejado</option>
-                            <option value="DOING">Em progresso</option>
-                            <option value="DONE">Feito</option>
-                        </Form.Select>
-                      </Form.Group>
-                  </>
+                    </Form.Group>
                   )}
+                  <Form.Group className="mb-3">
+                    <Form.Label>Status</Form.Label>
+                    <Form.Select value={status} onChange={(e) => setStatus(e.target.value)} style={darkInputStyle} className="custom-form-control">
+                        <option value="PLANNED">Planejado</option>
+                        <option value="DOING">Em progresso</option>
+                        <option value="DONE">Feito</option>
+                    </Form.Select>
+                  </Form.Group>
               </Modal.Body>
               <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }} className="d-flex justify-content-between">
                 <div>

@@ -10,8 +10,8 @@
   --border-strong: #333336;
 
   --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #52525b;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
 
   --accent: #10b981;
   --accent-hover: #059669;
@@ -194,6 +194,7 @@ html {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -201,8 +202,13 @@ html {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-fade-in-up {
@@ -213,14 +219,86 @@ html {
   animation: fadeIn 0.5s ease-out both;
 }
 
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
-.delay-6 { animation-delay: 0.6s; }
+/* Notification styling (Sonner) */
+[data-sonner-toast] {
+  color: var(--text-primary) !important;
+}
+
+/* Modal and Backdrop Otimization */
+.modal-backdrop.show {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  opacity: 1 !important;
+}
+
+.modal-content {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.custom-modal-content {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--accent) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--danger) !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: #3b82f6 !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  background: var(--bg-hover) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-muted) !important;
+  opacity: 0.6;
+  transition: all var(--transition) !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  opacity: 1;
+  color: var(--text-primary) !important;
+  background: var(--bg-active) !important;
+}
+
+.delay-1 {
+  animation-delay: 0.1s;
+}
+
+.delay-2 {
+  animation-delay: 0.2s;
+}
+
+.delay-3 {
+  animation-delay: 0.3s;
+}
+
+.delay-4 {
+  animation-delay: 0.4s;
+}
+
+.delay-5 {
+  animation-delay: 0.5s;
+}
+
+.delay-6 {
+  animation-delay: 0.6s;
+}
 
 @media (prefers-reduced-motion: reduce) {
+
   .animate-fade-in-up,
   .animate-fade-in {
     animation: none;

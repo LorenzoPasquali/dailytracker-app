@@ -24,39 +24,41 @@ export default function ConfirmationModal({ show, handleClose, handleConfirm, ti
   const isDanger = !confirmButtonVariant || confirmButtonVariant === 'danger';
 
   return (
-    <Modal show={show} onHide={handleClose} centered>
-      <Modal.Header closeButton closeVariant="white" style={{ ...modalBodyStyle, borderColor: 'var(--border-subtle)' }}>
-        <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>{title || 'Confirmar Acao'}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body style={modalBodyStyle}>
-        <p style={{ margin: 0, fontSize: '0.9rem' }}>{body || 'Voce tem certeza que deseja continuar?'}</p>
-      </Modal.Body>
-      <Modal.Footer style={{ ...modalBodyStyle, borderColor: 'var(--border-subtle)' }}>
-        <Button
-          onClick={handleClose}
-          style={{
-            backgroundColor: 'var(--bg-hover)',
-            border: '1px solid var(--border-default)',
-            color: 'var(--text-secondary)',
-            fontSize: '0.85rem'
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleConfirm}
-          autoFocus
-          style={{
-            backgroundColor: isDanger ? 'var(--danger)' : 'var(--accent)',
-            border: 'none',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: '0.85rem'
-          }}
-        >
-          {confirmButtonText || 'Confirmar'}
-        </Button>
-      </Modal.Footer>
+    <Modal show={show} onHide={handleClose} centered contentClassName="bg-transparent border-0">
+      <div className="custom-modal-content">
+        <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
+          <Modal.Title style={{ fontSize: '1rem', fontWeight: 600 }}>{title || 'Confirmar Acao'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>{body || 'Voce tem certeza que deseja continuar?'}</p>
+        </Modal.Body>
+        <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }}>
+          <Button
+            onClick={handleClose}
+            style={{
+              backgroundColor: 'var(--bg-hover)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-secondary)',
+              fontSize: '0.85rem'
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            autoFocus
+            style={{
+              backgroundColor: isDanger ? 'var(--danger)' : 'var(--accent)',
+              border: 'none',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.85rem'
+            }}
+          >
+            {confirmButtonText || 'Confirmar'}
+          </Button>
+        </Modal.Footer>
+      </div>
     </Modal>
   );
 }

@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { Spinner } from 'react-bootstrap';
 
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import AuthCallback from './pages/AuthCallback';
-import DashboardPage from './pages/DashboardPage';
+const HomePage = lazy(() => import('./pages/HomePage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+
+const LoadingFallback = () => (
+  <div style={{
+    height: '100vh',
+    width: '100vw',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'var(--bg-base)'
+  }}>
+    <Spinner animation="border" variant="success" />
+  </div>
+);
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = !!localStorage.getItem('authToken');
@@ -19,24 +33,38 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <BrowserRouter>
-      <Toaster position="bottom-center" richColors closeButton />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/login/success" element={<AuthCallback />} />
-        
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Toaster 
+        position="bottom-center" 
+        richColors 
+        closeButton 
+        theme="dark"
+        toastOptions={{
+          style: {
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-subtle)',
+            fontFamily: 'var(--font-body)',
+          },
+        }}
+      />
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login/success" element={<AuthCallback />} />
+          
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

@@ -159,6 +159,7 @@ export default function LoginPage() {
           variant="outline-light"
           onClick={handleGoogleLogin}
           className="w-100 py-2 d-flex align-items-center justify-content-center"
+          aria-label="Entrar com sua conta do Google"
           style={{
             border: '1px solid var(--border-default)',
             backgroundColor: 'transparent',
@@ -167,7 +168,7 @@ export default function LoginPage() {
             borderRadius: 'var(--radius-md)'
           }}
         >
-          <img src={googleLogo} alt="Google" style={{ width: 16, marginRight: 8 }} />
+          <img src={googleLogo} alt="" aria-hidden="true" width="16" height="16" loading="lazy" style={{ marginRight: 8 }} />
           Continuar com Google
         </Button>
 
