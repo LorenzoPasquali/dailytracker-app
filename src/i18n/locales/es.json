@@ -80,6 +80,8 @@
   },
   "sidebar": {
     "monitor": "Monitor",
+    "monitorClassic": "Clásico",
+    "monitorModern": "Moderno",
     "registrations": "Registros",
     "projects": "Proyectos",
     "taskTypes": "Tipos de Tarea",
@@ -96,6 +98,7 @@
     "doing": "En Progreso",
     "done": "Hecho",
     "noTasks": "Sin tareas",
+    "noProject": "Sin Proyecto",
     "tasksCount_one": "{{count}} tarea en esta columna",
     "tasksCount_other": "{{count}} tareas en esta columna",
     "taskMoved": "¡Tarea movida!",

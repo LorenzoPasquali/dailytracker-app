@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Nav, Accordion, useAccordionButton, AccordionContext, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import HouseDoorFill from 'react-bootstrap-icons/dist/icons/house-door-fill';
@@ -8,6 +8,7 @@ import Folder from 'react-bootstrap-icons/dist/icons/folder';
 import TagFill from 'react-bootstrap-icons/dist/icons/tag-fill';
 import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
 import ChevronUp from 'react-bootstrap-icons/dist/icons/chevron-up';
+import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
 
 function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
@@ -64,8 +65,19 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
   );
 }
 
-export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, isCollapsed, onToggleCollapse, isMobile }) {
+export default function Sidebar({
+  onProjectsClick,
+  onTaskTypesClick,
+  onAiClick,
+  isCollapsed,
+  onToggleCollapse,
+  isMobile,
+  monitorView,
+  onMonitorViewChange,
+}) {
   const { t } = useTranslation();
+  const [monitorExpanded, setMonitorExpanded] = useState(true);
+
   const sidebarStyle = {
     width: isCollapsed ? '56px' : '240px',
     backgroundColor: 'var(--bg-surface)',
@@ -74,12 +86,6 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
     overflowX: 'hidden',
     borderRight: '1px solid var(--border-subtle)',
     flexShrink: 0
-  };
-
-  const activeLinkStyle = {
-    borderLeft: '2px solid var(--accent)',
-    background: 'var(--accent-subtle)',
-    color: 'var(--text-primary)',
   };
 
   const linkStyle = {
@@ -98,24 +104,148 @@ export default function Sidebar({ onProjectsClick, onTaskTypesClick, onAiClick, 
     borderLeft: '2px solid transparent'
   };
 
+  const handleMonitorHeaderClick = (e) => {
+    e.preventDefault();
+    if (isCollapsed) {
+      onToggleCollapse();
+      return;
+    }
+    setMonitorExpanded(prev => !prev);
+  };
+
+  const handleMonitorViewSelect = (view) => {
+    onMonitorViewChange(view);
+  };
+
   return (
     <div style={sidebarStyle} className="h-100 d-flex flex-column">
       <Nav className="flex-column flex-grow-1" style={{ paddingTop: '0.5rem' }}>
-        <Nav.Link
-          href="#"
-          style={{ ...linkStyle, ...activeLinkStyle }}
-          onClick={isCollapsed ? onToggleCollapse : null}
-          onMouseEnter={e => {
-            if (!activeLinkStyle.color) e.currentTarget.style.color = 'var(--text-primary)';
-          }}
-          onMouseLeave={e => {
-            if (!activeLinkStyle.color) e.currentTarget.style.color = 'var(--text-secondary)';
-          }}
-        >
-          <HouseDoorFill size={16} className="flex-shrink-0" />
-          {!isCollapsed && t('sidebar.monitor')}
-        </Nav.Link>
 
+        {/* Monitor Section - Expandable */}
+        <div>
+          {/* Monitor Header */}
+          <div
+            role="button"
+            onClick={handleMonitorHeaderClick}
+            style={{
+              display: 'flex',
+              justifyContent: isCollapsed ? 'center' : 'space-between',
+              alignItems: 'center',
+              padding: isCollapsed ? '0.75rem' : '0.75rem 1.1rem',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              borderLeft: '2px solid var(--accent)',
+              background: 'var(--accent-subtle)',
+              transition: 'all var(--transition)',
+              userSelect: 'none',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = 'rgba(16,185,129,0.15)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'var(--accent-subtle)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.9rem' }}>
+              <HouseDoorFill size={16} className="flex-shrink-0" />
+              {!isCollapsed && t('sidebar.monitor')}
+            </div>
+            {!isCollapsed && (
+              monitorExpanded
+                ? <ChevronDown size={13} style={{ flexShrink: 0 }} />
+                : <ChevronRight size={13} style={{ flexShrink: 0 }} />
+            )}
+          </div>
+
+          {/* Monitor Sub-items */}
+          {!isCollapsed && monitorExpanded && (
+            <div>
+              {/* Classic View */}
+              <div
+                role="button"
+                onClick={() => handleMonitorViewSelect('classic')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.55rem 1.1rem 0.55rem 2.35rem',
+                  fontSize: '0.85rem',
+                  color: monitorView === 'classic' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  borderLeft: `2px solid ${monitorView === 'classic' ? 'var(--accent)' : 'transparent'}`,
+                  backgroundColor: monitorView === 'classic' ? 'var(--bg-active)' : 'transparent',
+                  transition: 'all var(--transition)',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => {
+                  if (monitorView !== 'classic') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (monitorView !== 'classic') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }
+                }}
+              >
+                <span style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  backgroundColor: monitorView === 'classic' ? 'var(--accent)' : 'var(--text-muted)',
+                  flexShrink: 0,
+                  transition: 'background-color var(--transition)',
+                }} />
+                {t('sidebar.monitorClassic')}
+              </div>
+
+              {/* Modern View */}
+              <div
+                role="button"
+                onClick={() => handleMonitorViewSelect('modern')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.55rem 1.1rem 0.55rem 2.35rem',
+                  fontSize: '0.85rem',
+                  color: monitorView === 'modern' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  borderLeft: `2px solid ${monitorView === 'modern' ? 'var(--accent)' : 'transparent'}`,
+                  backgroundColor: monitorView === 'modern' ? 'var(--bg-active)' : 'transparent',
+                  transition: 'all var(--transition)',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => {
+                  if (monitorView !== 'modern') {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (monitorView !== 'modern') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }
+                }}
+              >
+                <span style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  backgroundColor: monitorView === 'modern' ? 'var(--accent)' : 'var(--text-muted)',
+                  flexShrink: 0,
+                  transition: 'background-color var(--transition)',
+                }} />
+                {t('sidebar.monitorModern')}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Records Accordion */}
         <Accordion>
           <CustomToggle eventKey="0" isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse}>
             <CollectionFill size={16} className="flex-shrink-0" />

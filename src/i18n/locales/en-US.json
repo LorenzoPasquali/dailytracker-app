@@ -80,6 +80,8 @@
   },
   "sidebar": {
     "monitor": "Monitor",
+    "monitorClassic": "Classic",
+    "monitorModern": "Modern",
     "registrations": "Records",
     "projects": "Projects",
     "taskTypes": "Task Types",
@@ -96,6 +98,7 @@
     "doing": "In Progress",
     "done": "Done",
     "noTasks": "No tasks",
+    "noProject": "No Project",
     "tasksCount_one": "{{count}} task in this column",
     "tasksCount_other": "{{count}} tasks in this column",
     "taskMoved": "Task moved!",

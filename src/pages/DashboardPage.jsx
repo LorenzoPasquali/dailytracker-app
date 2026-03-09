@@ -10,6 +10,7 @@ import { useMediaQuery } from '../hooks/useMediaQuery';
 import AppHeader from '../components/AppHeader';
 import Sidebar from '../components/Sidebar';
 import KanbanColumn from '../components/KanbanColumn';
+import KanbanSwimlane from '../components/KanbanSwimlane';
 import TaskCard from '../components/TaskCard';
 import TaskFormModal from '../components/TaskFormModal';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -43,6 +44,13 @@ export default function DashboardPage() {
   const [showDateFilterModal, setShowDateFilterModal] = useState(false);
   const [dateRange, setDateRange] = useState([null, null]);
   const [showAiChat, setShowAiChat] = useState(false);
+
+  const [monitorView, setMonitorView] = useState(() => localStorage.getItem('monitorView') || 'classic');
+
+  const handleMonitorViewChange = (view) => {
+    setMonitorView(view);
+    localStorage.setItem('monitorView', view);
+  };
 
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [activeMobileTab, setActiveMobileTab] = useState('DOING');
@@ -153,12 +161,23 @@ export default function DashboardPage() {
   const handleOpenCreateModal = () => { setTaskToEdit(null); setShowTaskFormModal(true); };
   const handleOpenEditModal = (task) => { setTaskToEdit(task); setShowTaskFormModal(true); };
   const handleCloseTaskFormModal = () => { setTaskToEdit(null); setShowTaskFormModal(false); };
-  const handleTaskCreated = (newTask) => { setTaskColumns(prev => ({ ...prev, [newTask.status]: [newTask, ...prev[newTask.status]] })); };
+  const handleTaskCreated = (newTask) => {
+    setTaskColumns(prev => {
+      const column = prev[newTask.status] || [];
+      const updated = newTask.priority === 'HIGH' ? [newTask, ...column] : [...column, newTask];
+      return { ...prev, [newTask.status]: updated };
+    });
+  };
   const handleTaskUpdated = (updatedTask) => {
     setTaskColumns(prev => {
       const newColumns = { ...prev };
-      Object.keys(newColumns).forEach(status => { newColumns[status] = newColumns[status].filter(t => t.id !== updatedTask.id); });
-      if (newColumns[updatedTask.status]) newColumns[updatedTask.status].unshift(updatedTask);
+      const oldStatus = Object.keys(newColumns).find(s => newColumns[s].some(t => t.id === updatedTask.id));
+      if (oldStatus && oldStatus !== updatedTask.status) {
+        newColumns[oldStatus] = newColumns[oldStatus].filter(t => t.id !== updatedTask.id);
+        newColumns[updatedTask.status] = [updatedTask, ...newColumns[updatedTask.status]];
+      } else if (oldStatus) {
+        newColumns[oldStatus] = newColumns[oldStatus].map(t => t.id === updatedTask.id ? updatedTask : t);
+      }
       return newColumns;
     });
   };
@@ -186,12 +205,19 @@ export default function DashboardPage() {
     return null;
   };
   const handleDragStart = (event) => { const { active } = event; const task = allTasks.find(t => t.id === active.id); setActiveTask(task); };
+  // Parse compound swimlane droppable IDs like "PLANNED::project_1" → "PLANNED"
+  const parseContainerId = (id) => {
+    if (typeof id === 'string' && id.includes('::')) return id.split('::')[0];
+    return id;
+  };
+
   const handleDragEnd = (event) => {
     setActiveTask(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const sourceContainer = findContainer(active.id);
-    const destContainer = findContainer(over.id) || over.id;
+    const rawDest = findContainer(over.id) || over.id;
+    const destContainer = parseContainerId(String(rawDest));
     if (!sourceContainer || !destContainer || !taskColumns[sourceContainer] || !taskColumns[destContainer]) return;
     if (sourceContainer === destContainer) {
       setTaskColumns(prev => {
@@ -199,7 +225,10 @@ export default function DashboardPage() {
         const oldIndex = columnTasks.findIndex(t => t.id === active.id);
         const newIndex = columnTasks.findIndex(t => t.id === over.id);
         if (oldIndex === -1 || newIndex === -1) return prev;
-        return { ...prev, [sourceContainer]: arrayMove(columnTasks, oldIndex, newIndex) };
+        const reordered = arrayMove(columnTasks, oldIndex, newIndex);
+        const payload = reordered.map((task, index) => ({ id: task.id, position: index * 10 }));
+        api.put('/api/tasks/reorder', payload).catch(() => fetchData());
+        return { ...prev, [sourceContainer]: reordered };
       });
     } else {
       let movedTask;
@@ -233,6 +262,10 @@ export default function DashboardPage() {
   };
 
   const mobileTabDotColors = { PLANNED: 'var(--text-muted)', DOING: '#f59e0b', DONE: 'var(--accent)' };
+
+  const swimLaneProjects = selectedProjectIds.length > 0
+    ? projects.filter(p => selectedProjectIds.includes(p.id))
+    : projects;
 
   const renderDashboardContent = () => {
     const filteredPlanned = filteredTasks.filter(t => t.status === 'PLANNED');
@@ -332,6 +365,17 @@ export default function DashboardPage() {
         </div>
       );
     }
+    if (monitorView === 'modern') {
+      return (
+        <KanbanSwimlane
+          filteredTasks={filteredTasks}
+          swimLaneProjects={swimLaneProjects}
+          projects={projects}
+          onEdit={handleOpenEditModal}
+        />
+      );
+    }
+
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', height: '100%' }}>
         <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} />
@@ -364,6 +408,8 @@ export default function DashboardPage() {
             onProjectsClick={() => setShowProjectsModal(true)}
             onTaskTypesClick={() => setShowTaskTypesModal(true)}
             onAiClick={() => setShowAiChat(true)}
+            monitorView={monitorView}
+            onMonitorViewChange={handleMonitorViewChange}
           />
         )}
         <main className="flex-grow-1 d-flex flex-column" style={{
@@ -500,6 +546,8 @@ export default function DashboardPage() {
             onProjectsClick={() => { setShowProjectsModal(true); setShowMobileSidebar(false); }}
             onTaskTypesClick={() => { setShowTaskTypesModal(true); setShowMobileSidebar(false); }}
             onAiClick={() => { setShowAiChat(true); setShowMobileSidebar(false); }}
+            monitorView={monitorView}
+            onMonitorViewChange={(view) => { handleMonitorViewChange(view); setShowMobileSidebar(false); }}
           />
         </Offcanvas.Body>
       </Offcanvas>
