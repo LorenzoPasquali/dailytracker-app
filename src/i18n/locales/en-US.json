@@ -124,6 +124,7 @@
     "priorityLow": "Low",
     "saveCreate": "Save Task",
     "saveEdit": "Save Changes",
+    "createdAtLabel": "Created at",
     "deleteButton": "Delete Task",
     "titleRequired": "Task title is required.",
     "createdToast": "Task created!",
@@ -193,6 +194,25 @@
     "keySaveError": "Error saving the key.",
     "keyRemoveError": "Error removing the key.",
     "chatError": "Error communicating with AI."
+  },
+  "reports": {
+    "preset7d": "Last 7 days",
+    "preset30d": "Last 30 days",
+    "presetAll": "All",
+    "kpiTotal": "Total",
+    "kpiCompletion": "Completion",
+    "chartByStatus": "By Status",
+    "chartByPriority": "By Priority",
+    "chartByProject": "By Project",
+    "chartByType": "By Task Type",
+    "chartTimeline": "Tasks over time",
+    "groupedByWeek": "grouped by week",
+    "emptyState": "No data for the selected period",
+    "seriesCreated": "Created",
+    "seriesCompleted": "Completed",
+    "tasks": "Tasks",
+    "noProject": "No project",
+    "noType": "No type"
   },
   "api": {
     "networkError": "Could not connect to the server. Check your internet.",

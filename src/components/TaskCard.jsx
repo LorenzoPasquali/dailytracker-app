@@ -73,6 +73,11 @@ export default function TaskCard({ task, projects = [], onEdit }) {
     });
   };
 
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -123,16 +128,42 @@ export default function TaskCard({ task, projects = [], onEdit }) {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginTop: '0.5rem'
+              marginTop: '0.5rem',
+              gap: '0.25rem',
+              minWidth: 0,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                overflow: 'hidden',
+                minWidth: 0,
+                flex: 1,
+              }}>
                 <PriorityIcon
                   size={11}
                   style={{ color: priorityConfig.color, flexShrink: 0 }}
                   title={t(`taskForm.priority${priorityKey.charAt(0) + priorityKey.slice(1).toLowerCase()}`)}
                 />
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', opacity: 0.7 }}>
-                  {formatDate(task.updatedAt)}
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--text-muted)',
+                  opacity: 0.7,
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                }}>
+                  {formatDate(task.createdAt)}
+                </span>
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--text-muted)',
+                  opacity: 0.45,
+                  flexShrink: 1,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  minWidth: 0,
+                }}>
+                  {formatTime(task.createdAt)}
                 </span>
               </div>
               {taskType && (
@@ -142,7 +173,9 @@ export default function TaskCard({ task, projects = [], onEdit }) {
                   backgroundColor: 'var(--bg-hover)',
                   padding: '0.15rem 0.5rem',
                   borderRadius: '100px',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
                 }}>
                   {taskType.name}
                 </span>

@@ -124,6 +124,7 @@
     "priorityLow": "Baja",
     "saveCreate": "Guardar Tarea",
     "saveEdit": "Guardar Cambios",
+    "createdAtLabel": "Creado el",
     "deleteButton": "Eliminar Tarea",
     "titleRequired": "El título de la tarea es obligatorio.",
     "createdToast": "¡Tarea creada!",
@@ -193,6 +194,25 @@
     "keySaveError": "Error al guardar la clave.",
     "keyRemoveError": "Error al eliminar la clave.",
     "chatError": "Error al comunicar con la IA."
+  },
+  "reports": {
+    "preset7d": "Últimos 7 días",
+    "preset30d": "Últimos 30 días",
+    "presetAll": "Todo",
+    "kpiTotal": "Total",
+    "kpiCompletion": "Conclusión",
+    "chartByStatus": "Por Estado",
+    "chartByPriority": "Por Prioridad",
+    "chartByProject": "Por Proyecto",
+    "chartByType": "Por Tipo de Tarea",
+    "chartTimeline": "Tareas a lo largo del tiempo",
+    "groupedByWeek": "agrupado por semana",
+    "emptyState": "Sin datos para el período seleccionado",
+    "seriesCreated": "Creadas",
+    "seriesCompleted": "Completadas",
+    "tasks": "Tareas",
+    "noProject": "Sin proyecto",
+    "noType": "Sin tipo"
   },
   "api": {
     "networkError": "No se pudo conectar al servidor. Verifica tu internet.",

@@ -25,8 +25,16 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedTaskTypeId, setSelectedTaskTypeId] = useState('');
   const [availableTaskTypes, setAvailableTaskTypes] = useState([]);
+  const [createdAt, setCreatedAt] = useState('');
 
   const titleInputRef = useRef(null);
+
+  const toDatetimeLocal = (isoString) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   useEffect(() => {
     if (show) {
@@ -37,6 +45,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setPriority(taskToEdit.priority || 'MEDIUM');
         setSelectedProjectId(taskToEdit.projectId || '');
         setSelectedTaskTypeId(taskToEdit.taskTypeId || '');
+        setCreatedAt(toDatetimeLocal(taskToEdit.createdAt));
       } else {
         setTitle('');
         setDescription('');
@@ -45,6 +54,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setSelectedProjectId('');
         setSelectedTaskTypeId('');
         setAvailableTaskTypes([]);
+        setCreatedAt('');
       }
     }
   }, [show, taskToEdit]);
@@ -94,8 +104,9 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         projectId: selectedProjectId ? parseInt(selectedProjectId) : null,
         taskTypeId: selectedTaskTypeId ? parseInt(selectedTaskTypeId) : null,
       };
-      
+
       if (taskToEdit) {
+        if (createdAt) taskData.createdAt = new Date(createdAt).toISOString();
         const response = await api.put(`/api/tasks/${taskToEdit.id}`, taskData);
         onTaskUpdated({ ...response.data, priority: response.data.priority ?? taskData.priority });
         toast.success(t('taskForm.updatedToast'));
@@ -250,6 +261,21 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       })}
                     </div>
                   </Form.Group>
+                  {taskToEdit && (
+                    <Form.Group className="mb-3">
+                      <Form.Label>{t('taskForm.createdAtLabel')}</Form.Label>
+                      <Form.Control
+                        type="datetime-local"
+                        value={createdAt}
+                        onChange={(e) => setCreatedAt(e.target.value)}
+                        style={{
+                          ...darkInputStyle,
+                          colorScheme: 'dark',
+                        }}
+                        className="custom-form-control"
+                      />
+                    </Form.Group>
+                  )}
               </Modal.Body>
               <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }} className="d-flex justify-content-between">
                 <div>

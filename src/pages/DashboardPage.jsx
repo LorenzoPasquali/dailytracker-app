@@ -11,6 +11,7 @@ import AppHeader from '../components/AppHeader';
 import Sidebar from '../components/Sidebar';
 import KanbanColumn from '../components/KanbanColumn';
 import KanbanSwimlane from '../components/KanbanSwimlane';
+import ReportsView from '../components/ReportsView';
 import TaskCard from '../components/TaskCard';
 import TaskFormModal from '../components/TaskFormModal';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -365,6 +366,9 @@ export default function DashboardPage() {
         </div>
       );
     }
+    if (monitorView === 'reports') {
+      return <ReportsView tasks={allTasks} projects={projects} />;
+    }
     if (monitorView === 'modern') {
       return (
         <KanbanSwimlane
@@ -408,6 +412,7 @@ export default function DashboardPage() {
             onProjectsClick={() => setShowProjectsModal(true)}
             onTaskTypesClick={() => setShowTaskTypesModal(true)}
             onAiClick={() => setShowAiChat(true)}
+            onReportsClick={() => handleMonitorViewChange('reports')}
             monitorView={monitorView}
             onMonitorViewChange={handleMonitorViewChange}
           />
@@ -434,12 +439,12 @@ export default function DashboardPage() {
               letterSpacing: '-0.3px',
               display: isMobile ? 'none' : 'block'
             }}>
-              {t('dashboard.title')}
+              {monitorView === 'reports' ? t('sidebar.reports') : t('dashboard.title')}
             </h1>
             {/* SEO and Accessibility H1 for Mobile */}
-            {isMobile && <h1 className="visually-hidden">{t('dashboard.title')}</h1>}
+            {isMobile && <h1 className="visually-hidden">{monitorView === 'reports' ? t('sidebar.reports') : t('dashboard.title')}</h1>}
             
-            <div style={{
+            {monitorView !== 'reports' && <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
@@ -519,7 +524,7 @@ export default function DashboardPage() {
                   </span>
                 )}
               </button>
-            </div>
+            </div>}
           </header>
 
           <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -546,6 +551,7 @@ export default function DashboardPage() {
             onProjectsClick={() => { setShowProjectsModal(true); setShowMobileSidebar(false); }}
             onTaskTypesClick={() => { setShowTaskTypesModal(true); setShowMobileSidebar(false); }}
             onAiClick={() => { setShowAiChat(true); setShowMobileSidebar(false); }}
+            onReportsClick={() => { handleMonitorViewChange('reports'); setShowMobileSidebar(false); }}
             monitorView={monitorView}
             onMonitorViewChange={(view) => { handleMonitorViewChange(view); setShowMobileSidebar(false); }}
           />

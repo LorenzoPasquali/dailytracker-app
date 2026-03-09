@@ -69,6 +69,7 @@ export default function Sidebar({
   onProjectsClick,
   onTaskTypesClick,
   onAiClick,
+  onReportsClick,
   isCollapsed,
   onToggleCollapse,
   isMobile,
@@ -289,16 +290,31 @@ export default function Sidebar({
           )}
         </Accordion>
 
-        <OverlayTrigger
-          placement="right"
-          delay={{ show: 250, hide: 400 }}
-          overlay={<Tooltip id="tooltip-reports">{t('sidebar.reportsTooltip')}</Tooltip>}
+        <Nav.Link
+          onClick={isCollapsed ? () => { onToggleCollapse(); onReportsClick(); } : onReportsClick}
+          style={{
+            ...linkStyle,
+            color: monitorView === 'reports' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            borderLeft: `2px solid ${monitorView === 'reports' ? 'var(--accent)' : 'transparent'}`,
+            backgroundColor: monitorView === 'reports' ? 'var(--bg-active)' : 'transparent',
+          }}
+          onMouseEnter={e => {
+            if (monitorView !== 'reports') {
+              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+              e.currentTarget.style.color = 'var(--text-primary)';
+            }
+          }}
+          onMouseLeave={e => {
+            if (monitorView !== 'reports') {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }
+          }}
+          role="button"
         >
-          <div style={{ ...linkStyle, cursor: 'not-allowed', opacity: 0.5 }}>
-            <BarChartFill size={16} className="flex-shrink-0" />
-            {!isCollapsed && t('sidebar.reports')}
-          </div>
-        </OverlayTrigger>
+          <BarChartFill size={16} className="flex-shrink-0" />
+          {!isCollapsed && t('sidebar.reports')}
+        </Nav.Link>
 
         <Nav.Link
           onClick={isCollapsed ? () => { onToggleCollapse(); onAiClick(); } : onAiClick}
