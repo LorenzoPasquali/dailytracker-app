@@ -45,6 +45,7 @@ export default function DashboardPage() {
   const [showAiChat, setShowAiChat] = useState(false);
 
   const isMobile = useMediaQuery('(max-width: 992px)');
+  const [activeMobileTab, setActiveMobileTab] = useState('DOING');
   const navigate = useNavigate();
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   const allTasks = useMemo(() => Object.values(taskColumns).flat(), [taskColumns]);
@@ -231,6 +232,8 @@ export default function DashboardPage() {
     );
   };
 
+  const mobileTabDotColors = { PLANNED: 'var(--text-muted)', DOING: '#f59e0b', DONE: 'var(--accent)' };
+
   const renderDashboardContent = () => {
     const filteredPlanned = filteredTasks.filter(t => t.status === 'PLANNED');
     const filteredDoing = filteredTasks.filter(t => t.status === 'DOING');
@@ -240,11 +243,92 @@ export default function DashboardPage() {
       return <div className="w-100 text-center mt-5"><Spinner animation="border" style={{ color: 'var(--accent)' }} /></div>;
     }
     if (isMobile) {
+      const mobileTabs = [
+        { status: 'PLANNED', tasks: filteredPlanned, label: t('kanban.planned') },
+        { status: 'DOING',   tasks: filteredDoing,   label: t('kanban.doing') },
+        { status: 'DONE',    tasks: filteredDone,    label: t('kanban.done') },
+      ];
+      const activeTab = mobileTabs.find(tab => tab.status === activeMobileTab) || mobileTabs[0];
+
       return (
-        <div className="d-flex flex-column gap-3 h-100">
-          <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} isMobile />
-          <KanbanColumn title={t('kanban.doing')} status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} isMobile />
-          <KanbanColumn title={t('kanban.done')} status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} isMobile />
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+          {/* Tab bar */}
+          <div style={{
+            display: 'flex',
+            gap: '0.25rem',
+            padding: '0.25rem',
+            backgroundColor: 'var(--bg-elevated)',
+            borderRadius: 'var(--radius-lg)',
+            marginBottom: '0.75rem',
+            flexShrink: 0,
+            border: '1px solid var(--border-subtle)'
+          }}>
+            {mobileTabs.map(tab => {
+              const isActive = activeMobileTab === tab.status;
+              return (
+                <button
+                  key={tab.status}
+                  onClick={() => setActiveMobileTab(tab.status)}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem 0.25rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                    backgroundColor: isActive ? 'var(--bg-active)' : 'transparent',
+                    border: `1px solid ${isActive ? 'var(--border-default)' : 'transparent'}`,
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem',
+                    fontFamily: 'inherit',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    outline: 'none'
+                  }}
+                >
+                  <span style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    backgroundColor: mobileTabDotColors[tab.status],
+                    flexShrink: 0,
+                    opacity: isActive ? 1 : 0.5
+                  }} />
+                  {tab.label}
+                  <span style={{
+                    fontSize: '0.7rem',
+                    color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                    backgroundColor: isActive ? 'var(--accent-subtle)' : 'var(--bg-hover)',
+                    padding: '0.1rem 0.45rem',
+                    borderRadius: '100px',
+                    fontWeight: 600,
+                    minWidth: '20px',
+                    textAlign: 'center',
+                    lineHeight: 1.4
+                  }}>
+                    {tab.tasks.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active column fills remaining height */}
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <KanbanColumn
+              key={activeTab.status}
+              title={activeTab.label}
+              status={activeTab.status}
+              tasks={activeTab.tasks}
+              projects={projects}
+              onEdit={handleOpenEditModal}
+              isMobile
+            />
+          </div>
         </div>
       );
     }
@@ -283,7 +367,7 @@ export default function DashboardPage() {
           />
         )}
         <main className="flex-grow-1 d-flex flex-column" style={{
-          overflow: isMobile ? 'auto' : 'hidden',
+          overflow: 'hidden',
           padding: isMobile ? '0.75rem' : '1.25rem'
         }}>
           <header style={{
