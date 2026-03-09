@@ -46,8 +46,9 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
           padding: '1rem 1.25rem',
           borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           alignItems: 'center',
+          gap: '0.75rem',
           flexShrink: 0,
           backgroundColor: 'rgba(255, 255, 255, 0.02)'
         }}>

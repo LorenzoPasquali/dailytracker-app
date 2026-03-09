@@ -244,7 +244,7 @@ export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projec
         backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.025) 0%, transparent 100%)',
       }}>
         {STATUSES.map(status => (
-          <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div key={status} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
             <div style={{
               width: '6px',
               height: '6px',
