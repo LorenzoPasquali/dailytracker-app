@@ -535,6 +535,7 @@ export default function DashboardPage() {
           show={showAiChat}
           onClose={() => setShowAiChat(false)}
           isMobile={isMobile}
+          onTasksCreated={fetchData}
         />
       )}
     </div>

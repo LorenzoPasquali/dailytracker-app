@@ -10,7 +10,7 @@ import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
 import { toast } from 'sonner';
 import api from '../services/api';
 
-export default function AiChatModal({ show, onClose, isMobile }) {
+export default function AiChatModal({ show, onClose, isMobile, onTasksCreated }) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -125,6 +125,7 @@ export default function AiChatModal({ show, onClose, isMobile }) {
         history: newMessages.map(m => ({ role: m.role, text: m.text })),
       });
       setMessages(prev => [...prev, { role: 'model', text: res.data.reply }]);
+      if (res.data.tasksCreated && onTasksCreated) onTasksCreated();
     } catch (err) {
       const errorMsg = err.response?.data?.message || t('aiChat.chatError');
       setMessages(prev => [...prev, { role: 'model', text: errorMsg }]);

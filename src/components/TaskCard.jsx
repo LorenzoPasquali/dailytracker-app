@@ -3,9 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { Card, Badge } from 'react-bootstrap';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import ExclamationTriangleFill from 'react-bootstrap-icons/dist/icons/exclamation-triangle-fill';
+import DashCircleFill from 'react-bootstrap-icons/dist/icons/dash-circle-fill';
+import ArrowDownCircleFill from 'react-bootstrap-icons/dist/icons/arrow-down-circle-fill';
+
+const PRIORITY_CONFIG = {
+  HIGH:   { icon: ExclamationTriangleFill, color: '#ef4444' },
+  MEDIUM: { icon: DashCircleFill,           color: '#f59e0b' },
+  LOW:    { icon: ArrowDownCircleFill,       color: '#6b7280' },
+};
 
 export default function TaskCard({ task, projects = [], onEdit }) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const descriptionRef = useRef(null);
@@ -29,6 +38,10 @@ export default function TaskCard({ task, projects = [], onEdit }) {
   const project = task.projectId ? projects.find(p => p.id === task.projectId) : null;
   const taskType = project && task.taskTypeId ? project.taskTypes.find(tt => tt.id === task.taskTypeId) : null;
   const projectColor = project ? project.color : 'transparent';
+
+  const priorityKey = task.priority || 'MEDIUM';
+  const priorityConfig = PRIORITY_CONFIG[priorityKey] || PRIORITY_CONFIG.MEDIUM;
+  const PriorityIcon = priorityConfig.icon;
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -112,9 +125,16 @@ export default function TaskCard({ task, projects = [], onEdit }) {
               alignItems: 'center',
               marginTop: '0.5rem'
             }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', opacity: 0.7 }}>
-                {formatDate(task.updatedAt)}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <PriorityIcon
+                  size={11}
+                  style={{ color: priorityConfig.color, flexShrink: 0 }}
+                  title={t(`taskForm.priority${priorityKey.charAt(0) + priorityKey.slice(1).toLowerCase()}`)}
+                />
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', opacity: 0.7 }}>
+                  {formatDate(task.updatedAt)}
+                </span>
+              </div>
               {taskType && (
                 <span style={{
                   fontSize: '0.7rem',

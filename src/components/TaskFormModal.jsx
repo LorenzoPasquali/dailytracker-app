@@ -2,7 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { toast } from 'sonner';
+import ExclamationTriangleFill from 'react-bootstrap-icons/dist/icons/exclamation-triangle-fill';
+import DashCircleFill from 'react-bootstrap-icons/dist/icons/dash-circle-fill';
+import ArrowDownCircleFill from 'react-bootstrap-icons/dist/icons/arrow-down-circle-fill';
 import api from '../services/api';
+
+const PRIORITY_OPTIONS = [
+  { value: 'HIGH',   icon: ExclamationTriangleFill, color: '#ef4444' },
+  { value: 'MEDIUM', icon: DashCircleFill,           color: '#f59e0b' },
+  { value: 'LOW',    icon: ArrowDownCircleFill,       color: '#6b7280' },
+];
 
 const TITLE_LIMIT = 100;
 const DESCRIPTION_LIMIT = 500;
@@ -12,6 +21,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('PLANNED');
+  const [priority, setPriority] = useState('MEDIUM');
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedTaskTypeId, setSelectedTaskTypeId] = useState('');
   const [availableTaskTypes, setAvailableTaskTypes] = useState([]);
@@ -24,12 +34,14 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setTitle(taskToEdit.title);
         setDescription(taskToEdit.description || '');
         setStatus(taskToEdit.status);
+        setPriority(taskToEdit.priority || 'MEDIUM');
         setSelectedProjectId(taskToEdit.projectId || '');
         setSelectedTaskTypeId(taskToEdit.taskTypeId || '');
       } else {
         setTitle('');
         setDescription('');
         setStatus('PLANNED');
+        setPriority('MEDIUM');
         setSelectedProjectId('');
         setSelectedTaskTypeId('');
         setAvailableTaskTypes([]);
@@ -74,21 +86,22 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
     const trimmedDescription = description.trim();
 
     try {
-      const taskData = { 
-        title, 
-        description: trimmedDescription, 
+      const taskData = {
+        title,
+        description: trimmedDescription,
         status,
+        priority,
         projectId: selectedProjectId ? parseInt(selectedProjectId) : null,
         taskTypeId: selectedTaskTypeId ? parseInt(selectedTaskTypeId) : null,
       };
       
       if (taskToEdit) {
         const response = await api.put(`/api/tasks/${taskToEdit.id}`, taskData);
-        onTaskUpdated(response.data);
+        onTaskUpdated({ ...response.data, priority: response.data.priority ?? taskData.priority });
         toast.success(t('taskForm.updatedToast'));
       } else {
         const response = await api.post('/api/tasks', taskData);
-        onTaskCreated(response.data);
+        onTaskCreated({ ...response.data, priority: response.data.priority ?? taskData.priority });
         toast.success(t('taskForm.createdToast'));
       }
       handleClose();
@@ -200,6 +213,42 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                         <option value="DOING">{t('taskForm.statusDoing')}</option>
                         <option value="DONE">{t('taskForm.statusDone')}</option>
                     </Form.Select>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>{t('taskForm.priorityLabel')}</Form.Label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {PRIORITY_OPTIONS.map(({ value, icon: Icon, color }) => {
+                        const isSelected = priority === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setPriority(value)}
+                            style={{
+                              flex: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.4rem',
+                              padding: '0.45rem 0.5rem',
+                              fontSize: '0.82rem',
+                              fontWeight: 600,
+                              color: isSelected ? color : 'var(--text-muted)',
+                              backgroundColor: isSelected ? 'var(--bg-hover)' : 'var(--bg-base)',
+                              border: `1px solid ${isSelected ? color : 'var(--border-default)'}`,
+                              borderRadius: 'var(--radius-md)',
+                              cursor: 'pointer',
+                              transition: 'all var(--transition)',
+                              fontFamily: 'inherit',
+                              outline: 'none',
+                            }}
+                          >
+                            <Icon size={13} style={{ color: isSelected ? color : 'var(--text-muted)', flexShrink: 0 }} />
+                            {t(`taskForm.priority${value.charAt(0) + value.slice(1).toLowerCase()}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </Form.Group>
               </Modal.Body>
               <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }} className="d-flex justify-content-between">
