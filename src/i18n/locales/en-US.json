@@ -75,8 +75,11 @@
     "newTaskMobile": "+ Task",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
-    "basicPlan": "Basic Plan",
-    "logout": "Log out"
+    "logout": "Log out",
+    "appearance": "Appearance",
+    "darkMode": "Dark",
+    "lightMode": "Light",
+    "systemMode": "System"
   },
   "sidebar": {
     "monitor": "Monitor",

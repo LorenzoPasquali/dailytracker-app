@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { Spinner } from 'react-bootstrap';
@@ -31,13 +31,26 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  const [toasterTheme, setToasterTheme] = useState(() => {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
+  });
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const t = document.documentElement.getAttribute('data-theme') || 'dark';
+      setToasterTheme(t);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <BrowserRouter>
-      <Toaster 
-        position="bottom-center" 
-        richColors 
-        closeButton 
-        theme="dark"
+      <Toaster
+        position="bottom-center"
+        richColors
+        closeButton
+        theme={toasterTheme}
         toastOptions={{
           style: {
             background: 'var(--bg-elevated)',

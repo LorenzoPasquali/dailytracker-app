@@ -31,6 +31,31 @@
   --transition: 150ms ease;
 }
 
+/* Light mode overrides */
+[data-theme="light"] {
+  --bg-base: #f0f2f5;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #f4f5f7;
+  --bg-active: #e8eaed;
+
+  --border-subtle: #e4e6ea;
+  --border-default: #d0d3da;
+  --border-strong: #b8bbc4;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+
+  --accent: #059669;
+  --accent-hover: #047857;
+  --accent-subtle: rgba(5, 150, 105, 0.10);
+  --accent-border: rgba(5, 150, 105, 0.25);
+
+  --danger: #dc2626;
+  --danger-subtle: rgba(220, 38, 38, 0.10);
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--bg-base);
@@ -39,6 +64,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
   margin: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 html {
@@ -107,6 +133,14 @@ html {
 
 .date-input-dark::-webkit-calendar-picker-indicator {
   filter: invert(1);
+}
+
+[data-theme="light"] .date-input-dark {
+  color-scheme: light;
+}
+
+[data-theme="light"] .date-input-dark::-webkit-calendar-picker-indicator {
+  filter: none;
 }
 
 /* Sidebar */
@@ -230,6 +264,10 @@ html {
   -webkit-backdrop-filter: blur(6px);
   background-color: rgba(0, 0, 0, 0.4) !important;
   opacity: 1 !important;
+}
+
+[data-theme="light"] .modal-backdrop.show {
+  background-color: rgba(0, 0, 0, 0.2) !important;
 }
 
 .modal-content {

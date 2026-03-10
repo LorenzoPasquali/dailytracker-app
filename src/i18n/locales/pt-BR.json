@@ -75,8 +75,11 @@
     "newTaskMobile": "+ Tarefa",
     "expandSidebar": "Expandir barra lateral",
     "collapseSidebar": "Recolher barra lateral",
-    "basicPlan": "Plano Básico",
-    "logout": "Sair"
+    "logout": "Sair",
+    "appearance": "Aparência",
+    "darkMode": "Escuro",
+    "lightMode": "Claro",
+    "systemMode": "Sistema"
   },
   "sidebar": {
     "monitor": "Monitor",

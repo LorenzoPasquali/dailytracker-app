@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useTheme } from '../hooks/useTheme';
 import AppHeader from '../components/AppHeader';
 import Sidebar from '../components/Sidebar';
 import KanbanColumn from '../components/KanbanColumn';
@@ -53,6 +54,7 @@ export default function DashboardPage() {
     localStorage.setItem('monitorView', view);
   };
 
+  const { theme, setTheme } = useTheme();
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [activeMobileTab, setActiveMobileTab] = useState('DOING');
   const navigate = useNavigate();
@@ -165,7 +167,8 @@ export default function DashboardPage() {
   const handleTaskCreated = (newTask) => {
     setTaskColumns(prev => {
       const column = prev[newTask.status] || [];
-      const updated = newTask.priority === 'HIGH' ? [newTask, ...column] : [...column, newTask];
+      const goToBottom = newTask.priority === 'LOW' && newTask.status === 'PLANNED';
+      const updated = goToBottom ? [...column, newTask] : [newTask, ...column];
       return { ...prev, [newTask.status]: updated };
     });
   };
@@ -402,6 +405,8 @@ export default function DashboardPage() {
         currentUser={currentUser}
         onLogoutClick={() => setShowLogoutConfirm(true)}
         onLanguageChange={handleLanguageChange}
+        theme={theme}
+        onThemeChange={setTheme}
       />
       <div className="d-flex flex-grow-1" style={{ overflow: 'hidden', minHeight: 0 }}>
         {!isMobile && (
