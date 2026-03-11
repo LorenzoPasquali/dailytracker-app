@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Nav, Accordion, useAccordionButton, AccordionContext, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import HouseDoorFill from 'react-bootstrap-icons/dist/icons/house-door-fill';
@@ -75,9 +75,16 @@ export default function Sidebar({
   isMobile,
   monitorView,
   onMonitorViewChange,
+  forceOpenRegistrations,
+  isPersonalWorkspace,
 }) {
   const { t } = useTranslation();
   const [monitorExpanded, setMonitorExpanded] = useState(true);
+  const [accordionKey, setAccordionKey] = useState(undefined);
+
+  useEffect(() => {
+    if (forceOpenRegistrations) setAccordionKey('0');
+  }, [forceOpenRegistrations]);
 
   const sidebarStyle = {
     width: isCollapsed ? '56px' : '240px',
@@ -119,7 +126,7 @@ export default function Sidebar({
   };
 
   return (
-    <div style={sidebarStyle} className="h-100 d-flex flex-column">
+    <div style={sidebarStyle} className="h-100 d-flex flex-column" data-tutorial-id="tutorial-sidebar">
       <Nav className="flex-column flex-grow-1" style={{ paddingTop: '0.5rem' }}>
 
         {/* Monitor Section - Expandable */}
@@ -247,7 +254,7 @@ export default function Sidebar({
         </div>
 
         {/* Records Accordion */}
-        <Accordion>
+        <Accordion activeKey={accordionKey} onSelect={(k) => setAccordionKey(k)}>
           <CustomToggle eventKey="0" isCollapsed={isCollapsed} onToggleCollapse={onToggleCollapse}>
             <CollectionFill size={16} className="flex-shrink-0" />
             {!isCollapsed && t('sidebar.registrations')}
@@ -257,6 +264,7 @@ export default function Sidebar({
               <div>
                 <Nav.Link
                   onClick={onProjectsClick}
+                  data-tutorial-id="tutorial-sidebar-projects"
                   style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
                   onMouseEnter={e => {
                     e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
@@ -316,22 +324,24 @@ export default function Sidebar({
           {!isCollapsed && t('sidebar.reports')}
         </Nav.Link>
 
-        <Nav.Link
-          onClick={isCollapsed ? () => { onToggleCollapse(); onAiClick(); } : onAiClick}
-          style={linkStyle}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-            e.currentTarget.style.color = 'var(--text-primary)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = 'var(--text-secondary)';
-          }}
-          role="button"
-        >
-          <ChatDotsFill size={16} className="flex-shrink-0" />
-          {!isCollapsed && t('sidebar.aiAssistant')}
-        </Nav.Link>
+        {isPersonalWorkspace !== false && (
+          <Nav.Link
+            onClick={isCollapsed ? () => { onToggleCollapse(); onAiClick(); } : onAiClick}
+            style={linkStyle}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+              e.currentTarget.style.color = 'var(--text-primary)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }}
+            role="button"
+          >
+            <ChatDotsFill size={16} className="flex-shrink-0" />
+            {!isCollapsed && t('sidebar.aiAssistant')}
+          </Nav.Link>
+        )}
       </Nav>
     </div>
   );

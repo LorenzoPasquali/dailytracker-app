@@ -58,6 +58,7 @@
     "heroAccent": "for free",
     "heroBody": "Organize your dailies, simplify your day and keep everything under control.",
     "pageHeading": "Sign up for DailyTracker",
+    "nameLabel": "Name",
     "emailLabel": "Email",
     "passwordLabel": "Password",
     "confirmPasswordLabel": "Confirm Password",
@@ -76,6 +77,8 @@
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "logout": "Log out",
+    "editName": "Edit name",
+    "nameUpdateError": "Failed to update name.",
     "appearance": "Appearance",
     "darkMode": "Dark",
     "lightMode": "Light",
@@ -131,7 +134,10 @@
     "deleteButton": "Delete Task",
     "titleRequired": "Task title is required.",
     "createdToast": "Task created!",
-    "updatedToast": "Task updated!"
+    "updatedToast": "Task updated!",
+    "reporterLabel": "Reporter",
+    "assigneeLabel": "Assignee",
+    "noAssignee": "No assignee"
   },
   "confirmModal": {
     "defaultTitle": "Confirm Action",
@@ -216,6 +222,43 @@
     "tasks": "Tasks",
     "noProject": "No project",
     "noType": "No type"
+  },
+  "tutorial": {
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Let's go!",
+    "welcome": {
+      "title": "Welcome to DailyTracker!",
+      "body": "Let's take a quick 30-second tour. You can skip at any time."
+    },
+    "sidebar": {
+      "title": "Navigation sidebar",
+      "body": "Here you switch between views, manage projects and task types, access reports and open the AI assistant."
+    },
+    "workspace": {
+      "title": "Workspaces",
+      "body": "You have a personal workspace by default. Create new workspaces to collaborate as a team and invite people to join."
+    },
+    "projects": {
+      "title": "Projects and task types",
+      "body": "Click \"Projects\" to create color-coded projects. Each project can have its own task types."
+    },
+    "new-task": {
+      "title": "Creating a task",
+      "body": "Click \"+ New Task\" (or press Enter) to quickly create a task. It appears on the Kanban board instantly."
+    },
+    "kanban": {
+      "title": "Your Kanban board",
+      "body": "Tasks flow through three columns: Planned, In Progress and Done."
+    },
+    "drag-drop": {
+      "title": "Drag and drop",
+      "body": "Drag any card and drop it into another column to change its status. You can also reorder within the same column."
+    },
+    "done": {
+      "title": "All set!",
+      "body": "That's everything you need to know to get started. Create your first task now!"
+    }
   },
   "api": {
     "networkError": "Could not connect to the server. Check your internet.",

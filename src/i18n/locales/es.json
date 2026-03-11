@@ -58,6 +58,7 @@
     "heroAccent": "gratis",
     "heroBody": "Organiza tus dailies, simplifica tu día y mantén todo bajo control.",
     "pageHeading": "Regístrate en DailyTracker",
+    "nameLabel": "Nombre",
     "emailLabel": "Email",
     "passwordLabel": "Contraseña",
     "confirmPasswordLabel": "Confirmar Contraseña",
@@ -76,6 +77,8 @@
     "expandSidebar": "Expandir barra lateral",
     "collapseSidebar": "Colapsar barra lateral",
     "logout": "Salir",
+    "editName": "Editar nombre",
+    "nameUpdateError": "Error al actualizar el nombre.",
     "appearance": "Apariencia",
     "darkMode": "Oscuro",
     "lightMode": "Claro",
@@ -131,7 +134,10 @@
     "deleteButton": "Eliminar Tarea",
     "titleRequired": "El título de la tarea es obligatorio.",
     "createdToast": "¡Tarea creada!",
-    "updatedToast": "¡Tarea actualizada!"
+    "updatedToast": "¡Tarea actualizada!",
+    "reporterLabel": "Relator",
+    "assigneeLabel": "Responsable",
+    "noAssignee": "Sin responsable"
   },
   "confirmModal": {
     "defaultTitle": "Confirmar Acción",
@@ -216,6 +222,43 @@
     "tasks": "Tareas",
     "noProject": "Sin proyecto",
     "noType": "Sin tipo"
+  },
+  "tutorial": {
+    "skip": "Omitir",
+    "next": "Siguiente",
+    "start": "¡Empezar!",
+    "welcome": {
+      "title": "¡Bienvenido a DailyTracker!",
+      "body": "Hagamos un recorrido rápido de 30 segundos. Puedes omitirlo en cualquier momento."
+    },
+    "sidebar": {
+      "title": "Barra de navegación",
+      "body": "Aquí cambias entre vistas, gestionas proyectos y tipos de tarea, accedes a reportes y abres el asistente de IA."
+    },
+    "workspace": {
+      "title": "Espacios de trabajo",
+      "body": "Tienes un espacio de trabajo personal por defecto. Crea nuevos espacios para colaborar en equipo e invita personas a participar."
+    },
+    "projects": {
+      "title": "Proyectos y tipos de tarea",
+      "body": "Haz clic en \"Proyectos\" para crear proyectos con colores. Cada proyecto puede tener sus propios tipos de tarea."
+    },
+    "new-task": {
+      "title": "Creando una tarea",
+      "body": "Haz clic en \"+ Nueva Tarea\" (o presiona Enter) para crear una tarea rápidamente. Aparece en el Kanban al instante."
+    },
+    "kanban": {
+      "title": "Tu tablero Kanban",
+      "body": "Las tareas fluyen por tres columnas: Planificado, En Progreso y Terminado."
+    },
+    "drag-drop": {
+      "title": "Arrastrar y soltar",
+      "body": "Arrastra cualquier tarjeta y suéltala en otra columna para cambiar su estado. También puedes reordenar dentro de la misma columna."
+    },
+    "done": {
+      "title": "¡Todo listo!",
+      "body": "Eso es todo lo que necesitas saber para empezar. ¡Crea tu primera tarea ahora!"
+    }
   },
   "api": {
     "networkError": "No se pudo conectar al servidor. Verifica tu internet.",

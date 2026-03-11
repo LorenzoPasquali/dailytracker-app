@@ -13,6 +13,7 @@ import LanguageSelector from '../components/LanguageSelector';
 
 export default function RegisterPage() {
   const { t, i18n } = useTranslation();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,7 +26,7 @@ export default function RegisterPage() {
     setError('');
     setSuccess('');
 
-    if (!email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
       setError(t('register.emptyFieldsError'));
       return;
     }
@@ -35,10 +36,20 @@ export default function RegisterPage() {
     }
 
     try {
-      await api.post('/auth/register', { email, password, language: i18n.language });
+      await api.post('/auth/register', { name, email, password, language: i18n.language });
       const loginResponse = await api.post('/auth/login', { email, password });
       if (loginResponse.data?.token) {
         localStorage.setItem('authToken', loginResponse.data.token);
+        if (loginResponse.data?.refreshToken) {
+          localStorage.setItem('refreshToken', loginResponse.data.refreshToken);
+        }
+      }
+      const pendingToken = sessionStorage.getItem('pendingInviteToken');
+      if (pendingToken) {
+        try {
+          await api.post(`/api/workspaces/invite/${pendingToken}/accept`, {}, { _silent: true });
+        } catch { /* ignore — accept errors should not block navigation */ }
+        sessionStorage.removeItem('pendingInviteToken');
       }
       setSuccess(t('register.successMessage'));
       setTimeout(() => navigate('/dashboard'), 2000);
@@ -109,6 +120,10 @@ export default function RegisterPage() {
             borderRadius: 'var(--radius-lg)'
           }}>
             <Form onSubmit={handleRegister}>
+              <Form.Group className="mb-3">
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{t('register.nameLabel')}</Form.Label>
+                <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={20} />
+              </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{t('register.emailLabel')}</Form.Label>
                 <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -245,6 +260,10 @@ export default function RegisterPage() {
             </div>
 
             <Form onSubmit={handleRegister}>
+              <Form.Group className="mb-3">
+                <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{t('register.nameLabel')}</Form.Label>
+                <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={20} />
+              </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{t('register.emailLabel')}</Form.Label>
                 <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} />

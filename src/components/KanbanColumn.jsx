@@ -10,7 +10,7 @@ const statusColors = {
   DONE: 'var(--accent)'
 };
 
-export default function KanbanColumn({ title, status, tasks = [], projects = [], onEdit, isMobile }) {
+export default function KanbanColumn({ title, status, tasks = [], projects = [], onEdit, isMobile, isPersonalWorkspace }) {
   const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -90,7 +90,7 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
         <SortableContext items={taskIds}>
           {tasks.length > 0 ? (
             tasks.map(task => (
-              <TaskCard key={task.id} task={task} projects={projects} onEdit={onEdit} />
+              <TaskCard key={task.id} task={task} projects={projects} onEdit={onEdit} isPersonalWorkspace={isPersonalWorkspace} />
             ))
           ) : (
             <div style={{

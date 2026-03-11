@@ -58,6 +58,7 @@
     "heroAccent": "gratuitamente",
     "heroBody": "Organize suas dailies, simplifique seu dia e mantenha tudo sob controle.",
     "pageHeading": "Inscreva-se no DailyTracker",
+    "nameLabel": "Nome",
     "emailLabel": "Email",
     "passwordLabel": "Senha",
     "confirmPasswordLabel": "Confirmar Senha",
@@ -76,6 +77,8 @@
     "expandSidebar": "Expandir barra lateral",
     "collapseSidebar": "Recolher barra lateral",
     "logout": "Sair",
+    "editName": "Editar nome",
+    "nameUpdateError": "Erro ao atualizar o nome.",
     "appearance": "Aparência",
     "darkMode": "Escuro",
     "lightMode": "Claro",
@@ -131,7 +134,10 @@
     "deleteButton": "Excluir Tarefa",
     "titleRequired": "O título da tarefa é obrigatório.",
     "createdToast": "Tarefa criada!",
-    "updatedToast": "Tarefa atualizada!"
+    "updatedToast": "Tarefa atualizada!",
+    "reporterLabel": "Relator",
+    "assigneeLabel": "Responsável",
+    "noAssignee": "Nenhum responsável"
   },
   "confirmModal": {
     "defaultTitle": "Confirmar Ação",
@@ -216,6 +222,43 @@
     "tasks": "Tarefas",
     "noProject": "Sem projeto",
     "noType": "Sem tipo"
+  },
+  "tutorial": {
+    "skip": "Pular",
+    "next": "Próximo",
+    "start": "Começar!",
+    "welcome": {
+      "title": "Bem-vindo ao DailyTracker!",
+      "body": "Vamos fazer um tour rápido de 30 segundos. Você pode pular a qualquer momento."
+    },
+    "sidebar": {
+      "title": "Barra de navegação",
+      "body": "Aqui você alterna entre visualizações, gerencia projetos e tipos de tarefa, acessa relatórios e abre o assistente de IA."
+    },
+    "workspace": {
+      "title": "Workspaces",
+      "body": "Você tem um workspace pessoal por padrão. Crie novos workspaces para colaborar em equipe e convide pessoas para participar."
+    },
+    "projects": {
+      "title": "Projetos e tipos de tarefa",
+      "body": "Clique em \"Projetos\" para criar projetos com cores. Cada projeto pode ter seus próprios tipos de tarefa."
+    },
+    "new-task": {
+      "title": "Criando uma tarefa",
+      "body": "Clique em \"+ Nova Tarefa\" (ou pressione Enter) para criar uma tarefa rapidamente. Ela aparece no Kanban na hora."
+    },
+    "kanban": {
+      "title": "Seu quadro Kanban",
+      "body": "As tarefas fluem por três colunas: Planejado, Em Progresso e Concluído."
+    },
+    "drag-drop": {
+      "title": "Arrastar e soltar",
+      "body": "Arraste qualquer cartão e solte-o em outra coluna para mudar o status. Você também pode reordenar dentro da mesma coluna."
+    },
+    "done": {
+      "title": "Tudo pronto!",
+      "body": "Isso é tudo que você precisa saber para começar. Crie sua primeira tarefa agora!"
+    }
   },
   "api": {
     "networkError": "Não foi possível conectar ao servidor. Verifique sua internet.",

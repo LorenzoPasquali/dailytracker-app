@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import LanguageSelector from './LanguageSelector';
+import WorkspaceSwitcher from './WorkspaceSwitcher';
+import api from '../services/api';
+import { toast } from 'sonner';
 import List from 'react-bootstrap-icons/dist/icons/list';
 import PersonCircle from 'react-bootstrap-icons/dist/icons/person-circle';
 import BoxArrowRight from 'react-bootstrap-icons/dist/icons/box-arrow-right';
@@ -10,6 +13,9 @@ import ArrowRightSquare from 'react-bootstrap-icons/dist/icons/arrow-right-squar
 import MoonFill from 'react-bootstrap-icons/dist/icons/moon-fill';
 import SunFill from 'react-bootstrap-icons/dist/icons/sun-fill';
 import CircleHalf from 'react-bootstrap-icons/dist/icons/circle-half';
+import PencilFill from 'react-bootstrap-icons/dist/icons/pencil-fill';
+import CheckLg from 'react-bootstrap-icons/dist/icons/check-lg';
+import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
 
 const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   <a
@@ -33,12 +39,55 @@ export default function AppHeader({
   onToggleMobileSidebar,
   onNewTaskClick,
   currentUser,
+  onUserNameChange,
   onLogoutClick,
   onLanguageChange,
   theme,
-  onThemeChange
+  onThemeChange,
+  workspaces,
+  activeWorkspace,
+  onWorkspaceChange,
+  onWorkspaceManage,
+  onCreateWorkspace,
 }) {
   const { t } = useTranslation();
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const nameInputRef = useRef(null);
+
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
+
+  const handleStartEdit = () => {
+    setNameValue(currentUser?.name || '');
+    setEditingName(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingName(false);
+  };
+
+  const handleSaveName = async () => {
+    const trimmed = nameValue.trim();
+    if (!trimmed) return;
+    if (trimmed === currentUser?.name) { setEditingName(false); return; }
+    try {
+      await api.put('/api/user/name', { name: trimmed });
+      onUserNameChange?.(trimmed);
+      setEditingName(false);
+    } catch {
+      toast.error(t('header.nameUpdateError'));
+    }
+  };
+
+  const handleNameKeyDown = (e) => {
+    if (e.key === 'Enter') handleSaveName();
+    if (e.key === 'Escape') handleCancelEdit();
+  };
   return (
     <header style={{
       display: 'flex',
@@ -91,12 +140,22 @@ export default function AppHeader({
         }}>
           DailyTracker
         </span>
+        {workspaces && workspaces.length > 0 && (
+          <WorkspaceSwitcher
+            workspaces={workspaces}
+            activeWorkspace={activeWorkspace}
+            onWorkspaceChange={onWorkspaceChange}
+            onWorkspaceManage={onWorkspaceManage}
+            onCreateWorkspace={onCreateWorkspace}
+          />
+        )}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <Button
           onClick={onNewTaskClick}
           size="sm"
+          data-tutorial-id="tutorial-new-task-btn"
           style={{
             backgroundColor: 'var(--accent)',
             border: 'none',
@@ -125,10 +184,56 @@ export default function AppHeader({
               boxShadow: theme === 'light' ? '0 8px 24px rgba(0, 0, 0, 0.12)' : '0 8px 24px rgba(0, 0, 0, 0.4)'
             }}
           >
-            <div style={{ padding: '0.5rem', textAlign: 'center' }}>
-              <div style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
-                {currentUser?.email}
-              </div>
+            <div style={{ padding: '0.5rem 0.6rem' }}>
+              {editingName ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <input
+                    ref={nameInputRef}
+                    value={nameValue}
+                    onChange={e => setNameValue(e.target.value)}
+                    onKeyDown={handleNameKeyDown}
+                    maxLength={20}
+                    style={{
+                      flex: 1,
+                      padding: '0.3rem 0.5rem',
+                      fontSize: '0.88rem',
+                      fontWeight: 500,
+                      backgroundColor: 'var(--bg-input)',
+                      border: '1px solid var(--accent)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--text-primary)',
+                      outline: 'none',
+                      minWidth: 0,
+                    }}
+                  />
+                  <button onClick={handleSaveName} title={t('common.save')} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '0.2rem', display: 'flex' }}>
+                    <CheckLg size={14} />
+                  </button>
+                  <button onClick={handleCancelEdit} title={t('common.cancel')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex' }}>
+                    <XLg size={13} />
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.4rem' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {currentUser?.name}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {currentUser?.email}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleStartEdit}
+                    title={t('header.editName')}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex', flexShrink: 0 }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <PencilFill size={12} />
+                  </button>
+                </div>
+              )}
             </div>
             <Dropdown.Divider style={{ borderColor: 'var(--border-subtle)' }} />
 

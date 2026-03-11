@@ -8,6 +8,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const InviteAcceptPage = lazy(() => import('./pages/InviteAcceptPage'));
 
 const LoadingFallback = () => (
   <div style={{
@@ -75,6 +76,7 @@ function App() {
             } 
           />
           
+          <Route path="/invite/:token" element={<InviteAcceptPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

@@ -16,7 +16,7 @@ const PRIORITY_OPTIONS = [
 const TITLE_LIMIT = 100;
 const DESCRIPTION_LIMIT = 500;
 
-export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [] }) {
+export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [], workspaceId, isPersonal, workspaceMembers = [], currentUser }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -26,6 +26,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   const [selectedTaskTypeId, setSelectedTaskTypeId] = useState('');
   const [availableTaskTypes, setAvailableTaskTypes] = useState([]);
   const [createdAt, setCreatedAt] = useState('');
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
 
   const titleInputRef = useRef(null);
 
@@ -46,6 +47,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setSelectedProjectId(taskToEdit.projectId || '');
         setSelectedTaskTypeId(taskToEdit.taskTypeId || '');
         setCreatedAt(toDatetimeLocal(taskToEdit.createdAt));
+        setSelectedAssigneeId(taskToEdit.assigneeId || '');
       } else {
         setTitle('');
         setDescription('');
@@ -55,6 +57,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setSelectedTaskTypeId('');
         setAvailableTaskTypes([]);
         setCreatedAt('');
+        setSelectedAssigneeId('');
       }
     }
   }, [show, taskToEdit]);
@@ -103,15 +106,16 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         priority,
         projectId: selectedProjectId ? parseInt(selectedProjectId) : null,
         taskTypeId: selectedTaskTypeId ? parseInt(selectedTaskTypeId) : null,
+        assigneeId: selectedAssigneeId ? parseInt(selectedAssigneeId) : null,
       };
 
       if (taskToEdit) {
         if (createdAt) taskData.createdAt = new Date(createdAt).toISOString();
-        const response = await api.put(`/api/tasks/${taskToEdit.id}`, taskData);
+        const response = await api.put(`/api/tasks/${taskToEdit.id}`, taskData, { params: workspaceId ? { workspaceId } : {} });
         onTaskUpdated({ ...response.data, priority: response.data.priority ?? taskData.priority });
         toast.success(t('taskForm.updatedToast'));
       } else {
-        const response = await api.post('/api/tasks', taskData);
+        const response = await api.post('/api/tasks', taskData, { params: workspaceId ? { workspaceId } : {} });
         onTaskCreated({ ...response.data, priority: response.data.priority ?? taskData.priority });
         toast.success(t('taskForm.createdToast'));
       }
@@ -216,6 +220,34 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                         {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
                         </Form.Select>
                     </Form.Group>
+                  )}
+                  {!isPersonal && (
+                    <>
+                      <Form.Group className="mb-3">
+                        <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('taskForm.reporterLabel')}</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={taskToEdit?.reporterName || currentUser?.name || ''}
+                          readOnly
+                          style={{ ...darkInputStyle, opacity: 0.6, cursor: 'default' }}
+                          className="custom-form-control"
+                        />
+                      </Form.Group>
+                      <Form.Group className="mb-3">
+                        <Form.Label>{t('taskForm.assigneeLabel')}</Form.Label>
+                        <Form.Select
+                          value={selectedAssigneeId}
+                          onChange={(e) => setSelectedAssigneeId(e.target.value)}
+                          style={darkInputStyle}
+                          className="custom-form-control"
+                        >
+                          <option value="">{t('taskForm.noAssignee')}</option>
+                          {workspaceMembers.map(member => (
+                            <option key={member.userId} value={member.userId}>{member.name}</option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </>
                   )}
                   <Form.Group className="mb-3">
                     <Form.Label>{t('taskForm.statusLabel')}</Form.Label>

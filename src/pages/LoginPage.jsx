@@ -48,6 +48,13 @@ export default function LoginPage() {
       const response = await api.post('/auth/login', { email, password });
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('refreshToken', response.data.refreshToken);
+      const pendingToken = sessionStorage.getItem('pendingInviteToken');
+      if (pendingToken) {
+        try {
+          await api.post(`/api/workspaces/invite/${pendingToken}/accept`, {}, { _silent: true });
+        } catch { /* ignore */ }
+        sessionStorage.removeItem('pendingInviteToken');
+      }
       toast.success(t('login.successToast'));
       navigate('/dashboard');
     } catch (err) {

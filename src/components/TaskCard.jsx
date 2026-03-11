@@ -6,6 +6,8 @@ import { CSS } from '@dnd-kit/utilities';
 import ExclamationTriangleFill from 'react-bootstrap-icons/dist/icons/exclamation-triangle-fill';
 import DashCircleFill from 'react-bootstrap-icons/dist/icons/dash-circle-fill';
 import ArrowDownCircleFill from 'react-bootstrap-icons/dist/icons/arrow-down-circle-fill';
+import PersonFill from 'react-bootstrap-icons/dist/icons/person-fill';
+import SlashCircle from 'react-bootstrap-icons/dist/icons/slash-circle';
 
 const PRIORITY_CONFIG = {
   HIGH:   { icon: ExclamationTriangleFill, color: '#ef4444' },
@@ -13,7 +15,7 @@ const PRIORITY_CONFIG = {
   LOW:    { icon: ArrowDownCircleFill,       color: '#6b7280' },
 };
 
-export default function TaskCard({ task, projects = [], onEdit }) {
+export default function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace }) {
   const { i18n, t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -166,6 +168,43 @@ export default function TaskCard({ task, projects = [], onEdit }) {
                   {formatTime(task.createdAt)}
                 </span>
               </div>
+              {!isPersonalWorkspace && (
+                <span style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  fontSize: '0.68rem',
+                  color: task.assigneeName ? 'var(--accent)' : 'var(--text-muted)',
+                  backgroundColor: task.assigneeName 
+                    ? 'color-mix(in srgb, var(--accent) 10%, transparent)' 
+                    : 'color-mix(in srgb, var(--text-muted) 8%, transparent)',
+                  padding: '0.15rem 0.45rem',
+                  borderRadius: '100px',
+                  fontWeight: 500,
+                  flexShrink: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  maxWidth: '7.5rem',
+                  opacity: task.assigneeName ? 1 : 0.65,
+                }}>
+                  {task.assigneeName ? (
+                    <>
+                      <PersonFill size={9} style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {task.assigneeName}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <PersonFill size={9} style={{ flexShrink: 0, opacity: 0.8 }} />
+                      <SlashCircle size={7.5} style={{ flexShrink: 0, marginLeft: '-0.32rem', marginTop: '0.05rem', opacity: 0.8 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.85, fontSize: '0.62rem' }}>
+                        {t('taskForm.noAssignee')}
+                      </span>
+                    </>
+                  )}
+                </span>
+              )}
               {taskType && (
                 <span style={{
                   fontSize: '0.7rem',

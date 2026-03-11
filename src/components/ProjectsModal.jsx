@@ -10,7 +10,7 @@ import api from '../services/api';
 import ColorPicker from './ColorPicker';
 import ConfirmationModal from './ConfirmationModal';
 
-export default function ProjectsModal({ show, handleClose, onProjectsChange, projects = [] }) {
+export default function ProjectsModal({ show, handleClose, onProjectsChange, projects = [], workspaceId }) {
   const { t } = useTranslation();
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectColor, setNewProjectColor] = useState('#ef4444');
@@ -24,7 +24,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
     try {
-      const response = await api.post('/api/projects', { name: newProjectName, color: newProjectColor });
+      const response = await api.post('/api/projects', { name: newProjectName, color: newProjectColor }, { params: workspaceId ? { workspaceId } : {} });
       setNewProjectName('');
       setNewProjectColor('#ef4444');
       toast.success(t('projects.createdToast'));
@@ -36,7 +36,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
 
   const handleUpdateProject = async (project, dataToUpdate) => {
     try {
-      await api.put(`/api/projects/${project.id}`, { ...project, ...dataToUpdate });
+      await api.put(`/api/projects/${project.id}`, { ...project, ...dataToUpdate }, { params: workspaceId ? { workspaceId } : {} });
       toast.success(t('projects.updatedToast'));
       if (onProjectsChange) onProjectsChange();
     } catch (error) {
@@ -67,7 +67,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
   const confirmDelete = async () => {
     if (!projectToDelete) return;
     try {
-      await api.delete(`/api/projects/${projectToDelete.id}`);
+      await api.delete(`/api/projects/${projectToDelete.id}`, { params: workspaceId ? { workspaceId } : {} });
       toast.success(t('projects.deletedToast'));
       if (onProjectsChange) onProjectsChange();
     } catch (error) {

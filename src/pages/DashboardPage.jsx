@@ -8,6 +8,10 @@ import api from '../services/api';
 
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useTheme } from '../hooks/useTheme';
+import { useTutorial } from '../hooks/useTutorial';
+import { useWorkspace } from '../hooks/useWorkspace';
+import { useWorkspaceSocket } from '../hooks/useWorkspaceSocket';
+import TutorialOverlay from '../components/TutorialOverlay';
 import AppHeader from '../components/AppHeader';
 import Sidebar from '../components/Sidebar';
 import KanbanColumn from '../components/KanbanColumn';
@@ -18,6 +22,7 @@ import TaskFormModal from '../components/TaskFormModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import ProjectsModal from '../components/ProjectsModal';
 import TaskTypesModal from '../components/TaskTypesModal';
+import WorkspaceModal from '../components/WorkspaceModal';
 
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
 import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
@@ -56,9 +61,68 @@ export default function DashboardPage() {
 
   const { theme, setTheme } = useTheme();
   const isMobile = useMediaQuery('(max-width: 992px)');
+  const isDesktop = !isMobile;
+
+  const {
+    workspaces,
+    activeWorkspace,
+    activeWorkspaceId,
+    setActiveWorkspace,
+    isPersonal,
+    loading: workspaceLoading,
+    refetchWorkspaces,
+  } = useWorkspace();
+
+  const [workspaceMembers, setWorkspaceMembers] = useState([]);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [workspaceModalMode, setWorkspaceModalMode] = useState('create');
+  const [workspaceToManage, setWorkspaceToManage] = useState(null);
   const [activeMobileTab, setActiveMobileTab] = useState('DOING');
+
+  const { isActive: tutorialActive, steps: tutorialSteps, currentStep: tutorialCurrentStep, currentStepId: tutorialStepId, handleNext: tutorialNext, handleSkip: tutorialSkip } = useTutorial({
+    isDesktop,
+    currentUser,
+    setCurrentUser,
+  });
   const navigate = useNavigate();
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
+
+  // WS events from other workspace members
+  const handleWsEvent = (event) => {
+    const { type, payload } = event;
+    const isSelf = payload?.userId === currentUser?.id;
+    if (isSelf) return;
+
+    if (type === 'TASK_CREATED') {
+      handleTaskCreated(payload);
+    } else if (type === 'TASK_UPDATED') {
+      handleTaskUpdated(payload);
+    } else if (type === 'TASK_DELETED') {
+      setTaskColumns(prev => {
+        const cols = { ...prev };
+        Object.keys(cols).forEach(s => { cols[s] = cols[s].filter(t => t.id !== payload.id); });
+        return cols;
+      });
+      toast.info('Uma tarefa foi removida por outro membro.');
+    } else {
+      // TASK_REORDERED, PROJECT_*, MEMBER_* → full refetch
+      fetchData(undefined, activeWorkspaceId);
+    }
+  };
+
+  useWorkspaceSocket({
+    workspaceId: activeWorkspaceId,
+    isPersonal,
+    onEvent: handleWsEvent,
+  });
+
+  // Workspace change handler: reset filters + refetch
+  const handleWorkspaceChange = (id) => {
+    setActiveWorkspace(id);
+    setSelectedProjectIds([]);
+    setDateRange([null, null]);
+    localStorage.removeItem('dashboardDateRange');
+  };
   const allTasks = useMemo(() => Object.values(taskColumns).flat(), [taskColumns]);
 
   useEffect(() => {
@@ -108,13 +172,15 @@ export default function DashboardPage() {
 
   const handleLogout = () => { localStorage.removeItem('authToken'); localStorage.removeItem('refreshToken'); navigate('/'); };
 
-  const fetchData = async (signal) => {
+  const fetchData = async (signal, wsId) => {
     setLoading(true);
+    const workspaceId = wsId ?? activeWorkspaceId;
+    const wsParams = workspaceId ? { workspaceId } : {};
     try {
       const [userResponse, tasksResponse, projectsResponse] = await Promise.all([
         api.get('/api/user/me', { signal }),
-        api.get('/api/tasks', { signal }),
-        api.get('/api/projects', { signal }),
+        api.get('/api/tasks', { signal, params: wsParams }),
+        api.get('/api/projects', { signal, params: wsParams }),
       ]);
       
       const user = userResponse.data;
@@ -133,6 +199,16 @@ export default function DashboardPage() {
       }
       setTaskColumns(newColumns);
       setProjects(projectsResponse.data || []);
+
+      // Fetch workspace members for shared workspaces
+      if (workspaceId && !isPersonal) {
+        try {
+          const membersResponse = await api.get(`/api/workspaces/${workspaceId}/members`, { signal });
+          setWorkspaceMembers(membersResponse.data || []);
+        } catch { /* ignore */ }
+      } else {
+        setWorkspaceMembers([]);
+      }
     } catch (error) {
       if (error.name === 'CanceledError') return;
       console.error("Erro ao buscar dados:", error);
@@ -142,11 +218,12 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => { 
+  useEffect(() => {
+    if (workspaceLoading || !activeWorkspaceId) return;
     const controller = new AbortController();
-    fetchData(controller.signal); 
+    fetchData(controller.signal, activeWorkspaceId);
     return () => controller.abort();
-  }, []);
+  }, [activeWorkspaceId, workspaceLoading]);
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -191,7 +268,7 @@ export default function DashboardPage() {
   const handleConfirmDelete = async () => {
     if (!taskToDelete) return;
     try {
-      await api.delete(`/api/tasks/${taskToDelete}`);
+      await api.delete(`/api/tasks/${taskToDelete}`, { params: activeWorkspaceId ? { workspaceId: activeWorkspaceId } : {} });
       setTaskColumns(prev => {
         const newColumns = { ...prev };
         Object.keys(newColumns).forEach(status => { newColumns[status] = newColumns[status].filter(t => t.id !== taskToDelete); });
@@ -231,7 +308,7 @@ export default function DashboardPage() {
         if (oldIndex === -1 || newIndex === -1) return prev;
         const reordered = arrayMove(columnTasks, oldIndex, newIndex);
         const payload = reordered.map((task, index) => ({ id: task.id, position: index * 10 }));
-        api.put('/api/tasks/reorder', payload).catch(() => fetchData());
+        api.put('/api/tasks/reorder', payload, { params: activeWorkspaceId ? { workspaceId: activeWorkspaceId } : {} }).catch(() => fetchData());
         return { ...prev, [sourceContainer]: reordered };
       });
     } else {
@@ -240,7 +317,7 @@ export default function DashboardPage() {
       const activeIndex = sourceTasks.findIndex(t => t.id === active.id);
       if (activeIndex > -1) { [movedTask] = sourceTasks.splice(activeIndex, 1); } else return;
       const updatedTask = { ...movedTask, status: destContainer };
-      api.put(`/api/tasks/${active.id}`, { status: destContainer })
+      api.put(`/api/tasks/${active.id}`, { status: destContainer }, { params: activeWorkspaceId ? { workspaceId: activeWorkspaceId } : {} })
         .then(() => toast.success('Tarefa movida!'))
         .catch(() => { fetchData(); toast.error('Não foi possível mover a tarefa.'); });
       setTaskColumns(prev => {
@@ -364,6 +441,7 @@ export default function DashboardPage() {
               projects={projects}
               onEdit={handleOpenEditModal}
               isMobile
+              isPersonalWorkspace={isPersonal}
             />
           </div>
         </div>
@@ -379,15 +457,16 @@ export default function DashboardPage() {
           swimLaneProjects={swimLaneProjects}
           projects={projects}
           onEdit={handleOpenEditModal}
+          isPersonalWorkspace={isPersonal}
         />
       );
     }
 
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', height: '100%' }}>
-        <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} />
-        <KanbanColumn title={t('kanban.doing')} status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} />
-        <KanbanColumn title={t('kanban.done')} status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} />
+      <div data-tutorial-id="tutorial-kanban-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', height: '100%' }}>
+        <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
+        <KanbanColumn title={t('kanban.doing')} status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
+        <KanbanColumn title={t('kanban.done')} status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
       </div>
     );
   };
@@ -403,10 +482,16 @@ export default function DashboardPage() {
         onToggleMobileSidebar={() => setShowMobileSidebar(true)}
         onNewTaskClick={handleOpenCreateModal}
         currentUser={currentUser}
+        onUserNameChange={(name) => setCurrentUser(u => ({ ...u, name }))}
         onLogoutClick={() => setShowLogoutConfirm(true)}
         onLanguageChange={handleLanguageChange}
         theme={theme}
         onThemeChange={setTheme}
+        workspaces={workspaces}
+        activeWorkspace={activeWorkspace}
+        onWorkspaceChange={handleWorkspaceChange}
+        onWorkspaceManage={(ws) => { setWorkspaceToManage(ws); setWorkspaceModalMode('manage'); setShowWorkspaceModal(true); }}
+        onCreateWorkspace={() => { setWorkspaceModalMode('create'); setWorkspaceToManage(null); setShowWorkspaceModal(true); }}
       />
       <div className="d-flex flex-grow-1" style={{ overflow: 'hidden', minHeight: 0 }}>
         {!isMobile && (
@@ -420,6 +505,8 @@ export default function DashboardPage() {
             onReportsClick={() => handleMonitorViewChange('reports')}
             monitorView={monitorView}
             onMonitorViewChange={handleMonitorViewChange}
+            forceOpenRegistrations={tutorialActive && (tutorialStepId === 'projects')}
+            isPersonalWorkspace={isPersonal}
           />
         )}
         <main className="flex-grow-1 d-flex flex-column" style={{
@@ -537,7 +624,7 @@ export default function DashboardPage() {
               <h2 className="visually-hidden">{t('dashboard.title')}</h2>
               {renderDashboardContent()}
             </div>
-            <DragOverlay>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} /> : null}</DragOverlay>
+            <DragOverlay>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} isPersonalWorkspace={isPersonal} /> : null}</DragOverlay>
           </DndContext>
         </main>
       </div>
@@ -557,13 +644,14 @@ export default function DashboardPage() {
             onTaskTypesClick={() => { setShowTaskTypesModal(true); setShowMobileSidebar(false); }}
             onAiClick={() => { setShowAiChat(true); setShowMobileSidebar(false); }}
             onReportsClick={() => { handleMonitorViewChange('reports'); setShowMobileSidebar(false); }}
+            isPersonalWorkspace={isPersonal}
             monitorView={monitorView}
             onMonitorViewChange={(view) => { handleMonitorViewChange(view); setShowMobileSidebar(false); }}
           />
         </Offcanvas.Body>
       </Offcanvas>
 
-      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} projects={projects} />
+      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} projects={projects} workspaceId={activeWorkspaceId} isPersonal={isPersonal} workspaceMembers={workspaceMembers} currentUser={currentUser} />
       <ConfirmationModal
         show={showDeleteModal}
         handleClose={handleCloseDeleteModal}
@@ -581,8 +669,19 @@ export default function DashboardPage() {
         confirmButtonText={t('confirmModal.logoutConfirm')}
         confirmButtonVariant="primary"
       />
-      <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} onProjectsChange={fetchData} projects={projects} />
-      <TaskTypesModal show={showTaskTypesModal} handleClose={() => setShowTaskTypesModal(false)} onTaskTypesChange={fetchData} projects={projects} />
+      <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} onProjectsChange={fetchData} projects={projects} workspaceId={activeWorkspaceId} />
+      <TaskTypesModal show={showTaskTypesModal} handleClose={() => setShowTaskTypesModal(false)} onTaskTypesChange={fetchData} projects={projects} workspaceId={activeWorkspaceId} />
+      <WorkspaceModal
+        show={showWorkspaceModal}
+        onHide={() => setShowWorkspaceModal(false)}
+        mode={workspaceModalMode}
+        workspace={workspaceToManage}
+        currentUserId={currentUser?.id}
+        onWorkspaceCreated={(ws) => { refetchWorkspaces(); handleWorkspaceChange(ws.id); }}
+        onWorkspaceUpdated={() => refetchWorkspaces()}
+        onWorkspaceDeleted={() => { refetchWorkspaces(); handleWorkspaceChange(workspaces.find(w => w.isPersonal)?.id); }}
+        onMemberRemoved={() => { refetchWorkspaces(); handleWorkspaceChange(workspaces.find(w => w.isPersonal)?.id); }}
+      />
       <DateFilterModal
         show={showDateFilterModal}
         handleClose={() => setShowDateFilterModal(false)}
@@ -595,6 +694,15 @@ export default function DashboardPage() {
           onClose={() => setShowAiChat(false)}
           isMobile={isMobile}
           onTasksCreated={fetchData}
+        />
+      )}
+
+      {tutorialActive && (
+        <TutorialOverlay
+          steps={tutorialSteps}
+          currentStep={tutorialCurrentStep}
+          onNext={tutorialNext}
+          onSkip={tutorialSkip}
         />
       )}
     </div>

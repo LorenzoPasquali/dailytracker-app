@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import ConfirmationModal from './ConfirmationModal';
 
-export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, projects = [] }) {
+export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, projects = [], workspaceId }) {
   const { t } = useTranslation();
   const [taskTypes, setTaskTypes] = useState([]);
 
@@ -37,10 +37,10 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, p
       return;
     }
     try {
-      await api.post('/api/task-types', { 
-        name: newTypeName, 
-        projectId: parseInt(selectedProjectId) 
-      });
+      await api.post('/api/task-types', {
+        name: newTypeName,
+        projectId: parseInt(selectedProjectId)
+      }, { params: workspaceId ? { workspaceId } : {} });
       setNewTypeName('');
       setSelectedProjectId('');
       toast.success(t('taskTypes.createdToast'));
@@ -63,7 +63,7 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, p
   const saveEditing = async (type) => {
     if (!editingTypeName.trim()) return;
     try {
-      await api.put(`/api/task-types/${type.id}`, { name: editingTypeName, projectId: type.projectId });
+      await api.put(`/api/task-types/${type.id}`, { name: editingTypeName, projectId: type.projectId }, { params: workspaceId ? { workspaceId } : {} });
       toast.success(t('taskTypes.updatedToast'));
       if (onTaskTypesChange) onTaskTypesChange();
     } catch (error) {
@@ -81,7 +81,7 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, p
   const confirmDelete = async () => {
     if (!typeToDelete) return;
     try {
-      await api.delete(`/api/task-types/${typeToDelete.id}`);
+      await api.delete(`/api/task-types/${typeToDelete.id}`, { params: workspaceId ? { workspaceId } : {} });
       toast.success(t('taskTypes.deletedToast'));
       if (onTaskTypesChange) onTaskTypesChange();
     } catch (error) {

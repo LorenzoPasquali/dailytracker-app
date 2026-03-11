@@ -14,7 +14,7 @@ const STATUS_COLORS = {
 
 const STATUSES = ['PLANNED', 'DOING', 'DONE'];
 
-function SwimlaneCell({ status, laneId, tasks, projects, onEdit }) {
+function SwimlaneCell({ status, laneId, tasks, projects, onEdit, isPersonalWorkspace }) {
   const droppableId = `${status}::${laneId}`;
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
   const taskIds = tasks.map(t => t.id);
@@ -40,7 +40,7 @@ function SwimlaneCell({ status, laneId, tasks, projects, onEdit }) {
       <SortableContext items={taskIds}>
         {tasks.length > 0 ? (
           tasks.map(task => (
-            <TaskCard key={task.id} task={task} projects={projects} onEdit={onEdit} />
+            <TaskCard key={task.id} task={task} projects={projects} onEdit={onEdit} isPersonalWorkspace={isPersonalWorkspace} />
           ))
         ) : (
           <div style={{
@@ -58,7 +58,7 @@ function SwimlaneCell({ status, laneId, tasks, projects, onEdit }) {
   );
 }
 
-function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onToggle, isLast }) {
+function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onToggle, isLast, isPersonalWorkspace }) {
   const { t } = useTranslation();
 
   const tasksByStatus = {
@@ -160,6 +160,7 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
               tasks={tasksByStatus[status]}
               projects={projects}
               onEdit={onEdit}
+              isPersonalWorkspace={isPersonalWorkspace}
             />
           ))}
         </div>
@@ -168,7 +169,7 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
   );
 }
 
-export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projects, onEdit }) {
+export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projects, onEdit, isPersonalWorkspace }) {
   const { t } = useTranslation();
 
   const tasksWithoutProject = filteredTasks.filter(
@@ -282,6 +283,7 @@ export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projec
             isExpanded={expanded[lane.id] !== false}
             onToggle={() => toggleLane(lane.id)}
             isLast={idx === lanes.length - 1}
+            isPersonalWorkspace={isPersonalWorkspace}
           />
         ))}
       </div>
