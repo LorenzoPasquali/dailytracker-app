@@ -90,8 +90,6 @@ export default function DashboardPage() {
   // WS events from other workspace members
   const handleWsEvent = (event) => {
     const { type, payload } = event;
-    const isSelf = payload?.userId === currentUser?.id;
-    if (isSelf) return;
 
     if (type === 'TASK_CREATED') {
       handleTaskCreated(payload);
@@ -103,7 +101,7 @@ export default function DashboardPage() {
         Object.keys(cols).forEach(s => { cols[s] = cols[s].filter(t => t.id !== payload.id); });
         return cols;
       });
-      toast.info('Uma tarefa foi removida por outro membro.');
+      toast.info('Uma tarefa foi removida.');
     } else {
       // TASK_REORDERED, PROJECT_*, MEMBER_* → full refetch
       fetchData(undefined, activeWorkspaceId);
@@ -241,23 +239,45 @@ export default function DashboardPage() {
   const handleOpenCreateModal = () => { setTaskToEdit(null); setShowTaskFormModal(true); };
   const handleOpenEditModal = (task) => { setTaskToEdit(task); setShowTaskFormModal(true); };
   const handleCloseTaskFormModal = () => { setTaskToEdit(null); setShowTaskFormModal(false); };
+
   const handleTaskCreated = (newTask) => {
     setTaskColumns(prev => {
-      const column = prev[newTask.status] || [];
-      const goToBottom = newTask.priority === 'LOW' && newTask.status === 'PLANNED';
+      // Avoid duplicates if WS event arrives after local update or vice-versa
+      const alreadyExists = Object.values(prev).some(col => col.some(t => t.id === newTask.id));
+      if (alreadyExists) return prev;
+
+      const status = newTask.status || 'PLANNED';
+      const column = prev[status] || [];
+      const goToBottom = newTask.priority === 'LOW' && status === 'PLANNED';
       const updated = goToBottom ? [...column, newTask] : [newTask, ...column];
-      return { ...prev, [newTask.status]: updated };
+      return { ...prev, [status]: updated };
     });
   };
+
   const handleTaskUpdated = (updatedTask) => {
     setTaskColumns(prev => {
       const newColumns = { ...prev };
-      const oldStatus = Object.keys(newColumns).find(s => newColumns[s].some(t => t.id === updatedTask.id));
-      if (oldStatus && oldStatus !== updatedTask.status) {
+      const status = updatedTask.status || 'PLANNED';
+      
+      // Find where the task currently is
+      let oldStatus = null;
+      for (const s in newColumns) {
+        if (newColumns[s].some(t => t.id === updatedTask.id)) {
+          oldStatus = s;
+          break;
+        }
+      }
+
+      if (oldStatus && oldStatus !== status) {
+        // Move to different column
         newColumns[oldStatus] = newColumns[oldStatus].filter(t => t.id !== updatedTask.id);
-        newColumns[updatedTask.status] = [updatedTask, ...newColumns[updatedTask.status]];
+        newColumns[status] = [updatedTask, ...(newColumns[status] || [])];
       } else if (oldStatus) {
+        // Update in same column
         newColumns[oldStatus] = newColumns[oldStatus].map(t => t.id === updatedTask.id ? updatedTask : t);
+      } else {
+        // Task not found in any column? Add it (could happen if it was filtered out before)
+        newColumns[status] = [updatedTask, ...(newColumns[status] || [])];
       }
       return newColumns;
     });

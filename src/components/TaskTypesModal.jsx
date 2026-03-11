@@ -8,9 +8,11 @@ import X from 'react-bootstrap-icons/dist/icons/x';
 import { toast } from 'sonner';
 import api from '../services/api';
 import ConfirmationModal from './ConfirmationModal';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, projects = [], workspaceId }) {
   const { t } = useTranslation();
+  const isMobile = useMediaQuery('(max-width: 992px)');
   const [taskTypes, setTaskTypes] = useState([]);
 
   const [newTypeName, setNewTypeName] = useState('');
@@ -165,7 +167,7 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, p
                             value={editingTypeName}
                             onChange={(e) => setEditingTypeName(e.target.value)}
                             onKeyDown={(e) => handleEditKeyDown(e, type)}
-                            autoFocus
+                            autoFocus={!isMobile}
                             style={darkInputStyle}
                             className="custom-form-control"
                           />

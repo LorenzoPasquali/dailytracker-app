@@ -8,8 +8,8 @@ export function useWorkspaceSocket({ workspaceId, isPersonal, onEvent }) {
   const clientRef = useRef(null);
 
   useEffect(() => {
-    // Only connect for shared workspaces
-    if (!workspaceId || isPersonal) return;
+    // Only connect if workspaceId is present
+    if (!workspaceId) return;
 
     const token = localStorage.getItem('authToken');
     if (!token) return;

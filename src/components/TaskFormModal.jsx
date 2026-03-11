@@ -6,6 +6,7 @@ import ExclamationTriangleFill from 'react-bootstrap-icons/dist/icons/exclamatio
 import DashCircleFill from 'react-bootstrap-icons/dist/icons/dash-circle-fill';
 import ArrowDownCircleFill from 'react-bootstrap-icons/dist/icons/arrow-down-circle-fill';
 import api from '../services/api';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 const PRIORITY_OPTIONS = [
   { value: 'HIGH',   icon: ExclamationTriangleFill, color: '#ef4444' },
@@ -18,6 +19,7 @@ const DESCRIPTION_LIMIT = 500;
 
 export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [], workspaceId, isPersonal, workspaceMembers = [], currentUser }) {
   const { t } = useTranslation();
+  const isMobile = useMediaQuery('(max-width: 992px)');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('PLANNED');
@@ -78,6 +80,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   }, [selectedProjectId, projects, selectedTaskTypeId]);
 
   const onModalEntered = () => {
+    if (isMobile) return;
     // Attempt focus immediately
     if (titleInputRef.current) {
       titleInputRef.current.focus();
@@ -184,7 +187,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       maxLength={TITLE_LIMIT}
                       style={{...darkInputStyle, resize: 'auto' }}
                       className="custom-form-control"
-                      autoFocus
+                      autoFocus={!isMobile}
                     />
                   </Form.Group>
                   <Form.Group className="mb-3">

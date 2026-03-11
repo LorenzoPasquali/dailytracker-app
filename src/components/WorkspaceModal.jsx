@@ -7,6 +7,7 @@ import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
 import ClipboardFill from 'react-bootstrap-icons/dist/icons/clipboard-fill';
 import CheckLg from 'react-bootstrap-icons/dist/icons/check-lg';
 import PersonXFill from 'react-bootstrap-icons/dist/icons/person-x-fill';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 const MODE_CREATE = 'create';
 const MODE_MANAGE = 'manage';
@@ -22,6 +23,7 @@ export default function WorkspaceModal({
   onWorkspaceDeleted,
   onMemberRemoved,
 }) {
+  const isMobile = useMediaQuery('(max-width: 992px)');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState([]);
@@ -173,7 +175,7 @@ export default function WorkspaceModal({
               <Form.Group className="mb-3">
                 <Form.Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Nome do workspace</Form.Label>
                 <Form.Control
-                  autoFocus
+                  autoFocus={!isMobile}
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Ex: Time Alpha"
@@ -396,7 +398,7 @@ export default function WorkspaceModal({
             Digite o nome do workspace para confirmar:
           </p>
           <Form.Control
-            autoFocus
+            autoFocus={!isMobile}
             value={deleteNameInput}
             onChange={e => setDeleteNameInput(e.target.value)}
             placeholder={workspace?.name}

@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Button } from 'react-bootstrap';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 export default function ConfirmationModal({ show, handleClose, handleConfirm, title, body, confirmButtonText, confirmButtonVariant }) {
   const { t } = useTranslation();
+  const isMobile = useMediaQuery('(max-width: 992px)');
   
   const modalBodyStyle = {
     backgroundColor: 'var(--bg-surface)',
@@ -49,7 +51,7 @@ export default function ConfirmationModal({ show, handleClose, handleConfirm, ti
           </Button>
           <Button
             onClick={handleConfirm}
-            autoFocus
+            autoFocus={!isMobile}
             style={{
               backgroundColor: isDanger ? 'var(--danger)' : 'var(--accent)',
               border: 'none',

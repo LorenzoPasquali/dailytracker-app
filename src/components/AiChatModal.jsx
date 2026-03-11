@@ -49,8 +49,9 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
   }, [messages]);
 
   useEffect(() => {
+    if (isMobile) return;
     if (hasKey && !loading) inputRef.current?.focus();
-  }, [hasKey, loading, messages]);
+  }, [hasKey, loading, messages, isMobile]);
 
   const handleMouseDown = useCallback((e) => {
     if (isMobile) return;

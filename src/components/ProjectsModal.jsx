@@ -9,9 +9,11 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import ColorPicker from './ColorPicker';
 import ConfirmationModal from './ConfirmationModal';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 
 export default function ProjectsModal({ show, handleClose, onProjectsChange, projects = [], workspaceId }) {
   const { t } = useTranslation();
+  const isMobile = useMediaQuery('(max-width: 992px)');
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectColor, setNewProjectColor] = useState('#ef4444');
 
@@ -141,7 +143,7 @@ export default function ProjectsModal({ show, handleClose, onProjectsChange, pro
                             value={editingProjectName}
                             onChange={(e) => setEditingProjectName(e.target.value)}
                             onKeyDown={(e) => handleEditKeyDown(e, project)}
-                            autoFocus
+                            autoFocus={!isMobile}
                             style={darkInputStyle}
                             className="custom-form-control"
                           />
