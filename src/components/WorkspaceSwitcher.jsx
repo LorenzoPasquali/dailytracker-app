@@ -11,6 +11,7 @@ export default function WorkspaceSwitcher({
   onWorkspaceChange,
   onWorkspaceManage,
   onCreateWorkspace,
+  isMobile,
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -20,7 +21,11 @@ export default function WorkspaceSwitcher({
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('touchstart', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('touchstart', handleClick);
+    };
   }, []);
 
   const personal = workspaces.filter(w => w.isPersonal);
@@ -30,11 +35,12 @@ export default function WorkspaceSwitcher({
     <div ref={ref} style={{ position: 'relative' }} data-tutorial-id="tutorial-workspace-switcher">
       <button
         onClick={() => setOpen(prev => !prev)}
+        title={isMobile ? (activeWorkspace?.name ?? '…') : undefined}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.3rem 0.6rem',
+          gap: '0.35rem',
+          padding: isMobile ? '0.3rem 0.4rem' : '0.3rem 0.6rem',
           backgroundColor: 'var(--bg-elevated)',
           border: '1px solid var(--border-default)',
           borderRadius: 'var(--radius-sm)',
@@ -43,20 +49,23 @@ export default function WorkspaceSwitcher({
           fontWeight: 500,
           cursor: 'pointer',
           fontFamily: 'inherit',
-          maxWidth: '180px',
+          maxWidth: isMobile ? '36px' : '180px',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
         }}
       >
         {activeWorkspace?.isPersonal
           ? <PersonFill size={13} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />
           : <PeopleFill size={13} style={{ flexShrink: 0, color: 'var(--accent)' }} />
         }
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {activeWorkspace?.name ?? '…'}
-        </span>
-        <ChevronDown size={11} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />
+        {!isMobile && (
+          <>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {activeWorkspace?.name ?? '…'}
+            </span>
+            <ChevronDown size={11} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />
+          </>
+        )}
       </button>
 
       {open && (

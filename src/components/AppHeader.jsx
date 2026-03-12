@@ -147,6 +147,7 @@ export default function AppHeader({
             onWorkspaceChange={onWorkspaceChange}
             onWorkspaceManage={onWorkspaceManage}
             onCreateWorkspace={onCreateWorkspace}
+            isMobile={isMobile}
           />
         )}
       </div>
@@ -160,17 +161,20 @@ export default function AppHeader({
             backgroundColor: 'var(--accent)',
             border: 'none',
             fontWeight: 600,
-            fontSize: '0.85rem',
-            padding: '0.4rem 1rem',
+            fontSize: isMobile ? '1rem' : '0.85rem',
+            padding: isMobile ? '0.35rem 0.65rem' : '0.4rem 1rem',
             borderRadius: 'var(--radius-sm)',
             color: 'var(--bg-base)',
-            letterSpacing: '-0.01em'
+            letterSpacing: '-0.01em',
+            lineHeight: 1,
+            minWidth: isMobile ? 'auto' : undefined,
           }}
+          title={isMobile ? t('header.newTask') : undefined}
         >
-          {isMobile ? t('header.newTaskMobile') : t('header.newTask')}
+          {isMobile ? '+' : t('header.newTask')}
         </Button>
 
-        <Dropdown align="end">
+        <Dropdown align="end" autoClose="outside">
           <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components" />
           <Dropdown.Menu
             variant={theme === 'light' ? undefined : 'dark'}
@@ -206,11 +210,11 @@ export default function AppHeader({
                       minWidth: 0,
                     }}
                   />
-                  <button onClick={handleSaveName} title={t('common.save')} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '0.2rem', display: 'flex' }}>
-                    <CheckLg size={14} />
+                  <button onClick={(e) => { e.stopPropagation(); handleSaveName(); }} title={t('common.save')} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '0.4rem', display: 'flex', flexShrink: 0 }}>
+                    <CheckLg size={16} />
                   </button>
-                  <button onClick={handleCancelEdit} title={t('common.cancel')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex' }}>
-                    <XLg size={13} />
+                  <button onClick={(e) => { e.stopPropagation(); handleCancelEdit(); }} title={t('common.cancel')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.4rem', display: 'flex', flexShrink: 0 }}>
+                    <XLg size={15} />
                   </button>
                 </div>
               ) : (
@@ -224,13 +228,13 @@ export default function AppHeader({
                     </div>
                   </div>
                   <button
-                    onClick={handleStartEdit}
+                    onClick={(e) => { e.stopPropagation(); handleStartEdit(); }}
                     title={t('header.editName')}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex', flexShrink: 0 }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.4rem', display: 'flex', flexShrink: 0 }}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
                   >
-                    <PencilFill size={12} />
+                    <PencilFill size={14} />
                   </button>
                 </div>
               )}
