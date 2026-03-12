@@ -260,6 +260,29 @@
       "body": "Isso é tudo que você precisa saber para começar. Crie sua primeira tarefa agora!"
     }
   },
+  "summary": {
+    "title": "Resumo do Dia",
+    "goodMorning": "Bom dia",
+    "goodAfternoon": "Boa tarde",
+    "goodEvening": "Boa noite",
+    "filterByProject": "Filtrar por projeto",
+    "allProjects": "Todos",
+    "completedYesterday": "Concluído ontem",
+    "completedToday": "Concluído hoje",
+    "doneFilter": "Concluídas:",
+    "day_yesterday": "Ontem",
+    "day_today": "Hoje",
+    "inProgress": "Em andamento",
+    "plannedToday": "Planejado",
+    "completionRate": "Taxa de conclusão",
+    "doneCount": "{{count}} concluída(s)",
+    "totalCount": "{{count}} no total",
+    "startDay": "Começar o dia",
+    "remindLater": "Lembrar em 2h",
+    "noTasks": "Nenhuma tarefa ainda. Crie sua primeira!",
+    "emptySection": "Nenhuma tarefa nesta seção com os filtros ativos.",
+    "showMore": "ver mais {{count}} tarefa(s)"
+  },
   "api": {
     "networkError": "Não foi possível conectar ao servidor. Verifique sua internet.",
     "serverError": "Erro interno no servidor.",

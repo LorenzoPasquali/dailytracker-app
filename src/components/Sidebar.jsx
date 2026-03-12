@@ -10,6 +10,7 @@ import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
 import ChevronUp from 'react-bootstrap-icons/dist/icons/chevron-up';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
+import ClipboardCheck from 'react-bootstrap-icons/dist/icons/clipboard-check';
 
 function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
   const { activeEventKey } = useContext(AccordionContext);
@@ -70,6 +71,7 @@ export default function Sidebar({
   onTaskTypesClick,
   onAiClick,
   onReportsClick,
+  onDailySummaryClick,
   isCollapsed,
   onToggleCollapse,
   isMobile,
@@ -322,6 +324,23 @@ export default function Sidebar({
         >
           <BarChartFill size={16} className="flex-shrink-0" />
           {!isCollapsed && t('sidebar.reports')}
+        </Nav.Link>
+
+        <Nav.Link
+          onClick={isCollapsed ? () => { onToggleCollapse(); onDailySummaryClick?.(); } : onDailySummaryClick}
+          style={linkStyle}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+            e.currentTarget.style.color = 'var(--text-primary)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--text-secondary)';
+          }}
+          role="button"
+        >
+          <ClipboardCheck size={16} className="flex-shrink-0" />
+          {!isCollapsed && t('summary.title')}
         </Nav.Link>
 
         {isPersonalWorkspace !== false && (

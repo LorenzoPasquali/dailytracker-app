@@ -260,6 +260,29 @@
       "body": "That's everything you need to know to get started. Create your first task now!"
     }
   },
+  "summary": {
+    "title": "Daily Summary",
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "filterByProject": "Filter by project",
+    "allProjects": "All",
+    "completedYesterday": "Completed yesterday",
+    "completedToday": "Completed today",
+    "doneFilter": "Completed:",
+    "day_yesterday": "Yesterday",
+    "day_today": "Today",
+    "inProgress": "In progress",
+    "plannedToday": "Planned",
+    "completionRate": "Completion rate",
+    "doneCount": "{{count}} done",
+    "totalCount": "{{count}} total",
+    "startDay": "Start the day",
+    "remindLater": "Remind in 2h",
+    "noTasks": "No tasks yet. Create your first!",
+    "emptySection": "No tasks in this section with the active filters.",
+    "showMore": "show {{count}} more"
+  },
   "api": {
     "networkError": "Could not connect to the server. Check your internet.",
     "serverError": "Internal server error.",
