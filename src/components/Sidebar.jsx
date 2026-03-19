@@ -11,6 +11,7 @@ import ChevronUp from 'react-bootstrap-icons/dist/icons/chevron-up';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
 import ClipboardCheck from 'react-bootstrap-icons/dist/icons/clipboard-check';
+import BellFill from 'react-bootstrap-icons/dist/icons/bell-fill';
 
 function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
   const { activeEventKey } = useContext(AccordionContext);
@@ -72,6 +73,7 @@ export default function Sidebar({
   onAiClick,
   onReportsClick,
   onDailySummaryClick,
+  onNotificationsClick,
   isCollapsed,
   onToggleCollapse,
   isMobile,
@@ -361,6 +363,23 @@ export default function Sidebar({
             {!isCollapsed && t('sidebar.aiAssistant')}
           </Nav.Link>
         )}
+
+        <Nav.Link
+          onClick={isCollapsed ? () => { onToggleCollapse(); onNotificationsClick?.(); } : onNotificationsClick}
+          style={linkStyle}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+            e.currentTarget.style.color = 'var(--text-primary)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = 'var(--text-secondary)';
+          }}
+          role="button"
+        >
+          <BellFill size={16} className="flex-shrink-0" />
+          {!isCollapsed && t('sidebar.notifications')}
+        </Nav.Link>
       </Nav>
     </div>
   );

@@ -93,7 +93,8 @@
     "taskTypes": "Task Types",
     "reports": "Reports",
     "reportsTooltip": "Reports module not yet implemented",
-    "aiAssistant": "AI Assistant"
+    "aiAssistant": "AI Assistant",
+    "notifications": "Notifications"
   },
   "dashboard": {
     "title": "Task Monitor",
@@ -138,6 +139,11 @@
     "reporterLabel": "Reporter",
     "assigneeLabel": "Assignee",
     "noAssignee": "No assignee"
+  },
+  "task": {
+    "dueDate": "Due date",
+    "dueDateHint": "Optional. Defines when the task should be completed.",
+    "overdue": "overdue"
   },
   "confirmModal": {
     "defaultTitle": "Confirm Action",
@@ -223,6 +229,26 @@
     "noProject": "No project",
     "noType": "No type"
   },
+  "notifications": {
+    "title": "Email Notifications",
+    "noRules": "No notification rules configured",
+    "createFirst": "Create first rule",
+    "createRule": "New rule",
+    "ruleName": "Rule name",
+    "scopeAll": "Entire workspace",
+    "scopeProject": "Specific project",
+    "recipients": "Recipients",
+    "addEmail": "Add",
+    "offsets": "Alerts",
+    "offsetCustom": "Custom",
+    "offsetCustomUnit": "minutes before",
+    "activeToggle": "Active",
+    "saveRule": "Save rule",
+    "deleteRule": "Delete rule",
+    "deleteRuleConfirm": "Deleting this rule will cancel all pending alerts. Confirm?",
+    "ruleSaved": "Rule saved successfully",
+    "ruleDeleted": "Rule deleted"
+  },
   "tutorial": {
     "skip": "Skip",
     "next": "Next",
@@ -278,7 +304,6 @@
     "doneCount": "{{count}} done",
     "totalCount": "{{count}} total",
     "startDay": "Start the day",
-    "remindLater": "Remind in 2h",
     "noTasks": "No tasks yet. Create your first!",
     "emptySection": "No tasks in this section with the active filters.",
     "showMore": "show {{count}} more"

@@ -93,7 +93,8 @@
     "taskTypes": "Tipos de Tarefa",
     "reports": "Relatórios",
     "reportsTooltip": "Módulo de Relatórios ainda não implementado",
-    "aiAssistant": "Assistente IA"
+    "aiAssistant": "Assistente IA",
+    "notifications": "Notificações"
   },
   "dashboard": {
     "title": "Monitor de Tarefas",
@@ -138,6 +139,11 @@
     "reporterLabel": "Relator",
     "assigneeLabel": "Responsável",
     "noAssignee": "Nenhum responsável"
+  },
+  "task": {
+    "dueDate": "Prazo",
+    "dueDateHint": "Opcional. Define quando a tarefa deve ser concluída.",
+    "overdue": "atrasada"
   },
   "confirmModal": {
     "defaultTitle": "Confirmar Ação",
@@ -223,6 +229,26 @@
     "noProject": "Sem projeto",
     "noType": "Sem tipo"
   },
+  "notifications": {
+    "title": "Notificações por Email",
+    "noRules": "Nenhuma regra de notificação configurada",
+    "createFirst": "Criar primeira regra",
+    "createRule": "Nova regra",
+    "ruleName": "Nome da regra",
+    "scopeAll": "Workspace inteiro",
+    "scopeProject": "Projeto específico",
+    "recipients": "Destinatários",
+    "addEmail": "Adicionar",
+    "offsets": "Alertas",
+    "offsetCustom": "Personalizado",
+    "offsetCustomUnit": "minutos antes",
+    "activeToggle": "Ativa",
+    "saveRule": "Salvar regra",
+    "deleteRule": "Excluir regra",
+    "deleteRuleConfirm": "Excluir esta regra cancelará todos os alertas pendentes. Confirmar?",
+    "ruleSaved": "Regra salva com sucesso",
+    "ruleDeleted": "Regra excluída"
+  },
   "tutorial": {
     "skip": "Pular",
     "next": "Próximo",
@@ -278,7 +304,6 @@
     "doneCount": "{{count}} concluída(s)",
     "totalCount": "{{count}} no total",
     "startDay": "Começar o dia",
-    "remindLater": "Lembrar em 2h",
     "noTasks": "Nenhuma tarefa ainda. Crie sua primeira!",
     "emptySection": "Nenhuma tarefa nesta seção com os filtros ativos.",
     "showMore": "ver mais {{count}} tarefa(s)"

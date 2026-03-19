@@ -9,7 +9,6 @@ import ClipboardCheck from 'react-bootstrap-icons/dist/icons/clipboard-check';
 import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
 import ChevronUp from 'react-bootstrap-icons/dist/icons/chevron-up';
 import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
-import AlarmFill from 'react-bootstrap-icons/dist/icons/alarm-fill';
 import PlayFill from 'react-bootstrap-icons/dist/icons/play-fill';
 
 function getGreeting(date, t) {
@@ -175,7 +174,7 @@ function SummarySection({ icon, label, tasks, projects, color, accentBg, default
   );
 }
 
-export default function DailySummaryModal({ show, onClose, onSnooze, tasks, currentUser, projects }) {
+export default function DailySummaryModal({ show, onClose, tasks, currentUser, projects }) {
   const { t, i18n } = useTranslation();
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   const [doneDay, setDoneDay] = useState('yesterday'); // 'yesterday' | 'today'
@@ -579,36 +578,6 @@ export default function DailySummaryModal({ show, onClose, onSnooze, tasks, curr
           gap: '0.6rem',
           justifyContent: 'flex-end',
         }}>
-          <button
-            onClick={onSnooze}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.5rem 1rem',
-              fontSize: '0.82rem',
-              fontWeight: 500,
-              color: 'var(--text-muted)',
-              backgroundColor: 'transparent',
-              border: '1px solid var(--border-default)',
-              borderRadius: 'var(--radius-sm)',
-              cursor: 'pointer',
-              transition: 'all var(--transition)',
-              outline: 'none',
-              fontFamily: 'inherit',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'var(--text-muted)';
-            }}
-          >
-            <AlarmFill size={13} />
-            {t('summary.remindLater')}
-          </button>
           <button
             onClick={onClose}
             style={{

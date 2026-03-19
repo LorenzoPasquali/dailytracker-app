@@ -8,6 +8,7 @@ import DashCircleFill from 'react-bootstrap-icons/dist/icons/dash-circle-fill';
 import ArrowDownCircleFill from 'react-bootstrap-icons/dist/icons/arrow-down-circle-fill';
 import PersonFill from 'react-bootstrap-icons/dist/icons/person-fill';
 import SlashCircle from 'react-bootstrap-icons/dist/icons/slash-circle';
+import CalendarEvent from 'react-bootstrap-icons/dist/icons/calendar-event';
 
 const PRIORITY_CONFIG = {
   HIGH:   { icon: ExclamationTriangleFill, color: '#ef4444' },
@@ -104,6 +105,30 @@ export default function TaskCard({ task, projects = [], onEdit, isPersonalWorksp
                 {task.title}
               </span>
             </div>
+
+            {(() => {
+              const now = new Date();
+              const due = task.dueDate ? new Date(task.dueDate) : null;
+              const isOverdue = due && due < now && task.status !== 'DONE';
+              const isDueSoon = due && !isOverdue && (due - now) < 24 * 60 * 60 * 1000;
+              const dueDateColor = isOverdue ? 'var(--danger)' : isDueSoon ? '#f59e0b' : 'var(--text-muted)';
+              return due ? (
+                <span style={{
+                  fontSize: '0.73rem',
+                  color: task.status === 'DONE' ? 'var(--text-muted)' : dueDateColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  marginTop: '0.3rem',
+                }}>
+                  <CalendarEvent size={11} style={{ flexShrink: 0 }} />
+                  {due.toLocaleDateString(i18n.language, { day: '2-digit', month: 'short' })}
+                  {', '}
+                  {String(due.getHours()).padStart(2, '0')}:{String(due.getMinutes()).padStart(2, '0')}
+                  {isOverdue && task.status !== 'DONE' && ` · ${t('task.overdue')}`}
+                </span>
+              ) : null;
+            })()}
 
             <div
               ref={descriptionRef}

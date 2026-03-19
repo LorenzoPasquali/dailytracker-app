@@ -29,6 +29,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   const [availableTaskTypes, setAvailableTaskTypes] = useState([]);
   const [createdAt, setCreatedAt] = useState('');
   const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
+  const [dueDate, setDueDate] = useState('');
 
   const titleInputRef = useRef(null);
 
@@ -50,6 +51,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setSelectedTaskTypeId(taskToEdit.taskTypeId || '');
         setCreatedAt(toDatetimeLocal(taskToEdit.createdAt));
         setSelectedAssigneeId(taskToEdit.assigneeId || '');
+        setDueDate(toDatetimeLocal(taskToEdit.dueDate));
       } else {
         setTitle('');
         setDescription('');
@@ -60,6 +62,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setAvailableTaskTypes([]);
         setCreatedAt('');
         setSelectedAssigneeId('');
+        setDueDate('');
       }
     }
   }, [show, taskToEdit]);
@@ -110,6 +113,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         projectId: selectedProjectId ? parseInt(selectedProjectId) : null,
         taskTypeId: selectedTaskTypeId ? parseInt(selectedTaskTypeId) : null,
         assigneeId: selectedAssigneeId ? parseInt(selectedAssigneeId) : null,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
       };
 
       if (taskToEdit) {
@@ -295,6 +299,17 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                         );
                       })}
                     </div>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>{t('task.dueDate')}</Form.Label>
+                    <Form.Control
+                      type="datetime-local"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      style={{ ...darkInputStyle, colorScheme: 'dark' }}
+                      className="custom-form-control"
+                    />
+                    <Form.Text className="text-muted">{t('task.dueDateHint')}</Form.Text>
                   </Form.Group>
                   {taskToEdit && (
                     <Form.Group className="mb-3">

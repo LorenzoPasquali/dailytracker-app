@@ -24,6 +24,7 @@ import ProjectsModal from '../components/ProjectsModal';
 import TaskTypesModal from '../components/TaskTypesModal';
 import WorkspaceModal from '../components/WorkspaceModal';
 import DailySummaryModal from '../components/DailySummaryModal';
+import NotificationsModal from '../components/NotificationsModal';
 
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
 import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
@@ -53,6 +54,7 @@ export default function DashboardPage() {
   const [dateRange, setDateRange] = useState([null, null]);
   const [showAiChat, setShowAiChat] = useState(false);
   const [showDailySummary, setShowDailySummary] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
 
   const [monitorView, setMonitorView] = useState(() => localStorage.getItem('monitorView') || 'classic');
 
@@ -174,15 +176,9 @@ export default function DashboardPage() {
 
   const handleCloseDailySummary = () => {
     localStorage.setItem('lastSummaryDate', format(new Date(), 'yyyy-MM-dd'));
-    localStorage.removeItem('snoozeSummary');
     setShowDailySummary(false);
   };
 
-  const handleSnoozeDailySummary = () => {
-    const snoozeUntil = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    localStorage.setItem('snoozeSummary', snoozeUntil.toISOString());
-    setShowDailySummary(false);
-  };
 
   const fetchData = async (signal, wsId) => {
     setLoading(true);
@@ -215,9 +211,7 @@ export default function DashboardPage() {
       // Auto-open Daily Summary once per day
       const lastSummaryDate = localStorage.getItem('lastSummaryDate');
       const todayStr = format(new Date(), 'yyyy-MM-dd');
-      const snoozeUntil = localStorage.getItem('snoozeSummary');
-      const isSnoozed = snoozeUntil && new Date() < new Date(snoozeUntil);
-      if (lastSummaryDate !== todayStr && !isSnoozed) {
+      if (lastSummaryDate !== todayStr) {
         setShowDailySummary(true);
       }
 
@@ -547,6 +541,7 @@ export default function DashboardPage() {
             onAiClick={() => setShowAiChat(true)}
             onReportsClick={() => handleMonitorViewChange('reports')}
             onDailySummaryClick={() => setShowDailySummary(true)}
+            onNotificationsClick={() => setShowNotificationsModal(true)}
             monitorView={monitorView}
             onMonitorViewChange={handleMonitorViewChange}
             forceOpenRegistrations={tutorialActive && (tutorialStepId === 'projects')}
@@ -689,6 +684,7 @@ export default function DashboardPage() {
             onAiClick={() => { setShowAiChat(true); setShowMobileSidebar(false); }}
             onReportsClick={() => { handleMonitorViewChange('reports'); setShowMobileSidebar(false); }}
             onDailySummaryClick={() => { setShowDailySummary(true); setShowMobileSidebar(false); }}
+            onNotificationsClick={() => { setShowNotificationsModal(true); setShowMobileSidebar(false); }}
             isPersonalWorkspace={isPersonal}
             monitorView={monitorView}
             onMonitorViewChange={(view) => { handleMonitorViewChange(view); setShowMobileSidebar(false); }}
@@ -745,9 +741,15 @@ export default function DashboardPage() {
       <DailySummaryModal
         show={showDailySummary}
         onClose={handleCloseDailySummary}
-        onSnooze={handleSnoozeDailySummary}
         tasks={allTasks}
         currentUser={currentUser}
+        projects={projects}
+      />
+
+      <NotificationsModal
+        show={showNotificationsModal}
+        handleClose={() => setShowNotificationsModal(false)}
+        workspaceId={activeWorkspaceId}
         projects={projects}
       />
 
