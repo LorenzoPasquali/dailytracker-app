@@ -171,7 +171,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
             <Modal.Header closeButton closeVariant="white" style={{ borderColor: 'var(--border-subtle)' }}>
                 <Modal.Title>{taskToEdit ? t('taskForm.editTitle') : t('taskForm.createTitle')}</Modal.Title>
             </Modal.Header>
-            <Form onSubmit={handleFormSubmit}>
+            <Form onSubmit={handleFormSubmit} onKeyDown={handleKeyDown}>
               <Modal.Body>
                   <Form.Group className="mb-3">
                     <div className="d-flex justify-content-between align-items-center">
@@ -206,7 +206,6 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       rows={6}
                       value={description} 
                       onChange={(e) => setDescription(e.target.value)}
-                      onKeyDown={handleKeyDown}
                       maxLength={DESCRIPTION_LIMIT}
                       style={darkInputStyle}
                       className="custom-form-control" 
