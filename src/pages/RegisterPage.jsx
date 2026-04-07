@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import { toast } from 'sonner';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import Alert from 'react-bootstrap/Alert';
 
 import googleLogo from '../assets/google-icon.svg';
 import CssParticles from '../components/CssParticles';
@@ -17,21 +17,17 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
 
     if (!name || !email || !password || !confirmPassword) {
-      setError(t('register.emptyFieldsError'));
+      toast.error(t('register.emptyFieldsError'));
       return;
     }
     if (password !== confirmPassword) {
-      setError(t('register.passwordMismatch'));
+      toast.error(t('register.passwordMismatch'));
       return;
     }
 
@@ -47,14 +43,16 @@ export default function RegisterPage() {
       const pendingToken = sessionStorage.getItem('pendingInviteToken');
       if (pendingToken) {
         try {
-          await api.post(`/api/workspaces/invite/${pendingToken}/accept`, {}, { _silent: true });
+          const res = await api.post(`/api/workspaces/invite/${pendingToken}/accept`, {}, { _silent: true });
+          const workspaceId = res.data?.workspaceId;
+          if (workspaceId) localStorage.setItem('activeWorkspaceId', String(workspaceId));
         } catch { /* ignore — accept errors should not block navigation */ }
         sessionStorage.removeItem('pendingInviteToken');
       }
-      setSuccess(t('register.successMessage'));
-      setTimeout(() => navigate('/dashboard'), 2000);
+      toast.success(t('register.successMessage'));
+      navigate('/dashboard');
     } catch (err) {
-      setError(t('register.registerError'));
+      toast.error(t('register.registerError'));
     }
   };
 
@@ -136,8 +134,6 @@ export default function RegisterPage() {
                 <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{t('register.confirmPasswordLabel')}</Form.Label>
                 <Form.Control type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </Form.Group>
-              {error && <Alert variant="danger" className="py-2" style={{ fontSize: '0.85rem' }}>{error}</Alert>}
-              {success && <Alert variant="success" className="py-2" style={{ fontSize: '0.85rem' }}>{success}</Alert>}
               <Button type="submit" className="w-100 py-2" style={{
                 backgroundColor: 'var(--accent)',
                 border: 'none',
@@ -276,8 +272,6 @@ export default function RegisterPage() {
                 <Form.Label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{t('register.confirmPasswordLabel')}</Form.Label>
                 <Form.Control type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </Form.Group>
-              {error && <Alert variant="danger" className="py-2" style={{ fontSize: '0.85rem' }}>{error}</Alert>}
-              {success && <Alert variant="success" className="py-2" style={{ fontSize: '0.85rem' }}>{success}</Alert>}
               <Button type="submit" className="w-100 py-2 mt-1" style={{
                 backgroundColor: 'var(--accent)',
                 border: 'none',

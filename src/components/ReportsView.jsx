@@ -242,6 +242,10 @@ export default function ReportsView({ tasks, projects }) {
   const projBarHeight = Math.max(200, projectData.length * 44);
   const typeBarHeight = Math.max(200, typeData.length * 38);
 
+  // Dynamic YAxis width based on longest label (approx 6.5px per char at 11px font)
+  const projYAxisWidth = Math.min(Math.max(...projectData.map(d => d.name.length), 4) * 6.5, 160);
+  const typeYAxisWidth = Math.min(Math.max(...typeData.map(d => d.name.length), 4) * 6.5, 160);
+
   return (
     <div style={{ height: '100%', overflowY: 'auto', paddingRight: '0.25rem' }}>
 
@@ -376,7 +380,7 @@ export default function ReportsView({ tasks, projects }) {
               <BarChart data={projectData} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} horizontal={false} />
                 <XAxis type="number" tick={TICK_STYLE} axisLine={false} tickLine={false} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" tick={TICK_STYLE} axisLine={false} tickLine={false} width={88} />
+                <YAxis type="category" dataKey="name" tick={TICK_STYLE} axisLine={false} tickLine={false} width={projYAxisWidth} />
                 <Tooltip content={<DarkTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
                 <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{v}</span>} />
                 <Bar dataKey="PLANNED" name="Planejado"    stackId="s" fill={STATUS_COLORS.PLANNED} maxBarSize={28} />
@@ -395,7 +399,7 @@ export default function ReportsView({ tasks, projects }) {
               <BarChart data={typeData} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} horizontal={false} />
                 <XAxis type="number" tick={TICK_STYLE} axisLine={false} tickLine={false} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" tick={TICK_STYLE} axisLine={false} tickLine={false} width={88} />
+                <YAxis type="category" dataKey="name" tick={TICK_STYLE} axisLine={false} tickLine={false} width={typeYAxisWidth} />
                 <Tooltip content={<DarkTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
                 <Bar dataKey="value" name="Tarefas" radius={[0, 4, 4, 0]} maxBarSize={28}>
                   {typeData.map((entry, i) => <Cell key={i} fill={entry.color} />)}

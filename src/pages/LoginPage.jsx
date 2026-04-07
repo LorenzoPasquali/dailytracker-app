@@ -51,7 +51,9 @@ export default function LoginPage() {
       const pendingToken = sessionStorage.getItem('pendingInviteToken');
       if (pendingToken) {
         try {
-          await api.post(`/api/workspaces/invite/${pendingToken}/accept`, {}, { _silent: true });
+          const res = await api.post(`/api/workspaces/invite/${pendingToken}/accept`, {}, { _silent: true });
+          const workspaceId = res.data?.workspaceId;
+          if (workspaceId) localStorage.setItem('activeWorkspaceId', String(workspaceId));
         } catch { /* ignore */ }
         sessionStorage.removeItem('pendingInviteToken');
       }

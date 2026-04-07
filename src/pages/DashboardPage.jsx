@@ -106,8 +106,21 @@ export default function DashboardPage() {
         return cols;
       });
       toast.info('Uma tarefa foi removida.');
+    } else if (type === 'TASK_REORDERED') {
+      const positionMap = new Map((payload.items || []).map(i => [i.id, i.position]));
+      setTaskColumns(prev => {
+        const newColumns = { ...prev };
+        for (const status in newColumns) {
+          newColumns[status] = [...newColumns[status]].sort((a, b) => {
+            const pa = positionMap.has(a.id) ? positionMap.get(a.id) : (a.position ?? 0);
+            const pb = positionMap.has(b.id) ? positionMap.get(b.id) : (b.position ?? 0);
+            return pa - pb;
+          });
+        }
+        return newColumns;
+      });
     } else {
-      // TASK_REORDERED, PROJECT_*, MEMBER_* → full refetch
+      // PROJECT_*, MEMBER_* → full refetch
       fetchData(undefined, activeWorkspaceId);
     }
   };
@@ -208,10 +221,10 @@ export default function DashboardPage() {
       setTaskColumns(newColumns);
       setProjects(projectsResponse.data || []);
 
-      // Auto-open Daily Summary once per day
+      // Auto-open Daily Summary once per day, only for users who completed onboarding
       const lastSummaryDate = localStorage.getItem('lastSummaryDate');
       const todayStr = format(new Date(), 'yyyy-MM-dd');
-      if (lastSummaryDate !== todayStr) {
+      if (lastSummaryDate !== todayStr && user?.onboardingCompleted) {
         setShowDailySummary(true);
       }
 

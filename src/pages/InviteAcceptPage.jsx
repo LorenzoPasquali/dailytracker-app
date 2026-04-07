@@ -17,8 +17,10 @@ export default function InviteAcceptPage() {
     const init = async () => {
       try {
         if (isAuthenticated) {
-          // Authenticated: accept immediately
-          await api.post(`/api/workspaces/invite/${token}/accept`, {}, { _silent: true });
+          // Authenticated: accept immediately and switch to the joined workspace
+          const res = await api.post(`/api/workspaces/invite/${token}/accept`, {}, { _silent: true });
+          const workspaceId = res.data?.workspaceId;
+          if (workspaceId) localStorage.setItem('activeWorkspaceId', String(workspaceId));
           toast.success('Você entrou no workspace!');
           navigate('/dashboard');
         } else {

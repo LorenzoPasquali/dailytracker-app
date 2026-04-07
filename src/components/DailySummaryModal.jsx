@@ -26,98 +26,75 @@ function TaskItem({ task, projects }) {
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '0.6rem',
-      padding: '0.45rem 0.75rem',
+      gap: '0.5rem',
+      padding: '0.35rem 0.6rem',
       borderRadius: 'var(--radius-sm)',
       transition: 'background-color var(--transition)',
+      marginBottom: '2px',
     }}
     onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
     onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
     >
-      {/* Project color bar */}
       <div style={{
         width: '3px',
-        height: '18px',
+        height: '14px',
         borderRadius: '2px',
         backgroundColor: project?.color || 'var(--border-default)',
         flexShrink: 0,
       }} />
       <span style={{
         flex: 1,
-        fontSize: '0.875rem',
+        fontSize: '0.8rem',
         color: 'var(--text-primary)',
-        lineHeight: 1.4,
+        lineHeight: 1.3,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
       }}>
         {task.title}
       </span>
-      {project && (
-        <span style={{
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          letterSpacing: '0.02em',
-          color: project.color,
-          backgroundColor: `${project.color}18`,
-          border: `1px solid ${project.color}30`,
-          padding: '0.15rem 0.5rem',
-          borderRadius: '100px',
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-        }}>
-          {project.name}
-        </span>
-      )}
     </div>
   );
 }
 
-function SummarySection({ icon, label, tasks, projects, color, accentBg, defaultExpanded = true }) {
+function SummarySection({ icon, label, tasks, projects, color, accentBg }) {
   const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  const [showAll, setShowAll] = useState(false);
-
-  const visibleTasks = showAll ? tasks : tasks.slice(0, TASK_LIMIT);
-  const hiddenCount = tasks.length - TASK_LIMIT;
-
-  if (tasks.length === 0) return null;
 
   return (
     <div style={{
+      display: 'flex',
+      flexDirection: 'column',
       border: '1px solid var(--border-subtle)',
       borderRadius: 'var(--radius-md)',
       overflow: 'hidden',
       backgroundColor: 'var(--bg-elevated)',
+      height: '100%',
+      minHeight: '200px',
     }}>
       {/* Section header */}
-      <button
-        onClick={() => setExpanded(v => !v)}
+      <div
         style={{
-          width: '100%',
           display: 'flex',
           alignItems: 'center',
           gap: '0.6rem',
           padding: '0.65rem 0.75rem',
           backgroundColor: accentBg,
-          border: 'none',
-          cursor: 'pointer',
-          borderBottom: expanded ? '1px solid var(--border-subtle)' : 'none',
-          transition: 'background-color var(--transition)',
-          outline: 'none',
-          fontFamily: 'inherit',
+          borderBottom: '1px solid var(--border-subtle)',
         }}
       >
         <span style={{ color, display: 'flex', alignItems: 'center' }}>{icon}</span>
         <span style={{
           flex: 1,
-          fontSize: '0.7rem',
+          fontSize: '0.65rem',
           fontWeight: 700,
-          letterSpacing: '0.08em',
+          letterSpacing: '0.05em',
           textTransform: 'uppercase',
           color: 'var(--text-secondary)',
           fontFamily: 'var(--font-display)',
           textAlign: 'left',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         }}>
           {label}
         </span>
@@ -127,49 +104,38 @@ function SummarySection({ icon, label, tasks, projects, color, accentBg, default
           color,
           backgroundColor: `${color}18`,
           border: `1px solid ${color}30`,
-          padding: '0.1rem 0.55rem',
+          padding: '0.1rem 0.45rem',
           borderRadius: '100px',
-          minWidth: '24px',
+          minWidth: '22px',
           textAlign: 'center',
         }}>
           {tasks.length}
         </span>
-        <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
-          {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-        </span>
-      </button>
+      </div>
 
-      {/* Task list */}
-      {expanded && (
-        <div style={{ padding: '0.35rem 0' }}>
-          {visibleTasks.map(task => (
+      {/* Task list with internal scroll */}
+      <div style={{ 
+        padding: '0.35rem 0.2rem', 
+        overflowY: 'auto', 
+        flex: 1,
+        maxHeight: '400px'
+      }}>
+        {tasks.length === 0 ? (
+          <div style={{ 
+            padding: '2rem 1rem', 
+            textAlign: 'center', 
+            fontSize: '0.75rem', 
+            color: 'var(--text-muted)',
+            opacity: 0.5 
+          }}>
+            {t('summary.emptySection')}
+          </div>
+        ) : (
+          tasks.map(task => (
             <TaskItem key={task.id} task={task} projects={projects} />
-          ))}
-          {!showAll && hiddenCount > 0 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowAll(true); }}
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '0.4rem 0.75rem',
-                fontSize: '0.78rem',
-                fontWeight: 500,
-                color: 'var(--accent)',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                textAlign: 'left',
-                fontFamily: 'inherit',
-                opacity: 0.85,
-              }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '0.85'}
-            >
-              + {t('summary.showMore', { count: hiddenCount })}
-            </button>
-          )}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }
@@ -229,7 +195,7 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
       show={show}
       onHide={onClose}
       centered
-      size="md"
+      size="xl"
       backdrop
       keyboard
     >
@@ -241,14 +207,13 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
         boxShadow: '0 24px 64px rgba(0,0,0,0.45)',
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: '90vh',
+        maxHeight: '95vh',
       }}>
 
         {/* ── HEADER ── */}
         <div style={{
-          padding: '1.25rem 1.25rem 1rem',
+          padding: '1.25rem 1.5rem 1rem',
           borderBottom: '1px solid var(--border-subtle)',
-          position: 'relative',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -265,7 +230,7 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
               </div>
               <h2 style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: '1.3rem',
+                fontSize: '1.4rem',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
                 margin: 0,
@@ -275,7 +240,7 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 {greeting}{firstName ? `, ${firstName}` : ''}
               </h2>
               <p style={{
-                fontSize: '0.82rem',
+                fontSize: '0.85rem',
                 color: 'var(--text-muted)',
                 margin: '0.25rem 0 0',
                 textTransform: 'capitalize',
@@ -289,8 +254,8 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '28px',
-                height: '28px',
+                width: '32px',
+                height: '32px',
                 borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'transparent',
                 border: '1px solid var(--border-subtle)',
@@ -308,41 +273,30 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.color = 'var(--text-muted)';
               }}
-              aria-label="Fechar"
             >
-              <XLg size={13} />
+              <XLg size={14} />
             </button>
           </div>
         </div>
 
-        {/* ── PROJECT FILTER ── */}
-        {projects.length > 0 && (
-          <div style={{
-            padding: '0.75rem 1.25rem',
-            borderBottom: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-elevated)',
-          }}>
-            <div style={{
-              fontSize: '0.68rem',
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--text-muted)',
-              marginBottom: '0.5rem',
-              fontFamily: 'var(--font-display)',
-            }}>
-              {t('summary.filterByProject')}
-            </div>
+        {/* ── FILTERS ── */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '1.5rem',
+          padding: '0.75rem 1.5rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-elevated)',
+          alignItems: 'center',
+        }}>
+          {/* Projects */}
+          <div style={{ flex: 1, minWidth: '300px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-              {/* "All" chip */}
               <button
                 onClick={handleClearProjects}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
                   padding: '0.25rem 0.65rem',
-                  fontSize: '0.78rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   color: selectedProjectIds.length === 0 ? 'var(--accent)' : 'var(--text-muted)',
                   backgroundColor: selectedProjectIds.length === 0 ? 'var(--accent-subtle)' : 'transparent',
@@ -351,13 +305,10 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                   cursor: 'pointer',
                   transition: 'all var(--transition)',
                   outline: 'none',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
                 }}
               >
                 {t('summary.allProjects')}
               </button>
-
               {projects.map(project => {
                 const isActive = selectedProjectIds.includes(project.id);
                 return (
@@ -369,7 +320,7 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                       alignItems: 'center',
                       gap: '0.35rem',
                       padding: '0.25rem 0.65rem',
-                      fontSize: '0.78rem',
+                      fontSize: '0.75rem',
                       fontWeight: 600,
                       color: isActive ? project.color : 'var(--text-muted)',
                       backgroundColor: isActive ? `${project.color}18` : 'transparent',
@@ -378,45 +329,17 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                       cursor: 'pointer',
                       transition: 'all var(--transition)',
                       outline: 'none',
-                      fontFamily: 'inherit',
-                      whiteSpace: 'nowrap',
                     }}
                   >
-                    <span style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: project.color,
-                      flexShrink: 0,
-                    }} />
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: project.color }} />
                     {project.name}
                   </button>
                 );
               })}
             </div>
           </div>
-        )}
 
-        {/* ── DATE FILTER ── */}
-        <div style={{
-          padding: '0.6rem 1.25rem',
-          borderBottom: '1px solid var(--border-subtle)',
-          backgroundColor: 'var(--bg-elevated)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-        }}>
-          <span style={{
-            fontSize: '0.68rem',
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            fontFamily: 'var(--font-display)',
-            flexShrink: 0,
-          }}>
-            {t('summary.doneFilter')}
-          </span>
+          {/* Date Selector */}
           <div style={{
             display: 'flex',
             gap: '0.3rem',
@@ -429,7 +352,7 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 key={day}
                 onClick={() => setDoneDay(day)}
                 style={{
-                  padding: '0.2rem 0.75rem',
+                  padding: '0.25rem 0.85rem',
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   borderRadius: '100px',
@@ -437,7 +360,6 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                   cursor: 'pointer',
                   transition: 'all var(--transition)',
                   outline: 'none',
-                  fontFamily: 'inherit',
                   color: doneDay === day ? 'var(--text-primary)' : 'var(--text-muted)',
                   backgroundColor: doneDay === day ? 'var(--bg-surface)' : 'transparent',
                   boxShadow: doneDay === day ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
@@ -449,27 +371,25 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
           </div>
         </div>
 
-        {/* ── TASK SECTIONS ── */}
+        {/* ── TASK GRID ── */}
         <div style={{
-          padding: '1rem 1.25rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.6rem',
+          padding: '1.5rem',
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
         }}>
           {noTasksAtAll ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '2.5rem 1rem',
-              color: 'var(--text-muted)',
-            }}>
-              <ClipboardCheck size={32} style={{ marginBottom: '0.75rem', opacity: 0.4 }} />
-              <p style={{ fontSize: '0.875rem', margin: 0 }}>{t('summary.noTasks')}</p>
+            <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
+              <ClipboardCheck size={40} style={{ marginBottom: '1rem', opacity: 0.3 }} />
+              <p style={{ fontSize: '1rem', margin: 0 }}>{t('summary.noTasks')}</p>
             </div>
           ) : (
-            <>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '1.25rem',
+              alignItems: 'start',
+            }}>
               <SummarySection
                 icon={<CheckCircleFill size={14} />}
                 label={doneDay === 'today' ? t('summary.completedToday') : t('summary.completedYesterday')}
@@ -477,7 +397,6 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 projects={projects}
                 color="#10b981"
                 accentBg="rgba(16,185,129,0.06)"
-                defaultExpanded={true}
               />
               <SummarySection
                 icon={<ArrowClockwise size={14} />}
@@ -486,7 +405,6 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 projects={projects}
                 color="#f59e0b"
                 accentBg="rgba(245,158,11,0.06)"
-                defaultExpanded={true}
               />
               <SummarySection
                 icon={<ClipboardCheck size={14} />}
@@ -495,111 +413,58 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 projects={projects}
                 color="var(--text-muted)"
                 accentBg="var(--bg-hover)"
-                defaultExpanded={true}
               />
-              {doneTasks.length === 0 && doingTasks.length === 0 && plannedTasks.length === 0 && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '2rem 1rem',
-                  color: 'var(--text-muted)',
-                }}>
-                  <p style={{ fontSize: '0.875rem', margin: 0 }}>{t('summary.emptySection')}</p>
-                </div>
-              )}
-            </>
+            </div>
           )}
         </div>
 
-        {/* ── PROGRESS BAR ── */}
-        {!noTasksAtAll && totalRelevant > 0 && (
-          <div style={{
-            padding: '0.75rem 1.25rem',
-            borderTop: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-elevated)',
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '0.45rem',
-            }}>
-              <span style={{
-                fontSize: '0.72rem',
-                fontWeight: 600,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                color: 'var(--text-muted)',
-                fontFamily: 'var(--font-display)',
-              }}>
-                {t('summary.completionRate')}
-              </span>
-              <span style={{
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                color: completionRate >= 50 ? 'var(--accent)' : 'var(--text-muted)',
-                fontFamily: 'var(--font-display)',
-              }}>
-                {completionRate}%
-              </span>
-            </div>
-            <div style={{
-              height: '5px',
-              backgroundColor: 'var(--bg-active)',
-              borderRadius: '100px',
-              overflow: 'hidden',
-              border: '1px solid var(--border-subtle)',
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${completionRate}%`,
-                backgroundColor: completionRate >= 50 ? 'var(--accent)' : '#f59e0b',
-                borderRadius: '100px',
-                transition: 'width 0.6s ease',
-              }} />
-            </div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginTop: '0.3rem',
-              fontSize: '0.7rem',
-              color: 'var(--text-muted)',
-            }}>
-              <span>{t('summary.doneCount', { count: doneTasks.length })}</span>
-              <span>{t('summary.totalCount', { count: totalRelevant })}</span>
-            </div>
-          </div>
-        )}
-
-        {/* ── ACTION BUTTONS ── */}
+        {/* ── FOOTER WITH PROGRESS ── */}
         <div style={{
-          padding: '0.9rem 1.25rem',
+          padding: '1rem 1.5rem',
           borderTop: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-elevated)',
           display: 'flex',
-          gap: '0.6rem',
-          justifyContent: 'flex-end',
+          alignItems: 'center',
+          gap: '2rem',
         }}>
+          {!noTasksAtAll && totalRelevant > 0 && (
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-display)' }}>
+                  {t('summary.completionRate')}
+                </span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent)' }}>
+                  {completionRate}%
+                </span>
+              </div>
+              <div style={{ height: '6px', backgroundColor: 'var(--bg-active)', borderRadius: '100px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${completionRate}%`, backgroundColor: 'var(--accent)', transition: 'width 0.8s ease' }} />
+              </div>
+            </div>
+          )}
+          
           <button
             onClick={onClose}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.5rem 1.1rem',
-              fontSize: '0.82rem',
-              fontWeight: 600,
+              gap: '0.5rem',
+              padding: '0.6rem 1.5rem',
+              fontSize: '0.875rem',
+              fontWeight: 700,
               color: '#fff',
               backgroundColor: 'var(--accent)',
-              border: '1px solid var(--accent)',
-              borderRadius: 'var(--radius-sm)',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
               cursor: 'pointer',
               transition: 'all var(--transition)',
               outline: 'none',
-              fontFamily: 'inherit',
+              flexShrink: 0,
             }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
           >
-            <PlayFill size={13} />
+            <PlayFill size={16} />
             {t('summary.startDay')}
           </button>
         </div>
