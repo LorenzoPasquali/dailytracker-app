@@ -376,8 +376,8 @@ export default function WorkspaceModal({
       {/* Delete step 1 — generic confirm */}
       <ConfirmationModal
         show={showDeleteConfirm1}
-        onHide={() => setShowDeleteConfirm1(false)}
-        onConfirm={handleDeleteStep2}
+        handleClose={() => setShowDeleteConfirm1(false)}
+        handleConfirm={handleDeleteStep2}
         title="Deletar workspace"
         body={`Tem certeza que deseja deletar o workspace "${workspace?.name}"?`}
         confirmButtonText="Sim, continuar"
@@ -426,8 +426,8 @@ export default function WorkspaceModal({
       {/* Delete step 3 — final warning */}
       <ConfirmationModal
         show={showDeleteConfirm2}
-        onHide={() => setShowDeleteConfirm2(false)}
-        onConfirm={handleDeleteConfirm}
+        handleClose={() => setShowDeleteConfirm2(false)}
+        handleConfirm={handleDeleteConfirm}
         title="Atenção: ação irreversível"
         body="Todas as tarefas e projetos deste workspace serão permanentemente deletados. Esta ação não pode ser desfeita."
         confirmButtonText="Deletar permanentemente"
