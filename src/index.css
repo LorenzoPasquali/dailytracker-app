@@ -344,3 +344,246 @@ html {
     transform: none;
   }
 }
+
+/* Premium Refraction & Glassmorphism */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+/* Premium Grid Background */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+[data-theme="light"] .bg-grid {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+}
+
+/* Taste Skill Animations */
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glowing text effect */
+.text-glow {
+  text-shadow: 0 0 40px var(--accent-subtle);
+}
+
+/* Hero scroll indicator bounce */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0);    opacity: 0.4; }
+  50%       { transform: translateY(7px); opacity: 1;   }
+}
+
+.scroll-indicator-bounce {
+  animation: scrollBounce 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* Animated Edge Border & Glow for Media Containers */
+@keyframes bgShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulseGlow {
+  0% { opacity: 0.5; filter: blur(20px); }
+  50% { opacity: 0.8; filter: blur(25px); }
+  100% { opacity: 0.5; filter: blur(20px); }
+}
+
+.glow-wrapper {
+  position: relative;
+  /* The padding creates the 1px sharp border since the child covers the rest */
+  padding: 1px;
+  border-radius: inherit;
+  z-index: 1;
+  background: linear-gradient(270deg, rgba(16, 185, 129, 0.4), rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.2), rgba(16, 185, 129, 0.4));
+  background-size: 300% 300%;
+  animation: bgShift 8s ease infinite;
+}
+
+/* Blurred outward light emission */
+.glow-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(270deg, rgba(16, 185, 129, 0.6), rgba(59, 130, 246, 0.6), rgba(139, 92, 246, 0.4), rgba(16, 185, 129, 0.6));
+  background-size: 300% 300%;
+  z-index: -1;
+  pointer-events: none;
+  animation: bgShift 8s ease infinite, pulseGlow 4s ease-in-out infinite;
+}
+
+/* ─── Custom DateTimePicker ─────────────────────────────────────────────── */
+@keyframes dtpickerFadeIn {
+  from { opacity: 0; transform: scaleY(0.94) translateY(-4px); }
+  to   { opacity: 1; transform: scaleY(1)    translateY(0);    }
+}
+
+.dtpicker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  min-height: 38px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  user-select: none;
+}
+
+.dtpicker-trigger:hover:not(.dtpicker-trigger--disabled) {
+  border-color: var(--border-strong);
+}
+
+.dtpicker-trigger--open {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-subtle) !important;
+}
+
+.dtpicker-trigger--disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.dtpicker-display {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dtpicker-display--empty {
+  color: var(--text-muted);
+}
+
+.dtpicker-clear {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background-color var(--transition);
+  flex-shrink: 0;
+}
+
+.dtpicker-clear:hover {
+  color: var(--danger);
+  background-color: var(--danger-subtle);
+}
+
+.dtpicker-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+  padding: 0;
+}
+
+.dtpicker-nav-btn:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.dtpicker-time-input {
+  width: 42px;
+  text-align: center;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  padding: 3px 4px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -moz-appearance: textfield;
+}
+
+.dtpicker-time-input::-webkit-outer-spin-button,
+.dtpicker-time-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.dtpicker-time-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+
+.dtpicker-btn-cancel {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.dtpicker-btn-cancel:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.dtpicker-btn-confirm {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  color: var(--bg-base);
+  background-color: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.dtpicker-btn-confirm:hover:not(.dtpicker-btn-confirm--disabled) {
+  background-color: var(--accent-hover);
+}
+
+.dtpicker-btn-confirm--disabled {
+  background-color: var(--bg-active);
+  color: var(--text-muted);
+  cursor: default;
+}

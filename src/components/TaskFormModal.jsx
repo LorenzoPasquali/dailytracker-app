@@ -7,6 +7,7 @@ import DashCircleFill from 'react-bootstrap-icons/dist/icons/dash-circle-fill';
 import ArrowDownCircleFill from 'react-bootstrap-icons/dist/icons/arrow-down-circle-fill';
 import api from '../services/api';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import CustomDateTimePicker from './CustomDateTimePicker';
 
 const PRIORITY_OPTIONS = [
   { value: 'HIGH',   icon: ExclamationTriangleFill, color: '#ef4444' },
@@ -301,27 +302,19 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                   </Form.Group>
                   <Form.Group className="mb-3">
                     <Form.Label>{t('task.dueDate')}</Form.Label>
-                    <Form.Control
-                      type="datetime-local"
+                    <CustomDateTimePicker
                       value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      style={{ ...darkInputStyle, colorScheme: 'dark' }}
-                      className="custom-form-control"
+                      onChange={setDueDate}
+                      placeholder={t('task.dueDateHint')}
                     />
                     <Form.Text className="text-muted">{t('task.dueDateHint')}</Form.Text>
                   </Form.Group>
                   {taskToEdit && (
                     <Form.Group className="mb-3">
                       <Form.Label>{t('taskForm.createdAtLabel')}</Form.Label>
-                      <Form.Control
-                        type="datetime-local"
+                      <CustomDateTimePicker
                         value={createdAt}
-                        onChange={(e) => setCreatedAt(e.target.value)}
-                        style={{
-                          ...darkInputStyle,
-                          colorScheme: 'dark',
-                        }}
-                        className="custom-form-control"
+                        onChange={setCreatedAt}
                       />
                     </Form.Group>
                   )}
