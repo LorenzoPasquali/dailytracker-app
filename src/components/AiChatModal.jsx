@@ -147,7 +147,7 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
   const inputStyle = {
     width: '100%',
     padding: '0.6rem 0.75rem',
-    backgroundColor: 'var(--bg-base)',
+    backgroundColor: 'var(--bg-surface)',
     border: '1px solid var(--border-default)',
     borderRadius: 'var(--radius-md)',
     color: 'var(--text-primary)',

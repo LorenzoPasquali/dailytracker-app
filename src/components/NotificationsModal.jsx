@@ -8,6 +8,7 @@ import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
 import PlusLg from 'react-bootstrap-icons/dist/icons/plus-lg';
 import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
 import api from '../services/api';
+import CustomSelect from './CustomSelect';
 
 const PRESET_OFFSETS = [
   { label: '10 min antes',  minutes: 10 },
@@ -163,7 +164,7 @@ export default function NotificationsModal({ show, handleClose, workspaceId, pro
   };
 
   const inputStyle = {
-    backgroundColor: 'var(--bg-base)',
+    backgroundColor: 'var(--bg-surface)',
     color: 'var(--text-primary)',
     borderColor: 'var(--border-default)',
   };
@@ -303,10 +304,10 @@ export default function NotificationsModal({ show, handleClose, workspaceId, pro
               {form.scope === 'project' && (
                 <Form.Group className="mb-3">
                   <Form.Label style={{ fontSize: '0.85rem' }}>Projeto</Form.Label>
-                  <Form.Select value={form.projectId} onChange={e => setForm(f => ({ ...f, projectId: e.target.value }))} style={inputStyle} className="custom-form-control">
+                  <CustomSelect value={form.projectId} onChange={e => setForm(f => ({ ...f, projectId: e.target.value }))}>
                     <option value="">Selecionar projeto...</option>
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </Form.Select>
+                  </CustomSelect>
                 </Form.Group>
               )}
 

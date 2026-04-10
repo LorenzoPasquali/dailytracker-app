@@ -13,7 +13,7 @@ import ConfirmationModal from './ConfirmationModal';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
 const inputStyle = {
-  backgroundColor: 'var(--bg-base)',
+  backgroundColor: 'var(--bg-surface)',
   color: 'var(--text-primary)',
   borderColor: 'var(--border-default)',
   boxShadow: 'none',

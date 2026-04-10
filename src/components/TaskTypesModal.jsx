@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import ConfirmationModal from './ConfirmationModal';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import CustomSelect from './CustomSelect';
 
 export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, projects = [], workspaceId }) {
   const { t } = useTranslation();
@@ -109,7 +110,7 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, p
     }
   };
 
-  const darkInputStyle = { backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', borderColor: 'var(--border-default)' };
+  const darkInputStyle = { backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', borderColor: 'var(--border-default)' };
   const customThStyle = { backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 };
   const customTdStyle = { backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', fontSize: '0.85rem' };
 
@@ -123,27 +124,27 @@ export default function TaskTypesModal({ show, handleClose, onTaskTypesChange, p
           <Modal.Body>
           <h6 className="mb-3">{t('taskTypes.newType')}</h6>
           <Form onSubmit={handleCreateSubmit}>
-            <InputGroup className="mb-4">
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
               <Form.Control
                 placeholder={t('taskTypes.namePlaceholder')}
                 value={newTypeName}
                 onChange={(e) => setNewTypeName(e.target.value)}
-                style={darkInputStyle}
+                style={{ ...darkInputStyle, flex: '1 1 160px', minWidth: 0 }}
                 className="custom-form-control"
               />
-              <Form.Select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                style={darkInputStyle}
-                className="custom-form-control"
-              >
-                <option value="">{t('taskTypes.selectProject')}</option>
-                {projects.map(project => (
-                  <option key={project.id} value={project.id}>{project.name}</option>
-                ))}
-              </Form.Select>
-              <Button type="submit" style={{ backgroundColor: 'var(--accent)', border: 'none', color: 'var(--bg-base)', fontWeight: 600, fontSize: '0.85rem' }}>{t('common.create')}</Button>
-            </InputGroup>
+              <div style={{ flex: '1 1 140px', minWidth: 0 }}>
+                <CustomSelect
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                >
+                  <option value="">{t('taskTypes.selectProject')}</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>{project.name}</option>
+                  ))}
+                </CustomSelect>
+              </div>
+              <Button type="submit" style={{ backgroundColor: 'var(--accent)', border: 'none', color: 'var(--bg-base)', fontWeight: 600, fontSize: '0.85rem', flexShrink: 0 }}>{t('common.create')}</Button>
+            </div>
           </Form>
 
           <hr className="text-secondary" />

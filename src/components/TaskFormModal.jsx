@@ -8,6 +8,7 @@ import ArrowDownCircleFill from 'react-bootstrap-icons/dist/icons/arrow-down-cir
 import api from '../services/api';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import CustomDateTimePicker from './CustomDateTimePicker';
+import CustomSelect from './CustomSelect';
 
 const PRIORITY_OPTIONS = [
   { value: 'HIGH',   icon: ExclamationTriangleFill, color: '#ef4444' },
@@ -152,7 +153,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   };
 
   const darkInputStyle = {
-    backgroundColor: 'var(--bg-base)',
+    backgroundColor: 'var(--bg-surface)',
     color: 'var(--text-primary)',
     borderColor: 'var(--border-default)',
     resize: 'none',
@@ -214,18 +215,18 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                   </Form.Group>
                   <Form.Group className="mb-3">
                     <Form.Label>{t('taskForm.projectLabel')}</Form.Label>
-                    <Form.Select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} style={darkInputStyle} className="custom-form-control">
+                    <CustomSelect value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)}>
                         <option value="">{t('taskForm.noProject')}</option>
                         {projects.map(project => (<option key={project.id} value={project.id}>{project.name}</option>))}
-                    </Form.Select>
+                    </CustomSelect>
                   </Form.Group>
                   {selectedProjectId && (
                     <Form.Group className="mb-3">
                         <Form.Label>{t('taskForm.taskTypeLabel')}</Form.Label>
-                        <Form.Select value={selectedTaskTypeId} onChange={(e) => setSelectedTaskTypeId(e.target.value)} style={darkInputStyle} className="custom-form-control" disabled={availableTaskTypes.length === 0}>
-                        <option value="">{t('taskForm.noTaskType')}</option>
-                        {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
-                        </Form.Select>
+                        <CustomSelect value={selectedTaskTypeId} onChange={(e) => setSelectedTaskTypeId(e.target.value)} disabled={availableTaskTypes.length === 0}>
+                          <option value="">{t('taskForm.noTaskType')}</option>
+                          {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
+                        </CustomSelect>
                     </Form.Group>
                   )}
                   {!isPersonal && (
@@ -242,27 +243,25 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       </Form.Group>
                       <Form.Group className="mb-3">
                         <Form.Label>{t('taskForm.assigneeLabel')}</Form.Label>
-                        <Form.Select
+                        <CustomSelect
                           value={selectedAssigneeId}
                           onChange={(e) => setSelectedAssigneeId(e.target.value)}
-                          style={darkInputStyle}
-                          className="custom-form-control"
                         >
                           <option value="">{t('taskForm.noAssignee')}</option>
                           {workspaceMembers.map(member => (
                             <option key={member.userId} value={member.userId}>{member.name}</option>
                           ))}
-                        </Form.Select>
+                        </CustomSelect>
                       </Form.Group>
                     </>
                   )}
                   <Form.Group className="mb-3">
                     <Form.Label>{t('taskForm.statusLabel')}</Form.Label>
-                    <Form.Select value={status} onChange={(e) => setStatus(e.target.value)} style={darkInputStyle} className="custom-form-control">
+                    <CustomSelect value={status} onChange={(e) => setStatus(e.target.value)}>
                         <option value="PLANNED">{t('taskForm.statusPlanned')}</option>
                         <option value="DOING">{t('taskForm.statusDoing')}</option>
                         <option value="DONE">{t('taskForm.statusDone')}</option>
-                    </Form.Select>
+                    </CustomSelect>
                   </Form.Group>
                   <Form.Group className="mb-3">
                     <Form.Label>{t('taskForm.priorityLabel')}</Form.Label>

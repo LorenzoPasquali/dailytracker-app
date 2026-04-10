@@ -79,7 +79,7 @@ const spinBtnStyle = {
 const spinInputStyle = {
   width: '2rem',
   textAlign: 'center',
-  backgroundColor: 'var(--bg-base)',
+  backgroundColor: 'var(--bg-surface)',
   border: '1px solid var(--border-default)',
   borderRadius: 'var(--radius-sm)',
   color: 'var(--text-primary)',
