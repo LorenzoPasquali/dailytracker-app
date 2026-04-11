@@ -71,7 +71,7 @@ export default function LoginPage() {
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
     window.open(
-      `${api.defaults.baseURL}/auth/google`,
+      `${api.defaults.baseURL}/auth/google?popup=true`,
       'googleLogin',
       `width=${width},height=${height},top=${top},left=${left}`
     );
