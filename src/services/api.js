@@ -109,8 +109,6 @@ api.interceptors.response.use(
           window.location.href = '/login';
         }
       }
-    } else if (status === 500) {
-      toast.error(i18n.t('api.internalServerError'));
     }
 
     return Promise.reject(error);

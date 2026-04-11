@@ -185,7 +185,12 @@ export default function DashboardPage() {
     return tasks;
   }, [allTasks, selectedProjectIds, dateRange]);
 
-  const handleLogout = () => { localStorage.removeItem('authToken'); localStorage.removeItem('refreshToken'); navigate('/'); };
+  const handleLogout = () => {
+    api.post('/auth/logout').catch(() => {});
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    navigate('/');
+  };
 
   const handleCloseDailySummary = () => {
     localStorage.setItem('lastSummaryDate', format(new Date(), 'yyyy-MM-dd'));
