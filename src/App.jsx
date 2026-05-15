@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { Spinner } from 'react-bootstrap';
+import { useSessionRefresh } from './hooks/useSessionRefresh';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -32,6 +33,8 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  useSessionRefresh();
+
   const [toasterTheme, setToasterTheme] = useState(() => {
     return document.documentElement.getAttribute('data-theme') || 'dark';
   });

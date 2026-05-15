@@ -102,6 +102,7 @@ api.interceptors.response.use(
           isRefreshing = false;
         }
       } else {
+        isRefreshing = false;
         if (!window.location.pathname.includes('/login')) {
           toast.error(i18n.t('api.sessionExpired'));
           localStorage.removeItem('authToken');
