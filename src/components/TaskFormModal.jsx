@@ -18,6 +18,7 @@ const PRIORITY_OPTIONS = [
 
 const TITLE_LIMIT = 100;
 const DESCRIPTION_LIMIT = 500;
+const SUBMIT_COOLDOWN_MS = 250;
 
 export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [], workspaceId, isPersonal, workspaceMembers = [], currentUser }) {
   const { t } = useTranslation();
@@ -32,8 +33,12 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   const [createdAt, setCreatedAt] = useState('');
   const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(false);
 
   const titleInputRef = useRef(null);
+  const savingRef = useRef(false);
+  const cooldownTimerRef = useRef(null);
 
   const toDatetimeLocal = (isoString) => {
     if (!isoString) return '';
@@ -66,7 +71,18 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setSelectedAssigneeId('');
         setDueDate('');
       }
+      savingRef.current = false;
+      setIsSaving(false);
+      setCanSubmit(false);
+      if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
+      cooldownTimerRef.current = setTimeout(() => setCanSubmit(true), SUBMIT_COOLDOWN_MS);
     }
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current);
+        cooldownTimerRef.current = null;
+      }
+    };
   }, [show, taskToEdit]);
 
   useEffect(() => {
@@ -99,16 +115,23 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   };
 
   const handleSave = async () => {
-    if (!title.trim()) {
+    if (savingRef.current) return;
+    if (!canSubmit) return;
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
       toast.error(t('taskForm.titleRequired'));
       return;
     }
 
     const trimmedDescription = description.trim();
 
+    savingRef.current = true;
+    setIsSaving(true);
+
     try {
       const taskData = {
-        title,
+        title: trimmedTitle,
         description: trimmedDescription,
         status,
         priority,
@@ -131,6 +154,8 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       handleClose();
     } catch (error) {
       console.error("Erro ao salvar tarefa:", error);
+      savingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -142,12 +167,14 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    if (savingRef.current || !canSubmit) return;
     handleSave();
   };
-  
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && e.ctrlKey && !e.shiftKey && !e.altKey) {
       e.preventDefault();
+      if (savingRef.current || !canSubmit) return;
       handleSave();
     }
   };
@@ -323,6 +350,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                   {taskToEdit && (
                     <Button
                       onClick={handleDelete}
+                      disabled={isSaving}
                       style={{
                         backgroundColor: 'var(--danger-subtle)',
                         border: 'none',
@@ -338,12 +366,15 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                 <div>
                   <Button
                     type="submit"
+                    disabled={isSaving}
                     style={{
                       backgroundColor: 'var(--accent)',
                       border: 'none',
                       color: 'var(--bg-base)',
                       fontWeight: 600,
-                      fontSize: '0.85rem'
+                      fontSize: '0.85rem',
+                      opacity: isSaving ? 0.6 : 1,
+                      cursor: isSaving ? 'not-allowed' : 'pointer'
                     }}
                   >
                     {taskToEdit ? t('taskForm.saveEdit') : t('taskForm.saveCreate')}
