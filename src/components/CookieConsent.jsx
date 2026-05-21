@@ -62,9 +62,11 @@ const CategoryRow = ({ title, description, checked, disabled, badge, onChange })
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: '1rem',
-    padding: '0.9rem 0',
-    borderBottom: '1px solid var(--border-subtle)',
+    gap: '0.75rem',
+    padding: '0.8rem 0.9rem',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: '12px',
+    backgroundColor: 'var(--bg-elevated)',
   }}>
     <div style={{ flex: 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
@@ -141,6 +143,32 @@ export default function CookieConsent() {
 
   if (!visible) return null;
 
+  const iconBox = (
+    <div style={{
+      width: '38px', height: '38px', borderRadius: '11px', flexShrink: 0,
+      background: 'linear-gradient(135deg, var(--accent-subtle), var(--bg-hover))',
+      border: '1px solid var(--accent-border)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
+    }}>
+      <ShieldLockFill size={17} />
+    </div>
+  );
+
+  const description = (
+    <p style={{
+      margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.55,
+    }}>
+      {t('cookieConsent.description')}{' '}
+      <Link to="/politica-de-privacidade" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
+        {t('cookieConsent.privacyLink')}
+      </Link>
+      {' · '}
+      <Link to="/politica-de-cookies" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
+        {t('cookieConsent.cookieLink')}
+      </Link>
+    </p>
+  );
+
   return (
     <div
       role="dialog"
@@ -148,102 +176,99 @@ export default function CookieConsent() {
       aria-label={t('cookieConsent.title')}
       style={{
         position: 'fixed',
-        left: '50%',
-        bottom: isMobile ? '0.75rem' : '1.5rem',
-        transform: `translateX(-50%) translateY(${mounted ? '0' : '24px'})`,
-        opacity: mounted ? 1 : 0,
-        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease',
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 1100,
-        width: 'calc(100% - 2rem)',
-        maxWidth: showPreferences ? '560px' : '460px',
+        transform: `translateY(${mounted ? '0' : '110%'})`,
+        transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         pointerEvents: 'auto',
       }}
     >
-      <div className="glow-wrapper" style={{ borderRadius: '20px' }}>
-        <div className="glass-panel" style={{
-          borderRadius: '20px',
-          padding: isMobile ? '1.25rem' : '1.6rem',
-          maxHeight: '80dvh',
+      <div className="glass-panel" style={{
+        border: '1px solid transparent',
+        borderTop: '1px solid var(--border-default)',
+        borderRadius: 0,
+        backgroundColor: 'var(--bg-surface)',
+        boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.35)',
+      }}>
+        <div style={{
+          maxWidth: '1320px',
+          margin: '0 auto',
+          padding: isMobile ? '0.9rem 1.25rem' : '1rem 2rem',
+          maxHeight: '85dvh',
           overflowY: 'auto',
-          backgroundColor: 'var(--bg-surface)',
         }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
-            <div style={{
-              width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0,
-              background: 'linear-gradient(135deg, var(--accent-subtle), var(--bg-hover))',
-              border: '1px solid var(--accent-border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
-            }}>
-              <ShieldLockFill size={18} />
-            </div>
-            <h3 style={{
-              margin: 0, fontFamily: 'var(--font-display)', fontWeight: 700,
-              fontSize: isMobile ? '1.05rem' : '1.2rem', color: 'var(--text-primary)', letterSpacing: '-0.02em',
-            }}>
-              {t('cookieConsent.title')}
-            </h3>
-          </div>
-
-          <p style={{
-            margin: '0 0 1rem', color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.6,
-          }}>
-            {t('cookieConsent.description')}{' '}
-            <Link to="/politica-de-privacidade" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
-              {t('cookieConsent.privacyLink')}
-            </Link>
-            {' · '}
-            <Link to="/politica-de-cookies" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
-              {t('cookieConsent.cookieLink')}
-            </Link>
-          </p>
-
-          {/* Granular preferences */}
-          {showPreferences && (
-            <div style={{ marginBottom: '1.1rem' }}>
-              <CategoryRow
-                title={t('cookieConsent.necessaryTitle')}
-                description={t('cookieConsent.necessaryDesc')}
-                badge={t('cookieConsent.alwaysActive')}
-                checked
-                disabled
-                onChange={() => {}}
-              />
-              <CategoryRow
-                title={t('cookieConsent.analyticsTitle')}
-                description={t('cookieConsent.analyticsDesc')}
-                checked={analytics}
-                onChange={setAnalytics}
-              />
-              <CategoryRow
-                title={t('cookieConsent.marketingTitle')}
-                description={t('cookieConsent.marketingDesc')}
-                checked={marketing}
-                onChange={setMarketing}
-              />
-            </div>
-          )}
-
-          {/* Actions */}
           {showPreferences ? (
+            /* ── Preferences (full-width bar, expands upward) ── */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {iconBox}
+                <h3 style={{
+                  margin: 0, fontFamily: 'var(--font-display)', fontWeight: 700,
+                  fontSize: isMobile ? '1.05rem' : '1.15rem', color: 'var(--text-primary)', letterSpacing: '-0.02em',
+                }}>
+                  {t('cookieConsent.title')}
+                </h3>
+              </div>
+              {description}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                gap: isMobile ? '0.6rem' : '0.85rem 1.25rem',
+              }}>
+                <CategoryRow
+                  title={t('cookieConsent.necessaryTitle')}
+                  description={t('cookieConsent.necessaryDesc')}
+                  badge={t('cookieConsent.alwaysActive')}
+                  checked
+                  disabled
+                  onChange={() => {}}
+                />
+                <CategoryRow
+                  title={t('cookieConsent.analyticsTitle')}
+                  description={t('cookieConsent.analyticsDesc')}
+                  checked={analytics}
+                  onChange={setAnalytics}
+                />
+                <CategoryRow
+                  title={t('cookieConsent.marketingTitle')}
+                  description={t('cookieConsent.marketingDesc')}
+                  checked={marketing}
+                  onChange={setMarketing}
+                />
+              </div>
+              <div style={{
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                justifyContent: 'flex-end',
+                gap: '0.6rem',
+              }}>
+                <button onClick={acceptAll} style={secondaryBtn(isMobile)}>
+                  {t('cookieConsent.acceptAll')}
+                </button>
+                <button onClick={savePreferences} style={primaryBtn(isMobile)}>
+                  {t('cookieConsent.save')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* ── Compact bar (single bottom edge row) ── */
             <div style={{
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
-              gap: '0.6rem',
+              alignItems: isMobile ? 'stretch' : 'center',
+              gap: isMobile ? '0.85rem' : '1.75rem',
             }}>
-              <button onClick={savePreferences} style={primaryBtn(isMobile)}>
-                {t('cookieConsent.save')}
-              </button>
-              <button onClick={acceptAll} style={secondaryBtn(isMobile)}>
-                {t('cookieConsent.acceptAll')}
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: 0 }}>
+                {iconBox}
+                {description}
+              </div>
               <div style={{
                 display: 'flex',
                 flexDirection: isMobile ? 'column' : 'row',
                 gap: '0.6rem',
+                flexShrink: 0,
               }}>
                 <button onClick={acceptAll} style={primaryBtn(isMobile)}>
                   {t('cookieConsent.acceptAll')}
@@ -251,14 +276,11 @@ export default function CookieConsent() {
                 <button onClick={rejectAll} style={secondaryBtn(isMobile)}>
                   {t('cookieConsent.rejectAll')}
                 </button>
+                <button onClick={() => setShowPreferences(true)} style={ghostBtn(isMobile)}>
+                  <GearFill size={14} />
+                  {t('cookieConsent.customize')}
+                </button>
               </div>
-              <button
-                onClick={() => setShowPreferences(true)}
-                style={{ ...ghostBtn(false), width: '100%', flex: 'none' }}
-              >
-                <GearFill size={14} />
-                {t('cookieConsent.customize')}
-              </button>
             </div>
           )}
         </div>
@@ -281,8 +303,7 @@ const baseBtn = (isMobile) => ({
   cursor: 'pointer',
   transition: 'transform 0.15s ease, background-color var(--transition), border-color var(--transition), color var(--transition)',
   whiteSpace: 'nowrap',
-  minWidth: 0,
-  flex: isMobile ? 'none' : 1,
+  flex: 'none',
   width: isMobile ? '100%' : 'auto',
 });
 
