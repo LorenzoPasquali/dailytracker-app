@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import CssParticles from '../components/CssParticles';
 import LanguageSelector from '../components/LanguageSelector';
+import CookieConsent from '../components/CookieConsent';
 import heroVideo from '../assets/dailytracker1.mp4';
 import kanbanImg from '../assets/kanban.png';
 import reportsImg from '../assets/reportsIA.png';
@@ -742,11 +743,29 @@ export default function HomePage() {
             <CalendarCheck size={20} color="var(--text-secondary)" />
             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--text-secondary)' }}>DailyTracker</span>
           </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1.5rem' }}>
+            <Link to="/politica-de-privacidade" style={{
+              color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 500,
+              transition: 'color 0.2s ease',
+            }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}>
+              {t('legal.privacy.title')}
+            </Link>
+            <Link to="/politica-de-cookies" style={{
+              color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 500,
+              transition: 'color 0.2s ease',
+            }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}>
+              {t('legal.cookies.title')}
+            </Link>
+          </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', margin: 0 }}>
             {t('home.footer', 'Todos os direitos reservados.')}
           </p>
         </div>
       </footer>
+
+      <CookieConsent />
     </div>
   );
 }

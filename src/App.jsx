@@ -10,6 +10,7 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const InviteAcceptPage = lazy(() => import('./pages/InviteAcceptPage'));
+const LegalPage = lazy(() => import('./pages/LegalPage'));
 
 const LoadingFallback = () => (
   <div style={{
@@ -69,6 +70,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login/success" element={<AuthCallback />} />
+          <Route path="/politica-de-privacidade" element={<LegalPage docKey="privacy" />} />
+          <Route path="/politica-de-cookies" element={<LegalPage docKey="cookies" />} />
           
           <Route 
             path="/dashboard" 
