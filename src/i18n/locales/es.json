@@ -15,6 +15,146 @@
     "login": "Iniciar sesión",
     "register": "Registrarse"
   },
+  "cookieConsent": {
+    "title": "Valoramos tu privacidad",
+    "description": "Utilizamos cookies para garantizar el funcionamiento del sitio, analizar el uso y mejorar tu experiencia. Puedes aceptar todas, rechazar las no esenciales o personalizar tus elecciones. Más información en nuestra",
+    "privacyLink": "Política de Privacidad",
+    "cookieLink": "Política de Cookies",
+    "acceptAll": "Aceptar todas",
+    "rejectAll": "Rechazar no esenciales",
+    "customize": "Personalizar",
+    "save": "Guardar preferencias",
+    "alwaysActive": "Siempre activo",
+    "necessaryTitle": "Cookies esenciales",
+    "necessaryDesc": "Necesarias para el funcionamiento del sitio, como autenticación y seguridad. No se pueden desactivar.",
+    "analyticsTitle": "Cookies de análisis",
+    "analyticsDesc": "Nos ayudan a entender cómo usas DailyTracker para mejorar la plataforma. Los datos son agregados y anónimos.",
+    "marketingTitle": "Cookies de marketing",
+    "marketingDesc": "Se utilizan para personalizar contenido y medir la eficacia de las comunicaciones. Solo se activan con tu consentimiento."
+  },
+  "legal": {
+    "eyebrow": "Legal",
+    "backHome": "Volver al inicio",
+    "lastUpdated": "Última actualización",
+    "managePreferences": "Gestionar preferencias de cookies",
+    "privacy": {
+      "title": "Política de Privacidad",
+      "updatedDate": "21 de mayo de 2026",
+      "intro": "Esta Política de Privacidad describe cómo DailyTracker recopila, utiliza, almacena y protege los datos personales de sus usuarios, en conformidad con la Ley n.º 13.709/2018 (Ley General de Protección de Datos Personales — LGPD). Al utilizar nuestra plataforma, aceptas las prácticas aquí descritas.",
+      "sections": [
+        {
+          "heading": "1. Responsable del tratamiento",
+          "body": ["DailyTracker es el responsable de los datos personales tratados en esta plataforma y decide sobre la recopilación y el tratamiento de tu información. Para asuntos relacionados con la privacidad, contáctanos en privacidade@dailytracker.app."]
+        },
+        {
+          "heading": "2. Datos que recopilamos",
+          "body": ["Solo recopilamos los datos necesarios para ofrecer y mejorar nuestros servicios:"],
+          "bullets": [
+            "Datos de registro: nombre y dirección de correo electrónico proporcionados al crear la cuenta.",
+            "Datos de autenticación: al usar el inicio de sesión con Google, recibimos tu nombre, correo e identificador de la cuenta de Google.",
+            "Contenido del usuario: tareas, proyectos, workspaces y demás información que creas en la plataforma.",
+            "Datos de uso y técnicos: dirección IP, tipo de navegador, páginas visitadas y cookies, recopilados automáticamente."
+          ]
+        },
+        {
+          "heading": "3. Finalidades y bases legales del tratamiento",
+          "body": ["Tratamos tus datos personales con base en los supuestos legales previstos en la LGPD, para las siguientes finalidades:"],
+          "bullets": [
+            "Ejecución de un contrato: crear y gestionar tu cuenta y proporcionar las funcionalidades de la plataforma.",
+            "Consentimiento: envío de comunicaciones opcionales y uso de cookies no esenciales.",
+            "Interés legítimo: mejorar la seguridad, prevenir fraudes y optimizar la experiencia del usuario.",
+            "Cumplimiento de una obligación legal o regulatoria, cuando corresponda."
+          ]
+        },
+        {
+          "heading": "4. Compartición de datos",
+          "body": ["No vendemos tus datos personales. Podemos compartirlos con proveedores que nos ayudan a operar la plataforma, siempre limitados a lo necesario:"],
+          "bullets": [
+            "Proveedores de infraestructura y alojamiento responsables de mantener el servicio en funcionamiento.",
+            "Google, cuando eliges autenticarte mediante tu cuenta de Google.",
+            "Servicios de inteligencia artificial, cuando usas funciones de IA, procesando solo el contenido enviado para esa finalidad.",
+            "Autoridades públicas, cuando lo exija la ley o una orden judicial."
+          ]
+        },
+        {
+          "heading": "5. Cookies",
+          "body": ["Utilizamos cookies y tecnologías similares para el funcionamiento y la mejora del sitio. Puedes gestionar tus preferencias en cualquier momento. Para más detalles, consulta nuestra Política de Cookies."]
+        },
+        {
+          "heading": "6. Tus derechos como titular",
+          "body": ["Conforme al art. 18 de la LGPD, puedes ejercer los siguientes derechos en cualquier momento:"],
+          "bullets": [
+            "Confirmar la existencia del tratamiento y acceder a tus datos.",
+            "Corregir datos incompletos, inexactos o desactualizados.",
+            "Solicitar la anonimización, el bloqueo o la eliminación de datos innecesarios o tratados de forma ilícita.",
+            "Solicitar la portabilidad de tus datos a otro proveedor de servicios.",
+            "Revocar el consentimiento y solicitar la eliminación de los datos tratados con base en él.",
+            "Obtener información sobre las entidades con las que compartimos tus datos."
+          ]
+        },
+        {
+          "heading": "7. Seguridad de la información",
+          "body": ["Adoptamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados, pérdida, alteración o destrucción, incluyendo cifrado en tránsito y controles de acceso restringidos."]
+        },
+        {
+          "heading": "8. Conservación de los datos",
+          "body": ["Conservamos tus datos solo durante el tiempo necesario para cumplir las finalidades descritas en esta política o según lo exija la ley. Al eliminar tu cuenta, tus datos personales se eliminan o anonimizan, salvo obligación legal de conservación."]
+        },
+        {
+          "heading": "9. Transferencia internacional de datos",
+          "body": ["Algunos de nuestros proveedores pueden almacenar datos fuera de Brasil. En esos casos, garantizamos que la transferencia se realice conforme a la LGPD y con salvaguardas adecuadas de protección."]
+        },
+        {
+          "heading": "10. Cambios en esta política",
+          "body": ["Podemos actualizar esta Política de Privacidad periódicamente. Los cambios relevantes se comunicarán en la plataforma, y la fecha de la última actualización siempre se indicará en la parte superior de este documento."]
+        },
+        {
+          "heading": "11. Encargado y contacto",
+          "body": ["Para ejercer tus derechos o aclarar dudas sobre el tratamiento de datos, contacta a nuestro Encargado de Protección de Datos (DPO) en privacidade@dailytracker.app."]
+        }
+      ]
+    },
+    "cookies": {
+      "title": "Política de Cookies",
+      "updatedDate": "21 de mayo de 2026",
+      "intro": "Esta Política de Cookies explica qué son las cookies, cómo las utiliza DailyTracker y cómo puedes controlarlas. Complementa nuestra Política de Privacidad y cumple con la LGPD.",
+      "sections": [
+        {
+          "heading": "1. Qué son las cookies",
+          "body": ["Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web. Permiten que el sitio reconozca tu navegador, recuerde tus preferencias y mejore tu experiencia de navegación."]
+        },
+        {
+          "heading": "2. Cómo utilizamos las cookies",
+          "body": ["Utilizamos cookies para mantenerte autenticado, recordar tus preferencias (como idioma y tema), garantizar la seguridad y entender cómo se usa la plataforma para mejorarla continuamente."]
+        },
+        {
+          "heading": "3. Categorías de cookies que utilizamos",
+          "body": ["Clasificamos las cookies en las siguientes categorías:"],
+          "bullets": [
+            "Esenciales: indispensables para el funcionamiento del sitio, como autenticación, sesión y seguridad. No se pueden desactivar.",
+            "Análisis: recopilan información agregada y anónima sobre el uso de la plataforma para ayudarnos a mejorarla.",
+            "Marketing: se utilizan para personalizar contenido y medir la eficacia de las comunicaciones, activadas solo con tu consentimiento."
+          ]
+        },
+        {
+          "heading": "4. Cookies de terceros",
+          "body": ["Algunas cookies pueden ser definidas por servicios de terceros que utilizamos, como proveedores de autenticación y análisis. Estos terceros tienen sus propias políticas de privacidad sobre el uso de esta información."]
+        },
+        {
+          "heading": "5. Cómo gestionar tus preferencias",
+          "body": ["Al acceder al sitio por primera vez, puedes aceptar todas las cookies, rechazar las no esenciales o personalizar tus elecciones. Puedes cambiar tus preferencias en cualquier momento usando el botón de abajo. También puedes bloquear o eliminar cookies directamente en la configuración de tu navegador, pero esto puede afectar el funcionamiento del sitio."]
+        },
+        {
+          "heading": "6. Consentimiento",
+          "body": ["Las cookies no esenciales solo se activan tras tu consentimiento, que puede revocarse en cualquier momento. Registramos tus elecciones de consentimiento para no tener que preguntarte de nuevo en cada visita."]
+        },
+        {
+          "heading": "7. Actualizaciones de esta política",
+          "body": ["Podemos actualizar esta Política de Cookies periódicamente. Recomendamos revisarla con frecuencia. La fecha de la última actualización se indica en la parte superior de este documento."]
+        }
+      ]
+    }
+  },
   "home": {
     "tagline": "Organiza tus dailies con simplicidad",
     "heroTitle": "Cambia la forma en que",
