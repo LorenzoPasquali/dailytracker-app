@@ -52,7 +52,9 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    # Only deploys when the repo variable DEPLOY_ENABLED is set to "true"
+    # (turn it on in Fase 6, once the VPS + secrets are ready).
+    if: github.ref == 'refs/heads/master' && vars.DEPLOY_ENABLED == 'true'
     steps:
       - name: Deploy to VPS over SSH
         uses: appleboy/ssh-action@v1
