@@ -46,4 +46,8 @@ O frontend consome a API REST fornecida pelo backend em Java (Spring Boot), hosp
 
 ## Deploy
 
-O frontend é hospedado na Vercel. O build é feito automaticamente a cada push. A variável `VITE_API_URL` é configurada nas environment variables da Vercel apontando para o backend no Render.
+O build e o deploy são automatizados via GitHub Actions (`.github/workflows/docker-build.yml`): a cada push na `master` a imagem Docker é construída e publicada no GitHub Container Registry (`ghcr.io`), e em seguida puxada na VPS via SSH (`docker compose pull && docker compose up -d`).
+
+A `VITE_API_URL` é uma variável **de build do Vite**: ela é "impressa" dentro do JavaScript no momento do `npm run build` (que roda dentro do Actions). Por isso ela vem do arquivo [`.env.production`](.env.production), versionado no repositório, e **não** de variáveis de ambiente na VPS — definir `VITE_API_URL` no `docker-compose.yml` ou em `docker run -e` não tem efeito, pois o bundle já está gerado.
+
+Para apontar o front para outro backend: edite `.env.production`, faça commit/push na `master`, aguarde o Actions reconstruir a imagem `latest` e atualize a VPS.
