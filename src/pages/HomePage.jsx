@@ -374,18 +374,6 @@ export default function HomePage() {
           boxSizing: 'border-box',
         }}>
 
-          {/* Beta badge */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <span style={{
-              display: 'inline-block', fontSize: '0.72rem', fontWeight: 700,
-              letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)',
-              padding: '0.35rem 1rem', border: '1px solid var(--accent-border)',
-              borderRadius: '100px', backgroundColor: 'var(--accent-subtle)',
-            }}>
-              {t('home.betaBadge')}
-            </span>
-          </div>
-
           <h1 className="text-glow" style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'clamp(2rem, 3.8vw, 3.2rem)',
