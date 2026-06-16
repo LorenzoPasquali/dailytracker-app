@@ -7,7 +7,6 @@ import BarChartFill from 'react-bootstrap-icons/dist/icons/bar-chart-fill';
 import Folder from 'react-bootstrap-icons/dist/icons/folder';
 import TagFill from 'react-bootstrap-icons/dist/icons/tag-fill';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
-import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
 import ClipboardCheck from 'react-bootstrap-icons/dist/icons/clipboard-check';
 import BellFill from 'react-bootstrap-icons/dist/icons/bell-fill';
 
@@ -72,17 +71,14 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
 export default function Sidebar({
   onProjectsClick,
   onTaskTypesClick,
-  onAiClick,
   onReportsClick,
   onDailySummaryClick,
   onNotificationsClick,
   isCollapsed,
   onToggleCollapse,
-  isMobile,
   monitorView,
   onMonitorViewChange,
   forceOpenRegistrations,
-  isPersonalWorkspace,
 }) {
   const { t } = useTranslation();
   const [monitorExpanded, setMonitorExpanded] = useState(true);
@@ -311,6 +307,7 @@ export default function Sidebar({
         </Accordion>
 
         <Nav.Link
+          className="sidebar-nav-link"
           onClick={isCollapsed ? () => { onToggleCollapse(); onReportsClick(); } : onReportsClick}
           style={{
             ...linkStyle,
@@ -337,6 +334,7 @@ export default function Sidebar({
         </Nav.Link>
 
         <Nav.Link
+          className="sidebar-nav-link"
           onClick={isCollapsed ? () => { onToggleCollapse(); onDailySummaryClick?.(); } : onDailySummaryClick}
           style={linkStyle}
           onMouseEnter={e => {
@@ -353,26 +351,8 @@ export default function Sidebar({
           {!isCollapsed && t('summary.title')}
         </Nav.Link>
 
-        {isPersonalWorkspace !== false && (
-          <Nav.Link
-            onClick={isCollapsed ? () => { onToggleCollapse(); onAiClick(); } : onAiClick}
-            style={linkStyle}
-            onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-            }}
-            role="button"
-          >
-            <ChatDotsFill size={16} className="flex-shrink-0" />
-            {!isCollapsed && t('sidebar.aiAssistant')}
-          </Nav.Link>
-        )}
-
         <Nav.Link
+          className="sidebar-nav-link"
           onClick={isCollapsed ? () => { onToggleCollapse(); onNotificationsClick?.(); } : onNotificationsClick}
           style={linkStyle}
           onMouseEnter={e => {

@@ -20,7 +20,7 @@ const TITLE_LIMIT = 100;
 const DESCRIPTION_LIMIT = 500;
 const SUBMIT_COOLDOWN_MS = 250;
 
-export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [], workspaceId, isPersonal, workspaceMembers = [], currentUser }) {
+export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [], workspaceId, isPersonal, workspaceMembers = [], currentUser, defaultProjectId = null }) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [title, setTitle] = useState('');
@@ -64,7 +64,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         setDescription('');
         setStatus('PLANNED');
         setPriority('MEDIUM');
-        setSelectedProjectId('');
+        setSelectedProjectId(defaultProjectId != null ? String(defaultProjectId) : '');
         setSelectedTaskTypeId('');
         setAvailableTaskTypes([]);
         setCreatedAt('');
@@ -83,7 +83,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         cooldownTimerRef.current = null;
       }
     };
-  }, [show, taskToEdit]);
+  }, [show, taskToEdit, defaultProjectId]);
 
   useEffect(() => {
     if (selectedProjectId) {
@@ -187,12 +187,12 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
   };
 
   return (
-    <Modal 
-      show={show} 
-      onHide={handleClose} 
+    <Modal
+      show={show}
+      onHide={handleClose}
       onEntered={onModalEntered}
-      centered 
-      size="lg"
+      centered
+      dialogClassName="task-form-dialog"
       contentClassName="border-0 bg-transparent"
       autoFocus={false}
     >
@@ -201,8 +201,9 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                 <Modal.Title>{taskToEdit ? t('taskForm.editTitle') : t('taskForm.createTitle')}</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleFormSubmit} onKeyDown={handleKeyDown}>
-              <Modal.Body>
-                  <Form.Group className="mb-3">
+              <Modal.Body style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+                <div className="task-form-grid">
+                  <Form.Group className="mb-3 task-form-span-2">
                     <div className="d-flex justify-content-between align-items-center">
                       <Form.Label>
                           {t('taskForm.titleLabel')}
@@ -223,16 +224,16 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       autoFocus={!isMobile}
                     />
                   </Form.Group>
-                  <Form.Group className="mb-3">
+                  <Form.Group className="mb-3 task-form-span-2">
                     <div className="d-flex justify-content-between align-items-center">
                       <Form.Label>{t('taskForm.descriptionLabel')}</Form.Label>
                       <Form.Text className="text-secondary">
                         {description.length} / {DESCRIPTION_LIMIT}
                       </Form.Text>
                     </div>
-                    <Form.Control 
-                      as="textarea" 
-                      rows={6}
+                    <Form.Control
+                      as="textarea"
+                      rows={4}
                       value={description} 
                       onChange={(e) => setDescription(e.target.value)}
                       maxLength={DESCRIPTION_LIMIT}
@@ -247,15 +248,13 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                         {projects.map(project => (<option key={project.id} value={project.id}>{project.name}</option>))}
                     </CustomSelect>
                   </Form.Group>
-                  {selectedProjectId && (
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('taskForm.taskTypeLabel')}</Form.Label>
-                        <CustomSelect value={selectedTaskTypeId} onChange={(e) => setSelectedTaskTypeId(e.target.value)} disabled={availableTaskTypes.length === 0}>
-                          <option value="">{t('taskForm.noTaskType')}</option>
-                          {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
-                        </CustomSelect>
-                    </Form.Group>
-                  )}
+                  <Form.Group className="mb-3">
+                      <Form.Label>{t('taskForm.taskTypeLabel')}</Form.Label>
+                      <CustomSelect value={selectedTaskTypeId} onChange={(e) => setSelectedTaskTypeId(e.target.value)} disabled={!selectedProjectId || availableTaskTypes.length === 0}>
+                        <option value="">{t('taskForm.noTaskType')}</option>
+                        {availableTaskTypes.map(type => (<option key={type.id} value={type.id}>{type.name}</option>))}
+                      </CustomSelect>
+                  </Form.Group>
                   {!isPersonal && (
                     <>
                       <Form.Group className="mb-3">
@@ -344,6 +343,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                       />
                     </Form.Group>
                   )}
+                </div>
               </Modal.Body>
               <Modal.Footer style={{ borderColor: 'var(--border-subtle)' }} className="d-flex justify-content-between">
                 <div>

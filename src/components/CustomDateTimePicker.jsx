@@ -15,15 +15,54 @@ Object.entries(datepickerLocales).forEach(([key, locale]) => {
 
 const pad = (n) => String(n).padStart(2, '0');
 
+// Auto-repeat tuning: pause before repeat kicks in, then each tick speeds up
+// toward the floor — holding the key/button fast-forwards the value.
+const HOLD_START_DELAY = 320;
+const HOLD_MIN_DELAY = 35;
+const HOLD_ACCEL = 0.8;
+
 function TimeSpinner({ value, min, max, onChange }) {
   const inputRef = useRef(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const timerRef = useRef(null);
+  const holdingRef = useRef(false);
 
-  const increment = (e) => { e.preventDefault(); onChange((value + 1 > max ? min : value + 1)); };
-  const decrement = (e) => { e.preventDefault(); onChange((value - 1 < min ? max : value - 1)); };
+  const stepOnce = (dir) => {
+    const v = valueRef.current;
+    const next = dir > 0 ? (v >= max ? min : v + 1) : (v <= min ? max : v - 1);
+    valueRef.current = next; // advance synchronously so rapid ticks don't read a stale prop
+    onChange(next);
+  };
 
-  const handleKey = (e) => {
-    if (e.key === 'ArrowUp') { e.preventDefault(); increment(e); }
-    if (e.key === 'ArrowDown') { e.preventDefault(); decrement(e); }
+  const stopHold = useCallback(() => {
+    holdingRef.current = false;
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    window.removeEventListener('mouseup', stopHold);
+  }, []);
+
+  const startHold = (dir) => {
+    if (holdingRef.current) return;
+    holdingRef.current = true;
+    stepOnce(dir);
+    let delay = HOLD_START_DELAY;
+    const tick = () => {
+      stepOnce(dir);
+      delay = Math.max(HOLD_MIN_DELAY, delay * HOLD_ACCEL);
+      timerRef.current = setTimeout(tick, delay);
+    };
+    timerRef.current = setTimeout(tick, delay);
+    window.addEventListener('mouseup', stopHold);
+  };
+
+  useEffect(() => stopHold, [stopHold]); // clear any pending timer on unmount
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowUp') { e.preventDefault(); if (!e.repeat) startHold(1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); if (!e.repeat) startHold(-1); }
+  };
+  const handleKeyUp = (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') stopHold();
   };
 
   const handleInput = (e) => {
@@ -36,7 +75,10 @@ function TimeSpinner({ value, min, max, onChange }) {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
       <button
         type="button"
-        onMouseDown={increment}
+        aria-label="+"
+        onMouseDown={(e) => { e.preventDefault(); startHold(1); }}
+        onMouseUp={stopHold}
+        onMouseLeave={stopHold}
         style={spinBtnStyle}
       >
         <ChevronUp size={10} />
@@ -47,13 +89,18 @@ function TimeSpinner({ value, min, max, onChange }) {
         inputMode="numeric"
         value={pad(value)}
         onChange={handleInput}
-        onKeyDown={handleKey}
+        onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
+        onBlur={stopHold}
         onFocus={(e) => e.target.select()}
         style={spinInputStyle}
       />
       <button
         type="button"
-        onMouseDown={decrement}
+        aria-label="-"
+        onMouseDown={(e) => { e.preventDefault(); startHold(-1); }}
+        onMouseUp={stopHold}
+        onMouseLeave={stopHold}
         style={spinBtnStyle}
       >
         <ChevronDown size={10} />
@@ -102,6 +149,38 @@ const parseValue = (val) => {
 const formatValue = (date) => {
   if (!date) return '';
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// Typed-date support. English shows month first; everything else day first.
+const digitsToMask = (raw) => {
+  const d = raw.replace(/\D/g, '').slice(0, 12); // g1 g2 yyyy hh mm
+  let out = d.slice(0, 2);
+  if (d.length > 2) out += '/' + d.slice(2, 4);
+  if (d.length > 4) out += '/' + d.slice(4, 8);
+  if (d.length > 8) out += ' ' + d.slice(8, 10);
+  if (d.length > 10) out += ':' + d.slice(10, 12);
+  return out;
+};
+
+const dateToMask = (date, isEn) => {
+  const dd = pad(date.getDate());
+  const mm = pad(date.getMonth() + 1);
+  const datePart = isEn ? `${mm}/${dd}/${date.getFullYear()}` : `${dd}/${mm}/${date.getFullYear()}`;
+  return `${datePart} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const maskToDate = (str, isEn, fallback) => {
+  const d = str.replace(/\D/g, '');
+  if (d.length < 8) return null;
+  const g1 = +d.slice(0, 2), g2 = +d.slice(2, 4), year = +d.slice(4, 8);
+  const day = isEn ? g2 : g1;
+  const month = isEn ? g1 : g2;
+  const hh = d.length >= 10 ? +d.slice(8, 10) : (fallback ? fallback.getHours() : 0);
+  const mi = d.length >= 12 ? +d.slice(10, 12) : (fallback ? fallback.getMinutes() : 0);
+  if (month < 1 || month > 12 || day < 1 || day > 31 || hh > 23 || mi > 59 || year < 1000) return null;
+  const dt = new Date(year, month - 1, day, hh, mi);
+  if (dt.getMonth() !== month - 1 || dt.getDate() !== day) return null; // reject overflow (e.g. 31/02)
+  return dt;
 };
 
 const DTP_STYLES = `
@@ -169,10 +248,15 @@ export default function CustomDateTimePicker({ value, onChange, placeholder, dis
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0, above: false });
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState('');
   const triggerRef = useRef(null);
   const popupRef = useRef(null);
+  const inputRef = useRef(null);
 
   const locale = i18n.language || 'pt-BR';
+  const isEnLocale = locale.toLowerCase().startsWith('en');
+  const formatHint = isEnLocale ? 'mm/dd/yyyy hh:mm' : 'dd/mm/aaaa hh:mm';
   const selected = parseValue(value);
 
   const computePosition = useCallback(() => {
@@ -239,6 +323,24 @@ export default function CustomDateTimePicker({ value, onChange, placeholder, dis
   const handleClear = (e) => {
     e.stopPropagation();
     onChange('');
+  };
+
+  const enterEdit = () => {
+    setOpen(true);
+    setDraft(selected ? dateToMask(selected, isEnLocale) : '');
+    setFocused(true);
+  };
+
+  // Commit on blur/Enter: empty clears, valid date commits, anything else reverts.
+  const commitDraft = () => {
+    const trimmed = draft.trim();
+    if (!trimmed) {
+      if (value) onChange('');
+    } else {
+      const parsed = maskToDate(trimmed, isEnLocale, selected);
+      if (parsed) onChange(formatValue(parsed));
+    }
+    setFocused(false);
   };
 
   const displayText = (() => {
@@ -312,18 +414,31 @@ export default function CustomDateTimePicker({ value, onChange, placeholder, dis
     <>
       <div
         ref={triggerRef}
-        onClick={() => !disabled && setOpen((o) => !o)}
+        onClick={() => { if (!disabled) inputRef.current?.focus(); }}
         className={`dtpicker-trigger${open ? ' dtpicker-trigger--open' : ''}${disabled ? ' dtpicker-trigger--disabled' : ''}`}
       >
         <CalendarEventFill
           size={12}
           style={{ color: displayText ? 'var(--accent)' : 'var(--text-muted)', flexShrink: 0, transition: 'color var(--transition)' }}
         />
-        <span className={`dtpicker-display${!displayText ? ' dtpicker-display--empty' : ''}`}>
-          {displayText || (placeholder ?? '—')}
-        </span>
+        <input
+          ref={inputRef}
+          type="text"
+          inputMode="numeric"
+          disabled={disabled}
+          className="dtpicker-input"
+          placeholder={focused ? formatHint : (placeholder ?? '—')}
+          value={focused ? draft : displayText}
+          onFocus={(e) => { enterEdit(); requestAnimationFrame(() => e.target.select()); }}
+          onChange={(e) => setDraft(digitsToMask(e.target.value))}
+          onBlur={commitDraft}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); commitDraft(); inputRef.current?.blur(); }
+            else if (e.key === 'Escape') { setFocused(false); inputRef.current?.blur(); }
+          }}
+        />
         {value && !disabled && (
-          <span onClick={handleClear} className="dtpicker-clear" title={t('common.cancel')}>
+          <span onMouseDown={(e) => e.preventDefault()} onClick={handleClear} className="dtpicker-clear" title={t('common.cancel')}>
             <X size={13} />
           </span>
         )}

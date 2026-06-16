@@ -44,11 +44,15 @@
       "sections": [
         {
           "heading": "1. Data controller",
-          "body": ["DailyTracker is the controller of the personal data processed on this platform, responsible for deciding on the collection and processing of your information. For privacy-related matters, contact us at privacidade@dailytracker.app."]
+          "body": [
+            "DailyTracker is the controller of the personal data processed on this platform, responsible for deciding on the collection and processing of your information. For privacy-related matters, contact us at privacidade@dailytracker.app."
+          ]
         },
         {
           "heading": "2. Data we collect",
-          "body": ["We only collect the data necessary to provide and improve our services:"],
+          "body": [
+            "We only collect the data necessary to provide and improve our services:"
+          ],
           "bullets": [
             "Account data: name and email address provided when creating your account.",
             "Authentication data: when using Google sign-in, we receive your name, email and Google account identifier.",
@@ -58,7 +62,9 @@
         },
         {
           "heading": "3. Purposes and legal bases for processing",
-          "body": ["We process your personal data based on the legal grounds set out in the LGPD, for the following purposes:"],
+          "body": [
+            "We process your personal data based on the legal grounds set out in the LGPD, for the following purposes:"
+          ],
           "bullets": [
             "Performance of a contract: to create and manage your account and provide the platform's features.",
             "Consent: to send optional communications and use non-essential cookies.",
@@ -68,7 +74,9 @@
         },
         {
           "heading": "4. Data sharing",
-          "body": ["We do not sell your personal data. We may share it with providers that help us operate the platform, always limited to what is necessary:"],
+          "body": [
+            "We do not sell your personal data. We may share it with providers that help us operate the platform, always limited to what is necessary:"
+          ],
           "bullets": [
             "Infrastructure and hosting providers responsible for keeping the service running.",
             "Google, when you choose to authenticate using your Google account.",
@@ -78,11 +86,15 @@
         },
         {
           "heading": "5. Cookies",
-          "body": ["We use cookies and similar technologies to operate and improve the site. You can manage your preferences at any time. For more details, see our Cookie Policy."]
+          "body": [
+            "We use cookies and similar technologies to operate and improve the site. You can manage your preferences at any time. For more details, see our Cookie Policy."
+          ]
         },
         {
           "heading": "6. Your rights as a data subject",
-          "body": ["Under Article 18 of the LGPD, you may exercise the following rights at any time:"],
+          "body": [
+            "Under Article 18 of the LGPD, you may exercise the following rights at any time:"
+          ],
           "bullets": [
             "Confirm the existence of processing and access your data.",
             "Correct incomplete, inaccurate or outdated data.",
@@ -94,23 +106,33 @@
         },
         {
           "heading": "7. Information security",
-          "body": ["We adopt technical and organizational measures to protect your data against unauthorized access, loss, alteration or destruction, including encryption in transit and restricted access controls."]
+          "body": [
+            "We adopt technical and organizational measures to protect your data against unauthorized access, loss, alteration or destruction, including encryption in transit and restricted access controls."
+          ]
         },
         {
           "heading": "8. Data retention",
-          "body": ["We keep your data only for as long as necessary to fulfill the purposes described in this policy or as required by law. When you delete your account, your personal data is deleted or anonymized, except where retention is legally required."]
+          "body": [
+            "We keep your data only for as long as necessary to fulfill the purposes described in this policy or as required by law. When you delete your account, your personal data is deleted or anonymized, except where retention is legally required."
+          ]
         },
         {
           "heading": "9. International data transfers",
-          "body": ["Some of our providers may store data outside Brazil. In such cases, we ensure that the transfer complies with the LGPD and with appropriate safeguards for protection."]
+          "body": [
+            "Some of our providers may store data outside Brazil. In such cases, we ensure that the transfer complies with the LGPD and with appropriate safeguards for protection."
+          ]
         },
         {
           "heading": "10. Changes to this policy",
-          "body": ["We may update this Privacy Policy from time to time. Significant changes will be communicated on the platform, and the date of the last update will always be shown at the top of this document."]
+          "body": [
+            "We may update this Privacy Policy from time to time. Significant changes will be communicated on the platform, and the date of the last update will always be shown at the top of this document."
+          ]
         },
         {
           "heading": "11. Data Protection Officer and contact",
-          "body": ["To exercise your rights or clarify any questions about data processing, contact our Data Protection Officer (DPO) at privacidade@dailytracker.app."]
+          "body": [
+            "To exercise your rights or clarify any questions about data processing, contact our Data Protection Officer (DPO) at privacidade@dailytracker.app."
+          ]
         }
       ]
     },
@@ -121,15 +143,21 @@
       "sections": [
         {
           "heading": "1. What are cookies",
-          "body": ["Cookies are small text files stored on your device when you visit a website. They allow the site to recognize your browser, remember your preferences and improve your browsing experience."]
+          "body": [
+            "Cookies are small text files stored on your device when you visit a website. They allow the site to recognize your browser, remember your preferences and improve your browsing experience."
+          ]
         },
         {
           "heading": "2. How we use cookies",
-          "body": ["We use cookies to keep you signed in, remember your preferences (such as language and theme), ensure security and understand how the platform is used so we can continuously improve it."]
+          "body": [
+            "We use cookies to keep you signed in, remember your preferences (such as language and theme), ensure security and understand how the platform is used so we can continuously improve it."
+          ]
         },
         {
           "heading": "3. Cookie categories we use",
-          "body": ["We classify cookies into the following categories:"],
+          "body": [
+            "We classify cookies into the following categories:"
+          ],
           "bullets": [
             "Essential: indispensable to the operation of the site, such as authentication, session and security. They cannot be disabled.",
             "Analytics: collect aggregated and anonymous information about platform usage to help us improve it.",
@@ -138,19 +166,27 @@
         },
         {
           "heading": "4. Third-party cookies",
-          "body": ["Some cookies may be set by third-party services we use, such as authentication and analytics providers. These third parties have their own privacy policies regarding the use of this information."]
+          "body": [
+            "Some cookies may be set by third-party services we use, such as authentication and analytics providers. These third parties have their own privacy policies regarding the use of this information."
+          ]
         },
         {
           "heading": "5. How to manage your preferences",
-          "body": ["When you first access the site, you can accept all cookies, reject non-essential ones or customize your choices. You can change your preferences at any time using the button below. You can also block or delete cookies directly in your browser settings, but this may affect how the site works."]
+          "body": [
+            "When you first access the site, you can accept all cookies, reject non-essential ones or customize your choices. You can change your preferences at any time using the button below. You can also block or delete cookies directly in your browser settings, but this may affect how the site works."
+          ]
         },
         {
           "heading": "6. Consent",
-          "body": ["Non-essential cookies are only enabled after your consent, which can be withdrawn at any time. We record your consent choices so we don't have to ask again on every visit."]
+          "body": [
+            "Non-essential cookies are only enabled after your consent, which can be withdrawn at any time. We record your consent choices so we don't have to ask again on every visit."
+          ]
         },
         {
           "heading": "7. Updates to this policy",
-          "body": ["We may update this Cookie Policy from time to time. We recommend reviewing it regularly. The date of the last update is shown at the top of this document."]
+          "body": [
+            "We may update this Cookie Policy from time to time. We recommend reviewing it regularly. The date of the last update is shown at the top of this document."
+          ]
         }
       ]
     }
@@ -202,9 +238,17 @@
     "ctaParagraph": "Join the first users and discover how organizing professional and personal life has never been so simple.",
     "ctaButton": "Create my free account",
     "features": {
-      "kanban": { "title": "Visual Kanban", "description": "Organize tasks in Planned, In Progress and Done columns with intuitive drag & drop." },
-      "filters": { "title": "Smart Filters", "description": "Filter by project, task type and date range to find exactly what you need." },
-      "ai": { "title": "AI Assistant", "description": "Analyze your productivity, generate daily summaries and identify bottlenecks with integrated AI."
+      "kanban": {
+        "title": "Visual Kanban",
+        "description": "Organize tasks in Planned, In Progress and Done columns with intuitive drag & drop."
+      },
+      "filters": {
+        "title": "Smart Filters",
+        "description": "Filter by project, task type and date range to find exactly what you need."
+      },
+      "ai": {
+        "title": "AI Assistant",
+        "description": "Analyze your productivity, generate daily summaries and identify bottlenecks with integrated AI."
       }
     }
   },
@@ -269,6 +313,13 @@
   "dashboard": {
     "title": "Task Monitor",
     "filterByDate": "Filter by date"
+  },
+  "search": {
+    "placeholder": "Search tasks, projects…",
+    "noResults": "No results for \"{{query}}\"",
+    "projects": "Projects",
+    "tasks": "Tasks",
+    "filtersDisabled": "Filters disabled while searching"
   },
   "kanban": {
     "planned": "Planned",
@@ -360,6 +411,7 @@
   },
   "aiChat": {
     "title": "AI Assistant",
+    "subtitle": "Ask me anything",
     "setupTitle": "Set up your Gemini API Key",
     "setupBody": "Visit Google AI Studio to get your key.",
     "setupLinkText": "Google AI Studio",
@@ -378,7 +430,9 @@
     "keyRemovedToast": "Key removed.",
     "keySaveError": "Error saving the key.",
     "keyRemoveError": "Error removing the key.",
-    "chatError": "Error communicating with AI."
+    "chatError": "Error communicating with AI.",
+    "clearChat": "Clear chat",
+    "close": "Close"
   },
   "reports": {
     "preset7d": "Last 7 days",

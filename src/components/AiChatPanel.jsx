@@ -1,18 +1,30 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from 'react-bootstrap';
 import Stars from 'react-bootstrap-icons/dist/icons/stars';
-import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
 import SendFill from 'react-bootstrap-icons/dist/icons/send-fill';
 import KeyFill from 'react-bootstrap-icons/dist/icons/key-fill';
 import GearFill from 'react-bootstrap-icons/dist/icons/gear-fill';
 import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
+import Trash from 'react-bootstrap-icons/dist/icons/trash';
 import { toast } from 'sonner';
 import api from '../services/api';
 
-export default function AiChatModal({ show, onClose, isMobile, onTasksCreated }) {
+const STORAGE_KEY = 'dt_ai_chat_history';
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export default function AiChatPanel({ isOpen, isMobile, onTasksCreated }) {
   const { t } = useTranslation();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(loadHistory);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasKey, setHasKey] = useState(null);
@@ -20,63 +32,31 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
   const [savingKey, setSavingKey] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const modalRef = useRef(null);
 
-  const MODAL_WIDTH = isMobile ? window.innerWidth : 448;
-  const MODAL_HEIGHT = isMobile ? window.innerHeight * 0.78 : 600;
-
+  // Cache chat history locally so it survives open/close and reloads (no DB).
   useEffect(() => {
-    if (show) {
-      setPosition({
-        x: isMobile ? 0 : window.innerWidth - MODAL_WIDTH - 24,
-        y: isMobile ? window.innerHeight - MODAL_HEIGHT : window.innerHeight - MODAL_HEIGHT - 24,
-      });
-      setShowSettings(false);
-      setKeyInput('');
-      api.get('/api/ai/key-status')
-        .then(res => setHasKey(res.data.hasKey))
-        .catch(() => setHasKey(false));
-    }
-  }, [show]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch { /* ignore quota errors */ }
   }, [messages]);
 
+  // Fetch key status once on mount.
   useEffect(() => {
-    if (isMobile) return;
+    api.get('/api/ai/key-status')
+      .then(res => setHasKey(res.data.hasKey))
+      .catch(() => setHasKey(false));
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (isMobile || !isOpen) return;
     if (hasKey && !loading) inputRef.current?.focus();
-  }, [hasKey, loading, messages, isMobile]);
-
-  const handleMouseDown = useCallback((e) => {
-    if (isMobile) return;
-    setDragging(true);
-    const rect = modalRef.current.getBoundingClientRect();
-    dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    e.preventDefault();
-  }, [isMobile]);
-
-  useEffect(() => {
-    if (!dragging) return;
-    const handleMouseMove = (e) => {
-      setPosition({
-        x: Math.max(0, Math.min(e.clientX - dragOffset.current.x, window.innerWidth - MODAL_WIDTH)),
-        y: Math.max(0, Math.min(e.clientY - dragOffset.current.y, window.innerHeight - MODAL_HEIGHT)),
-      });
-    };
-    const handleMouseUp = () => setDragging(false);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [dragging, MODAL_WIDTH, MODAL_HEIGHT]);
+  }, [hasKey, loading, isOpen, isMobile]);
 
   const handleSaveKey = async () => {
     if (!keyInput.trim()) return;
@@ -94,13 +74,18 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
     }
   };
 
+  const clearHistory = () => {
+    setMessages([]);
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+  };
+
   const handleDeleteKey = async () => {
     if (!window.confirm(t('aiChat.removeKeyConfirm'))) return;
     setSavingKey(true);
     try {
       await api.delete('/api/ai/key');
       setHasKey(false);
-      setMessages([]);
+      clearHistory();
       setShowSettings(false);
       toast.success(t('aiChat.keyRemovedToast'));
     } catch {
@@ -142,8 +127,6 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
     }
   };
 
-  if (!show) return null;
-
   const inputStyle = {
     width: '100%',
     padding: '0.6rem 0.75rem',
@@ -165,6 +148,16 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
     fontSize: '0.85rem',
     fontWeight: 600,
     cursor: 'pointer',
+  };
+
+  const iconBtnStyle = {
+    background: 'none',
+    border: 'none',
+    color: 'var(--text-muted)',
+    cursor: 'pointer',
+    padding: 4,
+    display: 'flex',
+    borderRadius: 'var(--radius-sm)',
   };
 
   const renderKeySetup = () => (
@@ -251,7 +244,7 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '0.75rem',
+        padding: '0.85rem',
         display: 'flex',
         flexDirection: 'column',
         gap: '0.5rem',
@@ -271,7 +264,7 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
             <span className="ai-avatar" style={{ width: 60, height: 60 }}>
               <Stars size={28} />
             </span>
-            <p style={{ margin: 0, maxWidth: 260, lineHeight: 1.5 }}>{t('aiChat.chatEmpty')}</p>
+            <p style={{ margin: 0, maxWidth: 280, lineHeight: 1.5 }}>{t('aiChat.chatEmpty')}</p>
           </div>
         )}
         {messages.map((msg, i) => (
@@ -279,13 +272,13 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
             key={i}
             style={{
               alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '85%',
-              padding: '0.5rem 0.75rem',
-              borderRadius: msg.role === 'user' ? '10px 10px 2px 10px' : '10px 10px 10px 2px',
+              maxWidth: '88%',
+              padding: '0.55rem 0.8rem',
+              borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
               backgroundColor: msg.role === 'user' ? 'var(--accent-subtle)' : 'var(--bg-elevated)',
               border: `1px solid ${msg.role === 'user' ? 'var(--accent-border)' : 'var(--border-subtle)'}`,
               color: 'var(--text-secondary)',
-              fontSize: '0.83rem',
+              fontSize: '0.85rem',
               lineHeight: 1.5,
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
@@ -298,7 +291,7 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
           <div style={{
             alignSelf: 'flex-start',
             padding: '0.5rem 1rem',
-            borderRadius: '10px 10px 10px 2px',
+            borderRadius: '14px 14px 14px 4px',
             backgroundColor: 'var(--bg-elevated)',
             border: '1px solid var(--border-subtle)',
           }}>
@@ -309,7 +302,7 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
       </div>
 
       <div style={{
-        padding: '0.6rem 0.75rem',
+        padding: '0.7rem 0.85rem',
         borderTop: '1px solid var(--border-subtle)',
         display: 'flex',
         gap: '0.5rem',
@@ -325,12 +318,12 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
           style={{
             ...inputStyle,
             resize: 'none',
-            maxHeight: 80,
+            maxHeight: 96,
             lineHeight: 1.4,
           }}
           onInput={(e) => {
             e.target.style.height = 'auto';
-            e.target.style.height = Math.min(e.target.scrollHeight, 80) + 'px';
+            e.target.style.height = Math.min(e.target.scrollHeight, 96) + 'px';
           }}
         />
         <button
@@ -361,21 +354,7 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
   );
 
   return (
-    <div ref={modalRef} style={{
-      position: 'fixed',
-      left: position.x,
-      top: position.y,
-      width: MODAL_WIDTH,
-      height: MODAL_HEIGHT,
-      zIndex: 9999,
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: 'var(--bg-surface)',
-      border: '1px solid var(--border-default)',
-      borderRadius: isMobile ? '18px 18px 0 0' : '18px',
-      boxShadow: '0 24px 60px -12px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4)',
-      overflow: 'hidden',
-    }}>
+    <div className="ai-panel">
       <div
         style={{
           display: 'flex',
@@ -384,10 +363,8 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
           padding: '0.7rem 0.85rem',
           borderBottom: '1px solid var(--border-subtle)',
           background: 'linear-gradient(180deg, rgba(59,130,246,0.06), transparent)',
-          cursor: isMobile ? 'default' : 'grab',
-          userSelect: 'none',
+          flexShrink: 0,
         }}
-        onMouseDown={handleMouseDown}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <span className="ai-avatar" style={{ width: 34, height: 34 }}>
@@ -403,34 +380,21 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {hasKey && !showSettings && messages.length > 0 && (
+            <button onClick={clearHistory} title={t('aiChat.clearChat')} aria-label={t('aiChat.clearChat')} style={iconBtnStyle}>
+              <Trash size={14} />
+            </button>
+          )}
           {hasKey && (
             <button
               onClick={() => { setShowSettings(!showSettings); setKeyInput(''); }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: showSettings ? 'var(--accent)' : 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: 4,
-                display: 'flex',
-              }}
+              title={t('aiChat.settingsTitle')}
+              aria-label={t('aiChat.settingsTitle')}
+              style={{ ...iconBtnStyle, color: showSettings ? 'var(--accent)' : 'var(--text-muted)' }}
             >
               <GearFill size={14} />
             </button>
           )}
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              padding: 4,
-              display: 'flex',
-            }}
-          >
-            <XLg size={14} />
-          </button>
         </div>
       </div>
 

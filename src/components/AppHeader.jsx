@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import LanguageSelector from './LanguageSelector';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
+import GlobalSearch from './GlobalSearch';
 import api from '../services/api';
 import { toast } from 'sonner';
 import List from 'react-bootstrap-icons/dist/icons/list';
@@ -49,6 +50,12 @@ export default function AppHeader({
   onWorkspaceChange,
   onWorkspaceManage,
   onCreateWorkspace,
+  searchQuery,
+  onSearchChange,
+  searchTasks,
+  projects,
+  onSearchSelectTask,
+  onSearchSelectProject,
 }) {
   const { t } = useTranslation();
   const [editingName, setEditingName] = useState(false);
@@ -97,7 +104,8 @@ export default function AppHeader({
       backgroundColor: 'var(--bg-surface)',
       borderBottom: '1px solid var(--border-subtle)',
       height: '54px',
-      flexShrink: 0
+      flexShrink: 0,
+      position: 'relative'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {isMobile ? (
@@ -152,7 +160,30 @@ export default function AppHeader({
         )}
       </div>
 
+      {!isMobile && (
+        <GlobalSearch
+          query={searchQuery}
+          onQueryChange={onSearchChange}
+          tasks={searchTasks}
+          projects={projects}
+          onSelectTask={onSearchSelectTask}
+          onSelectProject={onSearchSelectProject}
+          isMobile={false}
+        />
+      )}
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {isMobile && (
+          <GlobalSearch
+            query={searchQuery}
+            onQueryChange={onSearchChange}
+            tasks={searchTasks}
+            projects={projects}
+            onSelectTask={onSearchSelectTask}
+            onSelectProject={onSearchSelectProject}
+            isMobile
+          />
+        )}
         <Button
           onClick={onNewTaskClick}
           size="sm"

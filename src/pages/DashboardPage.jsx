@@ -5,6 +5,7 @@ import { DndContext, DragOverlay, closestCorners, PointerSensor, TouchSensor, us
 import { arrayMove } from '@dnd-kit/sortable';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { normalizeText, taskMatches, buildProjectIndex } from '../utils/search';
 
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useTheme } from '../hooks/useTheme';
@@ -28,8 +29,10 @@ import NotificationsModal from '../components/NotificationsModal';
 
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
 import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
+import Stars from 'react-bootstrap-icons/dist/icons/stars';
+import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import DateFilterModal from '../components/DateFilterModal';
-import AiChatModal from '../components/AiChatModal';
+import AiChatPanel from '../components/AiChatPanel';
 import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } from 'date-fns';
 
 export default function DashboardPage() {
@@ -90,6 +93,7 @@ export default function DashboardPage() {
   });
   const navigate = useNavigate();
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // WS events from other workspace members
   const handleWsEvent = (event) => {
@@ -161,7 +165,17 @@ export default function DashboardPage() {
     }
   };
 
+  const projectIndex = useMemo(() => buildProjectIndex(projects), [projects]);
+  const normalizedSearch = normalizeText(searchQuery);
+  const isSearching = normalizedSearch.length > 0;
+
   const filteredTasks = useMemo(() => {
+    // Global search dominates: with a query, ignore the project pills and date
+    // filter and search the whole workspace instead.
+    if (normalizedSearch) {
+      return allTasks.filter(task => taskMatches(task, normalizedSearch, projectIndex));
+    }
+
     let tasks = allTasks;
 
     if (selectedProjectIds.length > 0) {
@@ -183,7 +197,7 @@ export default function DashboardPage() {
     }
 
     return tasks;
-  }, [allTasks, selectedProjectIds, dateRange]);
+  }, [allTasks, selectedProjectIds, dateRange, normalizedSearch, projectIndex]);
 
   const handleLogout = () => { localStorage.removeItem('authToken'); localStorage.removeItem('refreshToken'); navigate('/'); };
 
@@ -608,7 +622,7 @@ export default function DashboardPage() {
     }
 
     return (
-      <div data-tutorial-id="tutorial-kanban-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', height: '100%' }}>
+      <div data-tutorial-id="tutorial-kanban-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem', height: '100%' }}>
         <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
         <KanbanColumn title={t('kanban.doing')} status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
         <KanbanColumn title={t('kanban.done')} status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
@@ -637,6 +651,12 @@ export default function DashboardPage() {
         onWorkspaceChange={handleWorkspaceChange}
         onWorkspaceManage={(ws) => { setWorkspaceToManage(ws); setWorkspaceModalMode('manage'); setShowWorkspaceModal(true); }}
         onCreateWorkspace={() => { setWorkspaceModalMode('create'); setWorkspaceToManage(null); setShowWorkspaceModal(true); }}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchTasks={allTasks}
+        projects={projects}
+        onSearchSelectTask={handleOpenEditModal}
+        onSearchSelectProject={(id) => { setMonitorView(v => v === 'reports' ? 'classic' : v); setSelectedProjectIds([id]); }}
       />
       <div className="d-flex flex-grow-1" style={{ overflow: 'hidden', minHeight: 0 }}>
         {!isMobile && (
@@ -646,7 +666,6 @@ export default function DashboardPage() {
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onProjectsClick={() => setShowProjectsModal(true)}
             onTaskTypesClick={() => setShowTaskTypesModal(true)}
-            onAiClick={() => setShowAiChat(true)}
             onReportsClick={() => handleMonitorViewChange('reports')}
             onDailySummaryClick={() => setShowDailySummary(true)}
             onNotificationsClick={() => setShowNotificationsModal(true)}
@@ -683,13 +702,16 @@ export default function DashboardPage() {
             {/* SEO and Accessibility H1 for Mobile */}
             {isMobile && <h1 className="visually-hidden">{monitorView === 'reports' ? t('sidebar.reports') : t('dashboard.title')}</h1>}
             
-            {monitorView !== 'reports' && <div style={{
+            {monitorView !== 'reports' && <div title={isSearching ? t('search.filtersDisabled') : undefined} style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
               width: isMobile ? '100%' : 'auto',
               overflowX: 'auto',
-              paddingBottom: '2px'
+              paddingBottom: '2px',
+              opacity: isSearching ? 0.4 : 1,
+              pointerEvents: isSearching ? 'none' : 'auto',
+              transition: 'opacity var(--transition)'
             }}>
               {projects.map(project => {
                 const isSelected = selectedProjectIds.includes(project.id);
@@ -776,6 +798,39 @@ export default function DashboardPage() {
             <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} isPersonalWorkspace={isPersonal} isOverlay /> : null}</DragOverlay>
           </DndContext>
         </main>
+
+        {/* Desktop: AI chat panel docked to the right — squeezes the board when open */}
+        {isDesktop && isPersonal && (
+          <div className="ai-panel-dock" style={{ width: showAiChat ? 380 : 0 }}>
+            <div className="ai-panel-dock__inner" style={{ width: 380 }} inert={!showAiChat}>
+              <AiChatPanel
+                isOpen={showAiChat}
+                isMobile={false}
+                onTasksCreated={fetchData}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Desktop: collapse handle — rides the panel's left edge as it slides */}
+        {isDesktop && isPersonal && (
+          <button
+            type="button"
+            className="ai-edge-launcher ai-edge-launcher--close"
+            style={{
+              right: showAiChat ? 380 : 0,
+              opacity: showAiChat ? 1 : 0,
+              pointerEvents: showAiChat ? 'auto' : 'none',
+            }}
+            aria-hidden={!showAiChat}
+            tabIndex={showAiChat ? 0 : -1}
+            onClick={() => setShowAiChat(false)}
+            aria-label={t('aiChat.close')}
+            title={t('aiChat.close')}
+          >
+            <ChevronRight size={20} />
+          </button>
+        )}
       </div>
 
       <Offcanvas
@@ -791,7 +846,6 @@ export default function DashboardPage() {
             onToggleCollapse={() => setShowMobileSidebar(false)}
             onProjectsClick={() => { setShowProjectsModal(true); setShowMobileSidebar(false); }}
             onTaskTypesClick={() => { setShowTaskTypesModal(true); setShowMobileSidebar(false); }}
-            onAiClick={() => { setShowAiChat(true); setShowMobileSidebar(false); }}
             onReportsClick={() => { handleMonitorViewChange('reports'); setShowMobileSidebar(false); }}
             onDailySummaryClick={() => { setShowDailySummary(true); setShowMobileSidebar(false); }}
             onNotificationsClick={() => { setShowNotificationsModal(true); setShowMobileSidebar(false); }}
@@ -802,7 +856,7 @@ export default function DashboardPage() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} projects={projects} workspaceId={activeWorkspaceId} isPersonal={isPersonal} workspaceMembers={workspaceMembers} currentUser={currentUser} />
+      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} projects={projects} workspaceId={activeWorkspaceId} isPersonal={isPersonal} workspaceMembers={workspaceMembers} currentUser={currentUser} defaultProjectId={selectedProjectIds.length === 1 ? selectedProjectIds[0] : null} />
       <ConfirmationModal
         show={showDeleteModal}
         handleClose={handleCloseDeleteModal}
@@ -839,13 +893,43 @@ export default function DashboardPage() {
         onApplyFilter={handleDateFilterApply}
         initialDateRange={dateRange}
       />
-      {showAiChat && (
-        <AiChatModal
-          show={showAiChat}
-          onClose={() => setShowAiChat(false)}
-          isMobile={isMobile}
-          onTasksCreated={fetchData}
-        />
+      {/* AI launcher — tab docked to the right edge, vertically centered */}
+      {isPersonal && !showAiChat && (
+        <button
+          type="button"
+          className="ai-edge-launcher"
+          onClick={() => setShowAiChat(true)}
+          aria-label={t('sidebar.aiAssistant')}
+          title={t('sidebar.aiAssistant')}
+          data-tutorial-id="tutorial-sidebar-ai"
+        >
+          <span className="ai-edge-launcher__icon">
+            <Stars size={20} />
+          </span>
+          <span className="ai-edge-launcher__label">IA</span>
+        </button>
+      )}
+
+      {/* Mobile: AI chat as a slide-in drawer (no room to squeeze) */}
+      {isMobile && isPersonal && showAiChat && (
+        <div className="ai-panel-overlay" onClick={() => setShowAiChat(false)}>
+          <div className="ai-panel-drawer" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="ai-edge-launcher ai-edge-launcher--close ai-edge-launcher--drawer"
+              onClick={() => setShowAiChat(false)}
+              aria-label={t('aiChat.close')}
+              title={t('aiChat.close')}
+            >
+              <ChevronRight size={20} />
+            </button>
+            <AiChatPanel
+              isOpen={showAiChat}
+              isMobile
+              onTasksCreated={fetchData}
+            />
+          </div>
+        </div>
       )}
 
       <DailySummaryModal

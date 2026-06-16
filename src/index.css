@@ -285,6 +285,33 @@ html {
   overflow: hidden;
 }
 
+/* Task form modal — wider footprint + responsive two-column layout.
+   Goes wide instead of tall so fields don't push the form into a scroll. */
+.task-form-dialog {
+  max-width: 940px;
+}
+
+.task-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1.5rem;
+}
+
+/* Title + description always run the full width of the modal. */
+.task-form-grid .task-form-span-2 {
+  grid-column: 1 / -1;
+}
+
+/* Collapse to a single column on phones; let the modal use the screen. */
+@media (max-width: 767.98px) {
+  .task-form-dialog {
+    max-width: none;
+  }
+  .task-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 [data-sonner-toast][data-type="success"] [data-icon] {
   color: var(--accent) !important;
 }
@@ -434,6 +461,180 @@ html {
   animation: bgShift 8s ease infinite, pulseGlow 4s ease-in-out infinite;
 }
 
+/* ─── AI edge launcher — tab docked to the right edge, vertically centered ── */
+@keyframes bgShiftV {
+  0% { background-position: 50% 0%; }
+  50% { background-position: 50% 100%; }
+  100% { background-position: 50% 0%; }
+}
+
+.ai-edge-launcher {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1030;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 32px;
+  height: 64px;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  border-radius: 16px 0 0 16px;
+  background: linear-gradient(180deg, #10b981, #3b82f6, #8b5cf6);
+  background-size: 100% 300%;
+  animation: bgShiftV 8s ease infinite;
+  box-shadow: -6px 4px 18px -4px rgba(59, 130, 246, 0.45), 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: transform var(--transition), box-shadow var(--transition), filter var(--transition), width var(--transition);
+}
+
+.ai-edge-launcher:hover {
+  transform: translateY(-50%) translateX(-4px);
+  width: 36px;
+  filter: brightness(1.08);
+  box-shadow: -10px 6px 26px -4px rgba(59, 130, 246, 0.55), 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.ai-edge-launcher:active {
+  transform: translateY(-50%) translateX(-1px);
+}
+
+.ai-edge-launcher:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.ai-edge-launcher__icon {
+  display: flex;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.ai-edge-launcher__label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Collapse handle — mirror of the open tab, sits on the panel's left edge.
+   Thinner + less rounded ("menos bordas") and no slide-out on hover. */
+.ai-edge-launcher--close {
+  width: 24px;
+  height: 52px;
+  border-radius: 10px 0 0 10px;
+  box-shadow: -4px 4px 14px -4px rgba(59, 130, 246, 0.4), 0 2px 6px rgba(0, 0, 0, 0.35);
+  /* `right` matches the dock's width transition so the handle tracks the
+     panel's left edge while it opens/closes; opacity hides it when collapsed. */
+  transition: right 0.25s ease, opacity 0.18s ease, transform var(--transition), box-shadow var(--transition), filter var(--transition), width var(--transition);
+}
+.ai-edge-launcher--close:hover {
+  transform: translateY(-50%);
+  width: 27px;
+  filter: brightness(1.1);
+}
+.ai-edge-launcher--close:active {
+  transform: translateY(-50%);
+}
+
+/* Mobile: anchored to the drawer's left edge instead of the viewport edge. */
+.ai-edge-launcher--drawer {
+  position: absolute;
+  left: 0;
+  right: auto;
+  top: 50%;
+  transform: translate(-100%, -50%);
+}
+.ai-edge-launcher--drawer:hover,
+.ai-edge-launcher--drawer:active {
+  transform: translate(-100%, -50%);
+  width: 24px;
+}
+
+/* AI gradient avatar — reused in chat modal header / empty state */
+.ai-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  flex-shrink: 0;
+  background: linear-gradient(270deg, #10b981, #3b82f6, #8b5cf6, #10b981);
+  background-size: 300% 300%;
+  animation: bgShift 8s ease infinite;
+  box-shadow: 0 2px 10px -2px rgba(59, 130, 246, 0.5);
+}
+
+/* ─── AI chat side panel ────────────────────────────────────────────────── */
+/* Desktop: docked flex sibling of <main>; width animates 0 → open to squeeze
+   the board. Inner keeps a fixed width so content doesn't reflow mid-slide. */
+.ai-panel-dock {
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+  transition: width 0.25s ease;
+}
+
+.ai-panel-dock__inner {
+  height: 100%;
+}
+
+.ai-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-surface);
+  border-left: 1px solid var(--border-default);
+  overflow: hidden;
+}
+
+/* Mobile: slide-in drawer over the board (no room to squeeze). */
+.ai-panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease;
+}
+
+.ai-panel-drawer {
+  position: relative;
+  width: min(420px, 92%);
+  height: 100%;
+  animation: aiDrawerIn 0.25s ease;
+}
+
+@keyframes aiDrawerIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Sidebar nav micro-interaction */
+.sidebar-nav-link {
+  transition: background-color var(--transition), color var(--transition), transform var(--transition);
+}
+.sidebar-nav-link:hover {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-edge-launcher,
+  .ai-avatar { animation: none; }
+  .ai-edge-launcher:hover { transform: translateY(-50%); width: 32px; }
+  .ai-edge-launcher--close:hover { width: 27px; }
+  .ai-edge-launcher--drawer:hover { transform: translate(-100%, -50%); width: 24px; }
+  .sidebar-nav-link:hover { transform: none; }
+}
+
 /* ─── Custom DateTimePicker ─────────────────────────────────────────────── */
 @keyframes dtpickerFadeIn {
   from { opacity: 0; transform: scaleY(0.94) translateY(-4px); }
@@ -479,6 +680,25 @@ html {
 
 .dtpicker-display--empty {
   color: var(--text-muted);
+}
+
+.dtpicker-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  padding: 0;
+  outline: none;
+}
+
+.dtpicker-input::placeholder {
+  color: var(--text-muted);
+}
+
+.dtpicker-input:disabled {
+  cursor: default;
 }
 
 .dtpicker-clear {

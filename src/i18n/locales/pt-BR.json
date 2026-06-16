@@ -44,11 +44,15 @@
       "sections": [
         {
           "heading": "1. Controlador dos dados",
-          "body": ["O DailyTracker é o controlador dos dados pessoais tratados nesta plataforma, sendo responsável por decidir sobre a coleta e o tratamento das suas informações. Para questões relacionadas à privacidade, entre em contato pelo e-mail privacidade@dailytracker.app."]
+          "body": [
+            "O DailyTracker é o controlador dos dados pessoais tratados nesta plataforma, sendo responsável por decidir sobre a coleta e o tratamento das suas informações. Para questões relacionadas à privacidade, entre em contato pelo e-mail privacidade@dailytracker.app."
+          ]
         },
         {
           "heading": "2. Dados que coletamos",
-          "body": ["Coletamos apenas os dados necessários para oferecer e melhorar nossos serviços:"],
+          "body": [
+            "Coletamos apenas os dados necessários para oferecer e melhorar nossos serviços:"
+          ],
           "bullets": [
             "Dados de cadastro: nome e endereço de e-mail informados na criação da conta.",
             "Dados de autenticação: ao usar o login com Google, recebemos seu nome, e-mail e identificador da conta Google.",
@@ -58,7 +62,9 @@
         },
         {
           "heading": "3. Finalidades e bases legais do tratamento",
-          "body": ["Tratamos seus dados pessoais com base nas hipóteses legais previstas na LGPD, para as seguintes finalidades:"],
+          "body": [
+            "Tratamos seus dados pessoais com base nas hipóteses legais previstas na LGPD, para as seguintes finalidades:"
+          ],
           "bullets": [
             "Execução de contrato: criar e gerenciar sua conta e fornecer as funcionalidades da plataforma.",
             "Consentimento: envio de comunicações opcionais e uso de cookies não essenciais.",
@@ -68,7 +74,9 @@
         },
         {
           "heading": "4. Compartilhamento de dados",
-          "body": ["Não vendemos seus dados pessoais. Podemos compartilhá-los com provedores que nos ajudam a operar a plataforma, sempre limitados ao necessário:"],
+          "body": [
+            "Não vendemos seus dados pessoais. Podemos compartilhá-los com provedores que nos ajudam a operar a plataforma, sempre limitados ao necessário:"
+          ],
           "bullets": [
             "Provedores de infraestrutura e hospedagem responsáveis por manter o serviço no ar.",
             "Google, quando você opta pela autenticação via conta Google.",
@@ -78,11 +86,15 @@
         },
         {
           "heading": "5. Cookies",
-          "body": ["Utilizamos cookies e tecnologias semelhantes para o funcionamento e a melhoria do site. Você pode gerenciar suas preferências a qualquer momento. Para mais detalhes, consulte nossa Política de Cookies."]
+          "body": [
+            "Utilizamos cookies e tecnologias semelhantes para o funcionamento e a melhoria do site. Você pode gerenciar suas preferências a qualquer momento. Para mais detalhes, consulte nossa Política de Cookies."
+          ]
         },
         {
           "heading": "6. Seus direitos como titular",
-          "body": ["Nos termos do art. 18 da LGPD, você pode exercer os seguintes direitos a qualquer momento:"],
+          "body": [
+            "Nos termos do art. 18 da LGPD, você pode exercer os seguintes direitos a qualquer momento:"
+          ],
           "bullets": [
             "Confirmar a existência de tratamento e acessar seus dados.",
             "Corrigir dados incompletos, inexatos ou desatualizados.",
@@ -94,23 +106,33 @@
         },
         {
           "heading": "7. Segurança da informação",
-          "body": ["Adotamos medidas técnicas e organizacionais para proteger seus dados contra acessos não autorizados, perda, alteração ou destruição, incluindo criptografia em trânsito e controles de acesso restritos."]
+          "body": [
+            "Adotamos medidas técnicas e organizacionais para proteger seus dados contra acessos não autorizados, perda, alteração ou destruição, incluindo criptografia em trânsito e controles de acesso restritos."
+          ]
         },
         {
           "heading": "8. Retenção dos dados",
-          "body": ["Mantemos seus dados apenas pelo tempo necessário para cumprir as finalidades descritas nesta política ou conforme exigido por lei. Ao excluir sua conta, seus dados pessoais são eliminados ou anonimizados, salvo obrigação legal de retenção."]
+          "body": [
+            "Mantemos seus dados apenas pelo tempo necessário para cumprir as finalidades descritas nesta política ou conforme exigido por lei. Ao excluir sua conta, seus dados pessoais são eliminados ou anonimizados, salvo obrigação legal de retenção."
+          ]
         },
         {
           "heading": "9. Transferência internacional de dados",
-          "body": ["Alguns de nossos provedores podem armazenar dados fora do Brasil. Nesses casos, garantimos que a transferência ocorra de acordo com a LGPD e com salvaguardas adequadas de proteção."]
+          "body": [
+            "Alguns de nossos provedores podem armazenar dados fora do Brasil. Nesses casos, garantimos que a transferência ocorra de acordo com a LGPD e com salvaguardas adequadas de proteção."
+          ]
         },
         {
           "heading": "10. Alterações nesta política",
-          "body": ["Podemos atualizar esta Política de Privacidade periodicamente. Alterações relevantes serão comunicadas na plataforma, e a data da última atualização será sempre indicada no topo deste documento."]
+          "body": [
+            "Podemos atualizar esta Política de Privacidade periodicamente. Alterações relevantes serão comunicadas na plataforma, e a data da última atualização será sempre indicada no topo deste documento."
+          ]
         },
         {
           "heading": "11. Encarregado e contato",
-          "body": ["Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de dados, entre em contato com nosso Encarregado pela Proteção de Dados (DPO) pelo e-mail privacidade@dailytracker.app."]
+          "body": [
+            "Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento de dados, entre em contato com nosso Encarregado pela Proteção de Dados (DPO) pelo e-mail privacidade@dailytracker.app."
+          ]
         }
       ]
     },
@@ -121,15 +143,21 @@
       "sections": [
         {
           "heading": "1. O que são cookies",
-          "body": ["Cookies são pequenos arquivos de texto armazenados no seu dispositivo quando você visita um site. Eles permitem que o site reconheça seu navegador, lembre suas preferências e melhore sua experiência de navegação."]
+          "body": [
+            "Cookies são pequenos arquivos de texto armazenados no seu dispositivo quando você visita um site. Eles permitem que o site reconheça seu navegador, lembre suas preferências e melhore sua experiência de navegação."
+          ]
         },
         {
           "heading": "2. Como utilizamos cookies",
-          "body": ["Utilizamos cookies para manter você autenticado, lembrar suas preferências (como idioma e tema), garantir a segurança e entender como a plataforma é utilizada para aprimorá-la continuamente."]
+          "body": [
+            "Utilizamos cookies para manter você autenticado, lembrar suas preferências (como idioma e tema), garantir a segurança e entender como a plataforma é utilizada para aprimorá-la continuamente."
+          ]
         },
         {
           "heading": "3. Categorias de cookies que utilizamos",
-          "body": ["Classificamos os cookies nas seguintes categorias:"],
+          "body": [
+            "Classificamos os cookies nas seguintes categorias:"
+          ],
           "bullets": [
             "Essenciais: indispensáveis ao funcionamento do site, como autenticação, sessão e segurança. Não podem ser desativados.",
             "Análise: coletam informações agregadas e anônimas sobre o uso da plataforma para nos ajudar a melhorá-la.",
@@ -138,19 +166,27 @@
         },
         {
           "heading": "4. Cookies de terceiros",
-          "body": ["Alguns cookies podem ser definidos por serviços de terceiros que utilizamos, como provedores de autenticação e análise. Esses terceiros possuem suas próprias políticas de privacidade sobre o uso dessas informações."]
+          "body": [
+            "Alguns cookies podem ser definidos por serviços de terceiros que utilizamos, como provedores de autenticação e análise. Esses terceiros possuem suas próprias políticas de privacidade sobre o uso dessas informações."
+          ]
         },
         {
           "heading": "5. Como gerenciar suas preferências",
-          "body": ["Ao acessar o site pela primeira vez, você pode aceitar todos os cookies, recusar os não essenciais ou personalizar suas escolhas. Você pode alterar suas preferências a qualquer momento usando o botão abaixo. Também é possível bloquear ou excluir cookies diretamente nas configurações do seu navegador, mas isso pode afetar o funcionamento do site."]
+          "body": [
+            "Ao acessar o site pela primeira vez, você pode aceitar todos os cookies, recusar os não essenciais ou personalizar suas escolhas. Você pode alterar suas preferências a qualquer momento usando o botão abaixo. Também é possível bloquear ou excluir cookies diretamente nas configurações do seu navegador, mas isso pode afetar o funcionamento do site."
+          ]
         },
         {
           "heading": "6. Consentimento",
-          "body": ["Os cookies não essenciais só são ativados após o seu consentimento, que pode ser revogado a qualquer momento. Registramos suas escolhas de consentimento para que não precisemos perguntar novamente a cada visita."]
+          "body": [
+            "Os cookies não essenciais só são ativados após o seu consentimento, que pode ser revogado a qualquer momento. Registramos suas escolhas de consentimento para que não precisemos perguntar novamente a cada visita."
+          ]
         },
         {
           "heading": "7. Atualizações desta política",
-          "body": ["Podemos atualizar esta Política de Cookies periodicamente. Recomendamos revisá-la com frequência. A data da última atualização é indicada no topo deste documento."]
+          "body": [
+            "Podemos atualizar esta Política de Cookies periodicamente. Recomendamos revisá-la com frequência. A data da última atualização é indicada no topo deste documento."
+          ]
         }
       ]
     }
@@ -202,9 +238,18 @@
     "ctaParagraph": "Junte-se aos primeiros usuários e descubra como organizar a vida profissional e pessoal nunca foi tão simples.",
     "ctaButton": "Criar minha conta grátis",
     "features": {
-      "kanban": { "title": "Kanban Visual", "description": "Organize tarefas em colunas Planejado, Em Progresso e Feito com drag & drop intuitivo." },
-      "filters": { "title": "Filtros Inteligentes", "description": "Filtre por projeto, tipo de tarefa e intervalo de datas para encontrar exatamente o que precisa." },
-      "ai": { "title": "Assistente IA", "description": "Analise sua produtividade, gere resumos de daily e identifique gargalos com IA integrada." }
+      "kanban": {
+        "title": "Kanban Visual",
+        "description": "Organize tarefas em colunas Planejado, Em Progresso e Feito com drag & drop intuitivo."
+      },
+      "filters": {
+        "title": "Filtros Inteligentes",
+        "description": "Filtre por projeto, tipo de tarefa e intervalo de datas para encontrar exatamente o que precisa."
+      },
+      "ai": {
+        "title": "Assistente IA",
+        "description": "Analise sua produtividade, gere resumos de daily e identifique gargalos com IA integrada."
+      }
     }
   },
   "login": {
@@ -268,6 +313,13 @@
   "dashboard": {
     "title": "Monitor de Tarefas",
     "filterByDate": "Filtrar por data"
+  },
+  "search": {
+    "placeholder": "Buscar tarefas, projetos…",
+    "noResults": "Nenhum resultado para \"{{query}}\"",
+    "projects": "Projetos",
+    "tasks": "Tarefas",
+    "filtersDisabled": "Filtros desativados durante a busca"
   },
   "kanban": {
     "planned": "Planejado",
@@ -359,6 +411,7 @@
   },
   "aiChat": {
     "title": "Assistente IA",
+    "subtitle": "Pergunte qualquer coisa",
     "setupTitle": "Configure sua API Key do Gemini",
     "setupBody": "Acesse o Google AI Studio para obter sua chave.",
     "setupLinkText": "Google AI Studio",
@@ -377,7 +430,9 @@
     "keyRemovedToast": "Chave removida.",
     "keySaveError": "Erro ao salvar a chave.",
     "keyRemoveError": "Erro ao remover a chave.",
-    "chatError": "Erro ao comunicar com a IA."
+    "chatError": "Erro ao comunicar com a IA.",
+    "clearChat": "Limpar conversa",
+    "close": "Fechar"
   },
   "reports": {
     "preset7d": "Últimos 7 dias",
