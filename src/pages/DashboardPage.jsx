@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DndContext, DragOverlay, closestCorners, PointerSensor, TouchSensor, useSensor, useSensors, defaultDropAnimationSideEffects } from '@dnd-kit/core';
@@ -330,53 +330,137 @@ export default function DashboardPage() {
       toast.error('Não foi possível deletar a tarefa.');
     }
   };
-  const findContainer = (taskId) => {
+  // Mirror of taskColumns kept in sync so drag handlers always read the freshest
+  // ordering (onDragOver fires many times per second, before React re-renders).
+  const columnsRef = useRef(taskColumns);
+  useEffect(() => { columnsRef.current = taskColumns; }, [taskColumns]);
+  const applyColumns = (next) => { columnsRef.current = next; setTaskColumns(next); };
+
+  const dragSourceContainer = useRef(null);
+  const dragStartSnapshot = useRef(null);
+
+  const findContainerIn = (columns, taskId) => {
     if (!taskId) return null;
-    for (const status in taskColumns) { if (taskColumns[status].some(task => task.id === taskId)) return status; }
+    for (const status in columns) {
+      if (columns[status].some(task => task.id === taskId)) return status;
+    }
     return null;
   };
-  const handleDragStart = (event) => { const { active } = event; const task = allTasks.find(t => t.id === active.id); setActiveTask(task); };
+
   // Parse compound swimlane droppable IDs like "PLANNED::project_1" → "PLANNED"
   const parseContainerId = (id) => {
     if (typeof id === 'string' && id.includes('::')) return id.split('::')[0];
     return id;
   };
 
-  const handleDragEnd = (event) => {
-    setActiveTask(null);
+  const handleDragStart = (event) => {
+    const { active } = event;
+    const task = allTasks.find(t => t.id === active.id);
+    setActiveTask(task);
+    dragSourceContainer.current = findContainerIn(columnsRef.current, active.id);
+    dragStartSnapshot.current = columnsRef.current;
+  };
+
+  // Move the dragged card between columns mid-drag so the destination column
+  // reflows and previews the drop (the "make room" animation).
+  const handleDragOver = (event) => {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const sourceContainer = findContainer(active.id);
-    const rawDest = findContainer(over.id) || over.id;
-    const destContainer = parseContainerId(String(rawDest));
-    if (!sourceContainer || !destContainer || !taskColumns[sourceContainer] || !taskColumns[destContainer]) return;
-    if (sourceContainer === destContainer) {
-      setTaskColumns(prev => {
-        const columnTasks = prev[sourceContainer];
-        const oldIndex = columnTasks.findIndex(t => t.id === active.id);
-        const newIndex = columnTasks.findIndex(t => t.id === over.id);
-        if (oldIndex === -1 || newIndex === -1) return prev;
-        const reordered = arrayMove(columnTasks, oldIndex, newIndex);
-        const payload = reordered.map((task, index) => ({ id: task.id, position: index * 10 }));
-        api.put('/api/tasks/reorder', payload, { params: activeWorkspaceId ? { workspaceId: activeWorkspaceId } : {} }).catch(() => fetchData());
-        return { ...prev, [sourceContainer]: reordered };
-      });
+    if (!over) return;
+    const activeId = active.id;
+    const overId = over.id;
+    if (activeId === overId) return;
+
+    const prev = columnsRef.current;
+    const activeContainer = findContainerIn(prev, activeId);
+    const overTaskContainer = findContainerIn(prev, overId);
+    const overContainer = overTaskContainer || parseContainerId(String(overId));
+    if (!activeContainer || !overContainer || !prev[activeContainer] || !prev[overContainer]) return;
+    // Same column: the sortable strategy handles the reflow; commit at drop.
+    if (activeContainer === overContainer) return;
+
+    const activeItems = prev[activeContainer];
+    const overItems = prev[overContainer];
+    const activeIndex = activeItems.findIndex(t => t.id === activeId);
+    if (activeIndex === -1) return;
+    const overIndex = overItems.findIndex(t => t.id === overId);
+
+    let newIndex;
+    if (overTaskContainer) {
+      const isBelowOverItem =
+        over.rect &&
+        active.rect.current.translated &&
+        active.rect.current.translated.top > over.rect.top + over.rect.height / 2;
+      newIndex = overIndex >= 0 ? overIndex + (isBelowOverItem ? 1 : 0) : overItems.length;
     } else {
-      let movedTask;
-      const sourceTasks = [...taskColumns[sourceContainer]];
-      const activeIndex = sourceTasks.findIndex(t => t.id === active.id);
-      if (activeIndex > -1) { [movedTask] = sourceTasks.splice(activeIndex, 1); } else return;
-      const updatedTask = { ...movedTask, status: destContainer };
-      api.put(`/api/tasks/${active.id}`, { status: destContainer }, { params: activeWorkspaceId ? { workspaceId: activeWorkspaceId } : {} })
-        .then(() => toast.success('Tarefa movida!'))
-        .catch(() => { fetchData(); toast.error('Não foi possível mover a tarefa.'); });
-      setTaskColumns(prev => {
-        const destTasks = [...prev[destContainer]];
-        const overIndex = destTasks.findIndex(t => t.id === over.id);
-        if (overIndex !== -1) { destTasks.splice(overIndex, 0, updatedTask); } else { destTasks.push(updatedTask); }
-        return { ...prev, [sourceContainer]: sourceTasks, [destContainer]: destTasks };
-      });
+      newIndex = overItems.length;
     }
+
+    const movedTask = { ...activeItems[activeIndex], status: overContainer };
+    applyColumns({
+      ...prev,
+      [activeContainer]: activeItems.filter(t => t.id !== activeId),
+      [overContainer]: [
+        ...overItems.slice(0, newIndex),
+        movedTask,
+        ...overItems.slice(newIndex),
+      ],
+    });
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    const sourceContainer = dragSourceContainer.current;
+    dragSourceContainer.current = null;
+    setActiveTask(null);
+
+    // Dropped outside any droppable → revert to the pre-drag snapshot.
+    if (!over) {
+      if (dragStartSnapshot.current) applyColumns(dragStartSnapshot.current);
+      dragStartSnapshot.current = null;
+      return;
+    }
+    dragStartSnapshot.current = null;
+
+    const prev = columnsRef.current;
+    const finalContainer = findContainerIn(prev, active.id);
+    if (!finalContainer || !prev[finalContainer]) return;
+    const overContainer = findContainerIn(prev, over.id) || parseContainerId(String(over.id));
+
+    // Settle the exact index within the final column relative to the drop target.
+    let columns = prev;
+    if (overContainer === finalContainer) {
+      const items = prev[finalContainer];
+      const activeIndex = items.findIndex(t => t.id === active.id);
+      const overIndex = items.findIndex(t => t.id === over.id);
+      if (activeIndex !== -1 && overIndex !== -1 && activeIndex !== overIndex) {
+        columns = { ...prev, [finalContainer]: arrayMove(items, activeIndex, overIndex) };
+        applyColumns(columns);
+      }
+    }
+
+    const reordered = columns[finalContainer];
+    const reorderPayload = reordered.map((task, index) => ({ id: task.id, position: index * 10 }));
+    const params = activeWorkspaceId ? { workspaceId: activeWorkspaceId } : {};
+
+    if (finalContainer === sourceContainer) {
+      // Pure reorder within the original column.
+      api.put('/api/tasks/reorder', reorderPayload, { params }).catch(() => fetchData());
+    } else {
+      // Moved to another column → persist new status, then persist the drop order.
+      api.put(`/api/tasks/${active.id}`, { status: finalContainer }, { params })
+        .then(() => {
+          toast.success('Tarefa movida!');
+          api.put('/api/tasks/reorder', reorderPayload, { params }).catch(() => {});
+        })
+        .catch(() => { fetchData(); toast.error('Não foi possível mover a tarefa.'); });
+    }
+  };
+
+  const handleDragCancel = () => {
+    if (dragStartSnapshot.current) applyColumns(dragStartSnapshot.current);
+    dragStartSnapshot.current = null;
+    dragSourceContainer.current = null;
+    setActiveTask(null);
   };
 
   const sensors = useSensors(
@@ -684,7 +768,7 @@ export default function DashboardPage() {
             </div>}
           </header>
 
-          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <h2 className="visually-hidden">{t('dashboard.title')}</h2>
               {renderDashboardContent()}
