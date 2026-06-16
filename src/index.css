@@ -587,3 +587,131 @@ html {
   color: var(--text-muted);
   cursor: default;
 }
+
+/* ─── Dashboard: Kanban drag & drop ─────────────────────────────────────── */
+
+.task-card-wrapper {
+  position: relative;
+  outline: none;
+  touch-action: manipulation;
+}
+
+/* Original slot while its card is being dragged: clean dashed placeholder.
+   inset bottom matches the wrapper's 0.5rem marginBottom gap. */
+.task-card-wrapper--dragging > .card {
+  opacity: 0;
+}
+
+.task-card-wrapper--dragging::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1.5px dashed var(--accent-border);
+  border-radius: var(--radius-md);
+  background: var(--accent-subtle);
+  pointer-events: none;
+  animation: placeholderIn 0.16s ease both;
+}
+
+@keyframes placeholderIn {
+  from { opacity: 0; transform: scale(0.985); }
+  to   { opacity: 1; transform: scale(1);     }
+}
+
+/* The floating card under the cursor (DragOverlay) */
+.task-card--overlay {
+  cursor: grabbing !important;
+  animation: cardLift 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.task-card--overlay > .card {
+  border-color: var(--accent-border) !important;
+  box-shadow:
+    0 16px 32px -8px rgba(0, 0, 0, 0.55),
+    0 0 0 1px var(--accent-border);
+}
+
+@keyframes cardLift {
+  from { transform: scale(1)    rotate(0deg);     }
+  to   { transform: scale(1.03) rotate(-1.2deg);  }
+}
+
+[data-theme="light"] .task-card--overlay > .card {
+  box-shadow:
+    0 16px 32px -8px rgba(0, 0, 0, 0.2),
+    0 0 0 1px var(--accent-border);
+}
+
+/* Subtle press feedback for chips / tabs / sidebar rows */
+.press-effect {
+  transition: transform 0.12s ease, background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.press-effect:active {
+  transform: scale(0.97);
+}
+
+/* ─── Sidebar: menu reveal animations ───────────────────────────────────── */
+
+.sidebar-submenu {
+  overflow: hidden;
+  animation: submenuExpand 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes submenuExpand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.sidebar-submenu-item {
+  animation: submenuItemIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.sidebar-submenu-item:nth-child(1) { animation-delay: 0.03s; }
+.sidebar-submenu-item:nth-child(2) { animation-delay: 0.08s; }
+.sidebar-submenu-item:nth-child(3) { animation-delay: 0.13s; }
+
+@keyframes submenuItemIn {
+  from { opacity: 0; transform: translateX(-9px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+.sidebar-chevron {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-chevron--open {
+  transform: rotate(90deg);
+}
+
+/* Animated active-indicator bar for sidebar rows */
+.sidebar-row {
+  position: relative;
+}
+
+.sidebar-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 0;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  transform: translateY(-50%);
+  transition: height 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.sidebar-row--active::before {
+  height: 60%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-submenu,
+  .sidebar-submenu-item,
+  .task-card--overlay,
+  .task-card-wrapper--dragging::after {
+    animation: none;
+  }
+}

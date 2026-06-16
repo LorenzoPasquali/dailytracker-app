@@ -16,7 +16,7 @@ const PRIORITY_CONFIG = {
   LOW:    { icon: ArrowDownCircleFill,       color: '#6b7280' },
 };
 
-export default function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace }) {
+export default function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace, isOverlay = false }) {
   const { i18n, t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -46,25 +46,30 @@ export default function TaskCard({ task, projects = [], onEdit, isPersonalWorksp
   const priorityConfig = PRIORITY_CONFIG[priorityKey] || PRIORITY_CONFIG.MEDIUM;
   const PriorityIcon = priorityConfig.icon;
 
+  // When dragging, the floating DragOverlay represents the card, so the
+  // original slot stays put (no transform) and is shown as a clean dashed
+  // placeholder via CSS — avoids the duplicated "ghost" card effect.
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: transition || 'all 150ms ease',
-    opacity: isDragging ? 0.85 : 1,
-    cursor: 'grab',
+    transform: isOverlay ? undefined : CSS.Transform.toString(transform),
+    transition: transition || 'transform 200ms cubic-bezier(0.16, 1, 0.3, 1)',
     width: '100%',
-    margin: '0 auto',
-    scale: isDragging ? '1.02' : '1',
-    zIndex: isDragging ? 999 : 1,
-    position: 'relative'
+    marginBottom: '0.5rem',
   };
 
+  const wrapperClass = [
+    'task-card-wrapper',
+    isDragging ? 'task-card-wrapper--dragging' : '',
+    isOverlay ? 'task-card--overlay' : '',
+  ].filter(Boolean).join(' ');
+
   const cardStyle = {
-    backgroundColor: isHovered ? 'var(--bg-hover)' : 'var(--bg-surface)',
+    backgroundColor: isHovered && !isOverlay ? 'var(--bg-hover)' : 'var(--bg-surface)',
     border: '1px solid var(--border-subtle)',
     borderLeft: `3px solid ${projectColor}`,
     borderRadius: 'var(--radius-md)',
-    transition: 'background-color var(--transition)',
-    boxShadow: isDragging ? '0 8px 24px rgba(0, 0, 0, 0.4)' : 'none',
+    transition: 'background-color var(--transition), border-color var(--transition), box-shadow var(--transition), transform var(--transition)',
+    boxShadow: isHovered && !isOverlay ? '0 4px 14px -6px rgba(0, 0, 0, 0.4)' : 'none',
+    transform: isHovered && !isOverlay ? 'translateY(-1px)' : 'translateY(0)',
   };
 
   const formatDate = (dateString) => {
@@ -85,12 +90,13 @@ export default function TaskCard({ task, projects = [], onEdit, isPersonalWorksp
     <div
       ref={setNodeRef}
       style={style}
+      className={wrapperClass}
       {...attributes}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Card style={cardStyle} className="mb-2">
-        <div {...listeners} onClick={() => onEdit(task)} style={{ cursor: 'grab' }}>
+      <Card style={cardStyle}>
+        <div {...listeners} onClick={() => onEdit(task)} style={{ cursor: isOverlay ? 'grabbing' : 'grab' }}>
           <Card.Body style={{ padding: '0.75rem 0.9rem' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{

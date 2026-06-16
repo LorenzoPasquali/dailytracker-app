@@ -1,13 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Nav, Accordion, useAccordionButton, AccordionContext, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Nav, Accordion, useAccordionButton, AccordionContext, Tooltip, OverlayTrigger, Collapse } from 'react-bootstrap';
 import HouseDoorFill from 'react-bootstrap-icons/dist/icons/house-door-fill';
 import CollectionFill from 'react-bootstrap-icons/dist/icons/collection-fill';
 import BarChartFill from 'react-bootstrap-icons/dist/icons/bar-chart-fill';
 import Folder from 'react-bootstrap-icons/dist/icons/folder';
 import TagFill from 'react-bootstrap-icons/dist/icons/tag-fill';
-import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
-import ChevronUp from 'react-bootstrap-icons/dist/icons/chevron-up';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
 import ClipboardCheck from 'react-bootstrap-icons/dist/icons/clipboard-check';
@@ -62,7 +60,11 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.9rem' }}>
         {children}
       </div>
-      {isCurrentEventKey ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+      <ChevronRight
+        size={13}
+        className={`sidebar-chevron${isCurrentEventKey ? ' sidebar-chevron--open' : ''}`}
+        style={{ flexShrink: 0 }}
+      />
     </div>
   );
 }
@@ -163,18 +165,21 @@ export default function Sidebar({
               {!isCollapsed && t('sidebar.monitor')}
             </div>
             {!isCollapsed && (
-              monitorExpanded
-                ? <ChevronDown size={13} style={{ flexShrink: 0 }} />
-                : <ChevronRight size={13} style={{ flexShrink: 0 }} />
+              <ChevronRight
+                size={13}
+                className={`sidebar-chevron${monitorExpanded ? ' sidebar-chevron--open' : ''}`}
+                style={{ flexShrink: 0 }}
+              />
             )}
           </div>
 
           {/* Monitor Sub-items */}
-          {!isCollapsed && monitorExpanded && (
+          <Collapse in={!isCollapsed && monitorExpanded}>
             <div>
               {/* Classic View */}
               <div
                 role="button"
+                className="sidebar-submenu-item"
                 onClick={() => handleMonitorViewSelect('classic')}
                 style={{
                   display: 'flex',
@@ -216,6 +221,7 @@ export default function Sidebar({
               {/* Modern View */}
               <div
                 role="button"
+                className="sidebar-submenu-item"
                 onClick={() => handleMonitorViewSelect('modern')}
                 style={{
                   display: 'flex',
@@ -254,7 +260,7 @@ export default function Sidebar({
                 {t('sidebar.monitorModern')}
               </div>
             </div>
-          )}
+          </Collapse>
         </div>
 
         {/* Records Accordion */}
@@ -269,6 +275,7 @@ export default function Sidebar({
                 <Nav.Link
                   onClick={onProjectsClick}
                   data-tutorial-id="tutorial-sidebar-projects"
+                  className="sidebar-submenu-item"
                   style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
                   onMouseEnter={e => {
                     e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
@@ -284,6 +291,7 @@ export default function Sidebar({
                 </Nav.Link>
                 <Nav.Link
                   onClick={onTaskTypesClick}
+                  className="sidebar-submenu-item"
                   style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
                   onMouseEnter={e => {
                     e.currentTarget.style.backgroundColor = 'var(--bg-hover)';

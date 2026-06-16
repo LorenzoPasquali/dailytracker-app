@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DndContext, DragOverlay, rectIntersection, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCorners, PointerSensor, TouchSensor, useSensor, useSensors, defaultDropAnimationSideEffects } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { toast } from 'sonner';
 import api from '../services/api';
@@ -384,6 +384,16 @@ export default function DashboardPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
+  // Smooth settle when a card is dropped; keep the original slot hidden until
+  // the overlay finishes animating back into place.
+  const dropAnimation = {
+    duration: 240,
+    easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    sideEffects: defaultDropAnimationSideEffects({
+      styles: { active: { opacity: '0' } },
+    }),
+  };
+
   const handleProjectToggle = (projectId) => {
     setSelectedProjectIds(prev =>
       prev.includes(projectId)
@@ -432,6 +442,7 @@ export default function DashboardPage() {
               return (
                 <button
                   key={tab.status}
+                  className="press-effect"
                   onClick={() => setActiveMobileTab(tab.status)}
                   style={{
                     flex: 1,
@@ -603,6 +614,7 @@ export default function DashboardPage() {
                 return (
                   <button
                     key={project.id}
+                    className="press-effect"
                     onClick={() => handleProjectToggle(project.id)}
                     style={{
                       display: 'flex',
@@ -640,6 +652,7 @@ export default function DashboardPage() {
                 onClick={() => setShowDateFilterModal(true)}
                 title={t('dashboard.filterByDate')}
                 aria-label={t('dashboard.filterByDate')}
+                className="press-effect"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -671,12 +684,12 @@ export default function DashboardPage() {
             </div>}
           </header>
 
-          <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <h2 className="visually-hidden">{t('dashboard.title')}</h2>
               {renderDashboardContent()}
             </div>
-            <DragOverlay>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} isPersonalWorkspace={isPersonal} /> : null}</DragOverlay>
+            <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} projects={projects} onEdit={() => { }} isPersonalWorkspace={isPersonal} isOverlay /> : null}</DragOverlay>
           </DndContext>
         </main>
       </div>

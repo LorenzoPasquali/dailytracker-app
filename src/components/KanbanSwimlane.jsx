@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SortableContext } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
-import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 
 const STATUS_COLORS = {
@@ -29,7 +28,7 @@ function SwimlaneCell({ status, laneId, tasks, projects, onEdit, isPersonalWorks
         borderRadius: 'var(--radius-md)',
         backgroundColor: isOver ? 'rgba(16,185,129,0.06)' : 'var(--bg-elevated)',
         boxShadow: isOver ? '0 0 0 1px var(--accent), inset 0 0 12px var(--accent-subtle)' : 'none',
-        transition: 'all 200ms ease',
+        transition: 'border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease',
         minHeight: '72px',
         padding: '0.3rem',
         display: 'flex',
@@ -37,7 +36,7 @@ function SwimlaneCell({ status, laneId, tasks, projects, onEdit, isPersonalWorks
         gap: '0.2rem',
       }}
     >
-      <SortableContext items={taskIds}>
+      <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         {tasks.length > 0 ? (
           tasks.map(task => (
             <TaskCard key={task.id} task={task} projects={projects} onEdit={onEdit} isPersonalWorkspace={isPersonalWorkspace} />
@@ -90,7 +89,10 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = isExpanded ? 'rgba(255,255,255,0.015)' : 'transparent'; }}
       >
         <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          {isExpanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+          <ChevronRight
+            size={11}
+            className={`sidebar-chevron${isExpanded ? ' sidebar-chevron--open' : ''}`}
+          />
         </span>
 
         <span style={{
@@ -146,7 +148,7 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
 
       {/* Swimlane Body */}
       {isExpanded && (
-        <div style={{
+        <div className="sidebar-submenu" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '0.4rem',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SortableContext } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
 
@@ -15,18 +15,19 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   const columnStyle = {
-    backgroundColor: 'var(--bg-elevated)',
+    backgroundColor: isOver ? 'var(--bg-active)' : 'var(--bg-elevated)',
     backgroundImage: 'linear-gradient(to bottom, var(--bg-hover) 0%, var(--bg-elevated) 100%)',
     border: `1px solid ${isOver ? 'var(--accent)' : 'var(--border-subtle)'}`,
-    boxShadow: isOver ? '0 0 15px var(--accent-subtle)' : 'none',
+    boxShadow: isOver
+      ? '0 0 0 1px var(--accent-border), inset 0 0 24px var(--accent-subtle)'
+      : 'none',
     minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
     borderRadius: 'var(--radius-lg)',
     overflow: 'hidden',
     outline: 'none',
-    transition: 'all 200ms ease',
-    ...(isOver && { backgroundColor: 'var(--bg-active)' })
+    transition: 'border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease',
   };
 
   const tasksContainerStyle = {
@@ -87,7 +88,7 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
       )}
 
       <div style={{ padding: '0.6rem', ...tasksContainerStyle }}>
-        <SortableContext items={taskIds}>
+        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.length > 0 ? (
             tasks.map(task => (
               <TaskCard key={task.id} task={task} projects={projects} onEdit={onEdit} isPersonalWorkspace={isPersonalWorkspace} />
@@ -101,9 +102,28 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
               width: '100%',
               padding: '2rem 0'
             }}>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0, opacity: 0.6 }}>
-                {t('kanban.noTasks')}
-              </p>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                minHeight: '64px',
+                margin: '0 0.2rem',
+                border: `1.5px dashed ${isOver ? 'var(--accent-border)' : 'transparent'}`,
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: isOver ? 'var(--accent-subtle)' : 'transparent',
+                transition: 'all 200ms ease',
+              }}>
+                <p style={{
+                  color: isOver ? 'var(--accent)' : 'var(--text-muted)',
+                  fontSize: '0.85rem',
+                  margin: 0,
+                  opacity: isOver ? 0.9 : 0.6,
+                  transition: 'color 200ms ease, opacity 200ms ease',
+                }}>
+                  {t('kanban.noTasks')}
+                </p>
+              </div>
             </div>
           )}
         </SortableContext>
