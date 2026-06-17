@@ -56,15 +56,28 @@ jobs:
     # (turn it on in Fase 6, once the VPS + secrets are ready).
     if: github.ref == 'refs/heads/master' && vars.DEPLOY_ENABLED == 'true'
     steps:
+      # Prepara a chave SSH em disco para o passo de deploy abaixo.
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      # O dial TCP ate a VPS as vezes da i/o timeout (SYN dropado em algum
+      # hop entre o runner e a Hostinger). Nao da pra consertar a rota, entao
+      # tentamos de novo: 3 tentativas com backoff resolvem as falhas
+      # intermitentes sem mascarar uma VPS realmente fora do ar.
       - name: Deploy to VPS over SSH
-        uses: appleboy/ssh-action@v1
+        uses: nick-fields/retry@v3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            cd ${{ secrets.VPS_PATH }}
-            docker compose pull
-            docker compose up -d
-            docker image prune -f
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: |
+            ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=30 \
+              -p ${{ secrets.VPS_PORT || 22 }} \
+              ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+              'cd ${{ secrets.VPS_PATH }} && docker compose pull && docker compose up -d && docker image prune -f'
