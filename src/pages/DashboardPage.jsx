@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DndContext, DragOverlay, closestCorners, PointerSensor, TouchSensor, useSensor, useSensors, defaultDropAnimationSideEffects } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCorners, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, defaultDropAnimationSideEffects } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { toast } from 'sonner';
 import api from '../services/api';
@@ -39,6 +39,27 @@ import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } f
 const ReportsView = lazy(() => import('../components/ReportsView'));
 const AiChatPanel = lazy(() => import('../components/AiChatPanel'));
 
+// Build empty stage-keyed columns ({ [stageId]: [] }) preserving stage order.
+// Module-scoped (pure: depend only on args) so they keep a stable identity and
+// can be used as memo inputs without re-creating every render.
+const emptyColumnsForStages = (stageList) => {
+  const cols = {};
+  stageList.forEach(s => { cols[String(s.id)] = []; });
+  return cols;
+};
+
+// Bucket a flat task list into stage-keyed columns; tasks without a known
+// stage fall into the first stage so nothing disappears.
+const bucketTasksByStage = (taskList, stageList) => {
+  const cols = emptyColumnsForStages(stageList);
+  const fallback = stageList[0] ? String(stageList[0].id) : null;
+  taskList.forEach(task => {
+    const key = task.stageId != null && cols[String(task.stageId)] ? String(task.stageId) : fallback;
+    if (key != null && cols[key]) cols[key].push(task);
+  });
+  return cols;
+};
+
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const [taskColumns, setTaskColumns] = useState({});
@@ -46,6 +67,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
+  const [dropIndicator, setDropIndicator] = useState(null); // {containerId, index} insertion line (board views)
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -158,25 +180,6 @@ export default function DashboardPage() {
   }, [stages]);
   const firstStageId = stages[0]?.id ?? null;
 
-  // Build empty stage-keyed columns ({ [stageId]: [] }) preserving stage order.
-  const emptyColumnsForStages = (stageList) => {
-    const cols = {};
-    stageList.forEach(s => { cols[String(s.id)] = []; });
-    return cols;
-  };
-
-  // Bucket a flat task list into stage-keyed columns; tasks without a known
-  // stage fall into the first stage so nothing disappears.
-  const bucketTasksByStage = (taskList, stageList) => {
-    const cols = emptyColumnsForStages(stageList);
-    const fallback = stageList[0] ? String(stageList[0].id) : null;
-    taskList.forEach(task => {
-      const key = task.stageId != null && cols[String(task.stageId)] ? String(task.stageId) : fallback;
-      if (key != null && cols[key]) cols[key].push(task);
-    });
-    return cols;
-  };
-
   useEffect(() => {
     const savedDateRange = localStorage.getItem('dashboardDateRange');
     if (savedDateRange) {
@@ -231,6 +234,12 @@ export default function DashboardPage() {
 
     return tasks;
   }, [allTasks, selectedProjectIds, dateRange, normalizedSearch, projectIndex]);
+
+  // Memoized so the column arrays keep a stable identity across re-renders that
+  // don't change the task data (e.g. the per-pointer-move drop-indicator state
+  // during a drag). Without this, React.memo on KanbanColumn would break every
+  // frame and every column would re-render instead of only the drop target.
+  const columnsByStage = useMemo(() => bucketTasksByStage(filteredTasks, stages), [filteredTasks, stages]);
 
   const handleLogout = () => { localStorage.removeItem('authToken'); localStorage.removeItem('refreshToken'); navigate('/'); };
 
@@ -397,6 +406,15 @@ export default function DashboardPage() {
 
   const dragSourceContainer = useRef(null);
   const dragStartSnapshot = useRef(null);
+  // Ref mirror of dropIndicator so the drop commit reads the latest value
+  // synchronously (state may lag a render behind the final dragOver event).
+  const dropIndicatorRef = useRef(null);
+  const setDrop = (val) => { dropIndicatorRef.current = val; setDropIndicator(val); };
+
+  // Swimlane ('modern') view keeps the legacy reflow drag model. The classic
+  // grid and the mobile single-column view use the lighter insertion-line model
+  // (no mid-drag column mutation → board stays cheap under windowing).
+  const isSwimlaneActive = monitorView === 'modern' && !isMobile;
 
   const findContainerIn = (columns, taskId) => {
     if (!taskId) return null;
@@ -418,11 +436,12 @@ export default function DashboardPage() {
     setActiveTask(task);
     dragSourceContainer.current = findContainerIn(columnsRef.current, active.id);
     dragStartSnapshot.current = columnsRef.current;
+    setDrop(null);
   };
 
-  // Move the dragged card between columns mid-drag so the destination column
-  // reflows and previews the drop (the "make room" animation).
-  const handleDragOver = (event) => {
+  // ── Swimlane drag (legacy reflow): physically move the card between columns
+  // mid-drag so the project×stage grid previews the drop.
+  const handleSwimlaneDragOver = (event) => {
     const { active, over } = event;
     if (!over) return;
     const activeId = active.id;
@@ -434,7 +453,6 @@ export default function DashboardPage() {
     const overTaskContainer = findContainerIn(prev, overId);
     const overContainer = overTaskContainer || parseContainerId(String(overId));
     if (!activeContainer || !overContainer || !prev[activeContainer] || !prev[overContainer]) return;
-    // Same column: the sortable strategy handles the reflow; commit at drop.
     if (activeContainer === overContainer) return;
 
     const activeItems = prev[activeContainer];
@@ -472,7 +490,63 @@ export default function DashboardPage() {
     });
   };
 
-  const handleDragEnd = (event) => {
+  // Current pointer Y across pointer & touch sensors. activatorEvent is the
+  // initial down event; add the live drag delta to get the current position.
+  const pointerYFromEvent = (event) => {
+    const a = event.activatorEvent;
+    let startY = 0;
+    if (a) {
+      if (typeof a.clientY === 'number') startY = a.clientY;
+      else if (a.touches && a.touches[0]) startY = a.touches[0].clientY;
+      else if (a.changedTouches && a.changedTouches[0]) startY = a.changedTouches[0].clientY;
+    }
+    return startY + (event.delta?.y || 0);
+  };
+
+  // ── Board drag (classic + mobile): never mutate the columns mid-drag; just
+  // compute where the insertion line should sit {containerId, index}. Runs on
+  // onDragMove (continuous) rather than onDragOver — onDragOver only fires when
+  // `over` changes, so the above/below side wouldn't update while the pointer
+  // moves within the same card (the "line won't go back above" bug). Threshold
+  // is the pointer Y vs the target card's midpoint (pointer, not card center, so
+  // the grab offset doesn't bias it).
+  const handleBoardDragMove = (event) => {
+    const { over } = event;
+    if (!over) { setDrop(null); return; }
+
+    const prev = columnsRef.current;
+    const overId = over.id;
+    const overTaskContainer = findContainerIn(prev, overId);
+    const overContainer = overTaskContainer || parseContainerId(String(overId));
+    if (!overContainer || !prev[overContainer]) { setDrop(null); return; }
+
+    const overItems = prev[overContainer];
+    let index;
+    if (overTaskContainer && over.rect) {
+      const overIndex = overItems.findIndex(t => t.id === overId);
+      const overMid = over.rect.top + over.rect.height / 2;
+      const isBelowOverItem = pointerYFromEvent(event) > overMid;
+      index = overIndex >= 0 ? overIndex + (isBelowOverItem ? 1 : 0) : overItems.length;
+    } else {
+      // Hovering the column body (not a card) → append to the end.
+      index = overItems.length;
+    }
+
+    const cid = String(overContainer);
+    const cur = dropIndicatorRef.current;
+    if (cur && cur.containerId === cid && cur.index === index) return; // no-op
+    setDrop({ containerId: cid, index });
+  };
+
+  const handleDragMove = (event) => {
+    if (!isSwimlaneActive) handleBoardDragMove(event);
+  };
+
+  const handleDragOver = (event) => {
+    if (isSwimlaneActive) handleSwimlaneDragOver(event);
+  };
+
+  const handleSwimlaneDragEnd = (event) => {
     const { active, over } = event;
     const sourceContainer = dragSourceContainer.current;
     dragSourceContainer.current = null;
@@ -491,7 +565,6 @@ export default function DashboardPage() {
     if (!finalContainer || !prev[finalContainer]) return;
     const overContainer = findContainerIn(prev, over.id) || parseContainerId(String(over.id));
 
-    // Settle the exact index within the final column relative to the drop target.
     let columns = prev;
     if (overContainer === finalContainer) {
       const items = prev[finalContainer];
@@ -503,16 +576,69 @@ export default function DashboardPage() {
       }
     }
 
+    persistDrop(columns, finalContainer, sourceContainer, active.id);
+  };
+
+  // ── Board drop commit: remove from source, insert at the indicator index,
+  // persist. Cross-column also persists the new stageId first.
+  const handleBoardDragEnd = (event) => {
+    const { active } = event;
+    const source = dragSourceContainer.current;
+    const indicator = dropIndicatorRef.current;
+    dragSourceContainer.current = null;
+    dragStartSnapshot.current = null;
+    setActiveTask(null);
+    setDrop(null);
+
+    if (!indicator || !source) return;
+    const target = indicator.containerId;
+    let insertIndex = indicator.index;
+
+    const prev = columnsRef.current;
+    if (!prev[source] || !prev[target]) return;
+
+    const sourceItems = [...prev[source]];
+    const activeIndex = sourceItems.findIndex(t => t.id === active.id);
+    if (activeIndex === -1) return;
+    const [moved] = sourceItems.splice(activeIndex, 1);
+
+    let columns;
+    if (source === target) {
+      // Removing the active card shifts later indices down by one.
+      if (activeIndex < insertIndex) insertIndex -= 1;
+      insertIndex = Math.max(0, Math.min(insertIndex, sourceItems.length));
+      if (insertIndex === activeIndex) return; // dropped back in place → no-op
+      sourceItems.splice(insertIndex, 0, moved);
+      columns = { ...prev, [source]: sourceItems };
+    } else {
+      const destStage = stageById[target];
+      const movedTask = {
+        ...moved,
+        stageId: Number(target),
+        stage: destStage || moved.stage,
+        status: destStage ? destStage.name : moved.status,
+      };
+      const targetItems = [...prev[target]];
+      insertIndex = Math.max(0, Math.min(insertIndex, targetItems.length));
+      targetItems.splice(insertIndex, 0, movedTask);
+      columns = { ...prev, [source]: sourceItems, [target]: targetItems };
+    }
+    applyColumns(columns);
+
+    persistDrop(columns, target, source, active.id);
+  };
+
+  // Persist the post-drop order of `finalContainer`; cross-column also writes
+  // the moved task's new stageId first.
+  const persistDrop = (columns, finalContainer, sourceContainer, activeId) => {
     const reordered = columns[finalContainer];
     const reorderPayload = reordered.map((task, index) => ({ id: task.id, position: index * 10 }));
     const params = activeWorkspaceId ? { workspaceId: activeWorkspaceId } : {};
 
     if (finalContainer === sourceContainer) {
-      // Pure reorder within the original column.
       api.put('/api/tasks/reorder', reorderPayload, { params }).catch(() => fetchData());
     } else {
-      // Moved to another column → persist new stage, then persist the drop order.
-      api.put(`/api/tasks/${active.id}`, { stageId: Number(finalContainer) }, { params })
+      api.put(`/api/tasks/${activeId}`, { stageId: Number(finalContainer) }, { params })
         .then(() => {
           toast.success(t('kanban.taskMoved'));
           api.put('/api/tasks/reorder', reorderPayload, { params }).catch(() => {});
@@ -521,11 +647,19 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDragEnd = (event) => {
+    if (isSwimlaneActive) handleSwimlaneDragEnd(event);
+    else handleBoardDragEnd(event);
+  };
+
   const handleDragCancel = () => {
-    if (dragStartSnapshot.current) applyColumns(dragStartSnapshot.current);
+    // Board model never mutates columns mid-drag, so only the swimlane needs a
+    // revert to its pre-drag snapshot.
+    if (isSwimlaneActive && dragStartSnapshot.current) applyColumns(dragStartSnapshot.current);
     dragStartSnapshot.current = null;
     dragSourceContainer.current = null;
     setActiveTask(null);
+    setDrop(null);
   };
 
   const sensors = useSensors(
@@ -562,8 +696,6 @@ export default function DashboardPage() {
     if (loading) {
       return <div className="w-100 text-center mt-5"><Spinner animation="border" style={{ color: 'var(--accent)' }} /></div>;
     }
-
-    const columnsByStage = bucketTasksByStage(filteredTasks, stages);
 
     if (isMobile) {
       const mobileTabs = stages.map(stage => ({
@@ -656,6 +788,7 @@ export default function DashboardPage() {
               onEdit={handleOpenEditModal}
               isMobile
               isPersonalWorkspace={isPersonal}
+              dropIndex={dropIndicator && dropIndicator.containerId === String(activeTab.stage.id) ? dropIndicator.index : null}
             />
           </div>
         </div>
@@ -703,6 +836,7 @@ export default function DashboardPage() {
               projects={projects}
               onEdit={handleOpenEditModal}
               isPersonalWorkspace={isPersonal}
+              dropIndex={dropIndicator && dropIndicator.containerId === String(stage.id) ? dropIndicator.index : null}
             />
           ))}
         </div>
@@ -871,7 +1005,7 @@ export default function DashboardPage() {
             </div>}
           </header>
 
-          <DndContext sensors={sensors} collisionDetection={closestCorners} autoScroll={dndAutoScroll} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
+          <DndContext sensors={sensors} collisionDetection={isSwimlaneActive ? closestCorners : closestCenter} autoScroll={dndAutoScroll} onDragStart={handleDragStart} onDragMove={handleDragMove} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <h2 className="visually-hidden">{t('dashboard.title')}</h2>
               {renderDashboardContent()}

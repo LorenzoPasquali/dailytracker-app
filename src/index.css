@@ -259,15 +259,23 @@ html {
 }
 
 /* Modal and Backdrop Otimization */
+/* Translucent background on the BASE selector (all states), not only `.show`.
+   Bootstrap's default `.modal-backdrop` bg is solid #000; if the override lived
+   only on `.show`, removing that class on close reverts the bg to solid black
+   while opacity is still fading out → a black flash. Keeping it on the base keeps
+   the fade-out translucent the whole way. */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="light"] .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
 .modal-backdrop.show {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  background-color: rgba(0, 0, 0, 0.4) !important;
   opacity: 1 !important;
-}
-
-[data-theme="light"] .modal-backdrop.show {
-  background-color: rgba(0, 0, 0, 0.2) !important;
 }
 
 .modal-content {
@@ -494,14 +502,17 @@ html {
 }
 
 .ai-edge-launcher:hover {
-  transform: translateY(-50%) translateX(-4px);
+  /* Grow inward only (anchored at right:0), no translateX — keeps the right
+     edge flush to the viewport so opening doesn't leave a gap, matching the
+     close handle's hover. */
+  transform: translateY(-50%);
   width: 36px;
   filter: brightness(1.08);
   box-shadow: -10px 6px 26px -4px rgba(59, 130, 246, 0.55), 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .ai-edge-launcher:active {
-  transform: translateY(-50%) translateX(-1px);
+  transform: translateY(-50%);
 }
 
 .ai-edge-launcher:focus-visible {
@@ -530,7 +541,7 @@ html {
   box-shadow: -4px 4px 14px -4px rgba(59, 130, 246, 0.4), 0 2px 6px rgba(0, 0, 0, 0.35);
   /* `right` matches the dock's width transition so the handle tracks the
      panel's left edge while it opens/closes; opacity hides it when collapsed. */
-  transition: right 0.25s ease, opacity 0.18s ease, transform var(--transition), box-shadow var(--transition), filter var(--transition), width var(--transition);
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease, transform var(--transition), box-shadow var(--transition), filter var(--transition), width var(--transition);
 }
 .ai-edge-launcher--close:hover {
   transform: translateY(-50%);
@@ -576,7 +587,7 @@ html {
   flex-shrink: 0;
   height: 100%;
   overflow: hidden;
-  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: width;
   contain: layout paint;
 }
@@ -838,6 +849,14 @@ html {
 @keyframes placeholderIn {
   from { opacity: 0; transform: scale(0.985); }
   to   { opacity: 1; transform: scale(1);     }
+}
+
+/* Board columns (virtualized): the dragged card lifts into the DragOverlay and
+   the drop position is shown only by a thin insertion line, so suppress the
+   full-card dashed placeholder here. The source slot stays as a clean empty gap.
+   (The swimlane reflow view keeps the dashed placeholder.) */
+.kanban-virtual-col .task-card-wrapper--dragging::after {
+  content: none;
 }
 
 /* The floating card under the cursor (DragOverlay) */

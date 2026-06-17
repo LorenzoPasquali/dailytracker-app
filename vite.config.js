@@ -34,7 +34,7 @@ export default defineConfig({
           // Libs que NAO dependem de react sao seguras em chunks separados.
           if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-vendor')) return 'recharts';
           if (id.includes('date-fns')) return 'datefns';
-          if (id.includes('@dnd-kit')) return 'dndkit';
+          if (id.includes('@dnd-kit') || id.includes('@tanstack/react-virtual')) return 'dndkit';
           if (id.includes('flag-icons')) return 'flag-icons';
           if (id.includes('i18next')) return 'i18n';
           if (id.includes('sockjs') || id.includes('stomp')) return 'ws';

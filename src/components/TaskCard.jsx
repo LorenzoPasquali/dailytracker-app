@@ -16,7 +16,7 @@ const PRIORITY_CONFIG = {
   LOW:    { icon: ArrowDownCircleFill,       color: '#6b7280' },
 };
 
-function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace, isOverlay = false }) {
+function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace, isOverlay = false, noMargin = false }) {
   const { i18n, t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -47,13 +47,17 @@ function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace, isOverlay 
   const PriorityIcon = priorityConfig.icon;
 
   // When dragging, the floating DragOverlay represents the card, so the
-  // original slot stays put (no transform) and is shown as a clean dashed
-  // placeholder via CSS — avoids the duplicated "ghost" card effect.
+  // original slot stays pinned (no transform) and is shown as a clean dashed
+  // placeholder via CSS — avoids the duplicated "ghost" card effect and keeps
+  // the placeholder anchored when the list uses a no-shift sort strategy.
+  // noMargin: the virtualized column controls vertical spacing via the row
+  // wrapper's padding, so the card must not add its own marginBottom (margins
+  // are excluded from offsetHeight and would desync the virtualizer measure).
   const style = {
-    transform: isOverlay ? undefined : CSS.Transform.toString(transform),
+    transform: (isOverlay || isDragging) ? undefined : CSS.Transform.toString(transform),
     transition: transition || 'transform 200ms cubic-bezier(0.16, 1, 0.3, 1)',
     width: '100%',
-    marginBottom: '0.5rem',
+    marginBottom: noMargin ? 0 : '0.5rem',
   };
 
   const wrapperClass = [
