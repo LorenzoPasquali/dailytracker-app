@@ -28,7 +28,6 @@ function KanbanColumn({ title, status, color, tasks = [], projects = [], onEdit,
     overflowY: 'auto',
     overflowX: 'hidden',
     flexGrow: 1,
-    scrollBehavior: 'smooth'
   };
 
   const taskIds = tasks.map(task => task.id);
