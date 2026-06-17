@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import KanbanFill from 'react-bootstrap-icons/dist/icons/kanban-fill';
 import CalendarCheck from 'react-bootstrap-icons/dist/icons/calendar-check';
 import ChatDotsFill from 'react-bootstrap-icons/dist/icons/chat-dots-fill';
@@ -9,6 +9,8 @@ import FolderFill from 'react-bootstrap-icons/dist/icons/folder-fill';
 import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
 import CheckCircleFill from 'react-bootstrap-icons/dist/icons/check-circle-fill';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import api from '../services/api';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import CssParticles from '../components/CssParticles';
 import LanguageSelector from '../components/LanguageSelector';
@@ -16,6 +18,7 @@ import CookieConsent from '../components/CookieConsent';
 import heroVideo from '../assets/dailytracker1.mp4';
 import kanbanImg from '../assets/kanban.png';
 import reportsImg from '../assets/reportsIA.png';
+import googleLogo from '../assets/google-icon.svg';
 
 /* ── FAQ Accordion Item ─────────────────────────────── */
 const FAQItem = ({ question, answer }) => {
@@ -257,6 +260,7 @@ const VideoShowcase = ({ src, label }) => {
 /* ══════════════════════════════════════════════════════ */
 export default function HomePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   /* Force dark theme on mount, restore on unmount */
@@ -268,6 +272,37 @@ export default function HomePage() {
       else document.documentElement.removeAttribute('data-theme');
     };
   }, []);
+
+  /* Receive the OAuth popup's postMessage and finish login on the landing page. */
+  useEffect(() => {
+    const handleMessage = (event) => {
+      const apiOrigin = new URL(api.defaults.baseURL).origin;
+      if (event.origin !== apiOrigin) return;
+      const { token, refreshToken, error } = event.data || {};
+      if (token) {
+        localStorage.setItem('authToken', token);
+        if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+        toast.success(t('login.googleSuccessToast'));
+        navigate('/dashboard');
+      } else if (error) {
+        toast.error(t('login.googleErrorToast'));
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate, t]);
+
+  const handleGoogleLogin = () => {
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    window.open(
+      `${api.defaults.baseURL}/auth/google?popup=true`,
+      'googleLogin',
+      `width=${width},height=${height},top=${top},left=${left}`
+    );
+  };
 
   const faqs = [
     { question: t('home.faq1Q'), answer: t('home.faq1A') },
@@ -441,6 +476,45 @@ export default function HomePage() {
             }}>
               {t('home.howItWorksLink')}
             </a>
+          </div>
+
+          <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              aria-label={t('login.googleButton')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.6rem',
+                padding: '0.75rem 1.5rem',
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                color: 'var(--text-secondary)',
+                backgroundColor: 'transparent',
+                border: '1px solid var(--border-default)',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s, color 0.2s, transform 0.2s, border-color 0.2s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+                e.currentTarget.style.borderColor = 'var(--border-default)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+              onMouseDown={e => (e.currentTarget.style.transform = 'translateY(1px) scale(0.99)')}
+            >
+              <img src={googleLogo} alt="" aria-hidden="true" width="18" height="18" loading="lazy" />
+              {t('login.googleButton')}
+            </button>
           </div>
 
           {/* Scroll indicator */}
