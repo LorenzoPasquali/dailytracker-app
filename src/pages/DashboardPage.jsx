@@ -533,6 +533,9 @@ export default function DashboardPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
+  // Snappier autoscroll while dragging — defaults are too gentle and feel laggy.
+  const dndAutoScroll = { threshold: { x: 0.15, y: 0.18 }, acceleration: 30, interval: 5 };
+
   // Smooth settle when a card is dropped; keep the original slot hidden until
   // the overlay finishes animating back into place.
   const dropAnimation = {
@@ -868,7 +871,7 @@ export default function DashboardPage() {
             </div>}
           </header>
 
-          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
+          <DndContext sensors={sensors} collisionDetection={closestCorners} autoScroll={dndAutoScroll} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <h2 className="visually-hidden">{t('dashboard.title')}</h2>
               {renderDashboardContent()}
