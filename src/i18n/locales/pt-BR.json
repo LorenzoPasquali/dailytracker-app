@@ -308,7 +308,8 @@
     "reports": "Relatórios",
     "reportsTooltip": "Módulo de Relatórios ainda não implementado",
     "aiAssistant": "Assistente IA",
-    "notifications": "Notificações"
+    "notifications": "Notificações",
+    "stages": "Etapas"
   },
   "dashboard": {
     "title": "Monitor de Tarefas",
@@ -359,7 +360,8 @@
     "updatedToast": "Tarefa atualizada!",
     "reporterLabel": "Relator",
     "assigneeLabel": "Responsável",
-    "noAssignee": "Nenhum responsável"
+    "noAssignee": "Nenhum responsável",
+    "stageLabel": "Etapa"
   },
   "task": {
     "dueDate": "Prazo",
@@ -538,5 +540,26 @@
     "unexpectedError": "Ocorreu um erro inesperado.",
     "sessionExpired": "Sessão expirada. Por favor, faça login novamente.",
     "internalServerError": "Erro interno no servidor. Tente novamente mais tarde."
+  },
+  "stages": {
+    "modalTitle": "Gerenciar Etapas",
+    "subtitle": "As etapas são as colunas do seu quadro. Arraste para reordenar.",
+    "newStage": "Nova Etapa",
+    "namePlaceholder": "Nome da nova etapa",
+    "existingStages": "Etapas Existentes",
+    "colorLabel": "Cor",
+    "finalLabel": "Etapa final",
+    "finalHint": "Tarefas nesta etapa contam como concluídas.",
+    "finalBadge": "Final",
+    "reorderHint": "Arraste para reordenar as colunas do quadro.",
+    "createdToast": "Etapa criada!",
+    "updatedToast": "Etapa atualizada!",
+    "deletedToast": "Etapa excluída!",
+    "deleteTitle": "Confirmar Exclusão de Etapa",
+    "deleteBody": "Tem certeza que deseja excluir a etapa \"{{name}}\"?",
+    "moveTasksLabel": "Mover tarefas existentes para",
+    "moveTasksHint": "Esta etapa possui tarefas. Escolha para qual etapa elas devem ir.",
+    "noStages": "Nenhuma etapa ainda. Crie a primeira acima.",
+    "lastStageError": "Você precisa manter ao menos uma etapa."
   }
 }

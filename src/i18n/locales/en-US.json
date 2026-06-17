@@ -308,7 +308,8 @@
     "reports": "Reports",
     "reportsTooltip": "Reports module not yet implemented",
     "aiAssistant": "AI Assistant",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "stages": "Stages"
   },
   "dashboard": {
     "title": "Task Monitor",
@@ -359,7 +360,8 @@
     "updatedToast": "Task updated!",
     "reporterLabel": "Reporter",
     "assigneeLabel": "Assignee",
-    "noAssignee": "No assignee"
+    "noAssignee": "No assignee",
+    "stageLabel": "Stage"
   },
   "task": {
     "dueDate": "Due date",
@@ -538,5 +540,26 @@
     "unexpectedError": "An unexpected error occurred.",
     "sessionExpired": "Session expired. Please log in again.",
     "internalServerError": "Internal server error. Please try again later."
+  },
+  "stages": {
+    "modalTitle": "Manage Stages",
+    "subtitle": "Stages are the columns of your board. Drag to reorder.",
+    "newStage": "New Stage",
+    "namePlaceholder": "New stage name",
+    "existingStages": "Existing Stages",
+    "colorLabel": "Color",
+    "finalLabel": "Final stage",
+    "finalHint": "Tasks in this stage count as completed.",
+    "finalBadge": "Final",
+    "reorderHint": "Drag to reorder the board columns.",
+    "createdToast": "Stage created!",
+    "updatedToast": "Stage updated!",
+    "deletedToast": "Stage deleted!",
+    "deleteTitle": "Confirm Stage Deletion",
+    "deleteBody": "Are you sure you want to delete the stage \"{{name}}\"?",
+    "moveTasksLabel": "Move existing tasks to",
+    "moveTasksHint": "This stage has tasks. Choose which stage they should move to.",
+    "noStages": "No stages yet. Create the first one above.",
+    "lastStageError": "You must keep at least one stage."
   }
 }

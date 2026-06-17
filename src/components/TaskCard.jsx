@@ -16,7 +16,7 @@ const PRIORITY_CONFIG = {
   LOW:    { icon: ArrowDownCircleFill,       color: '#6b7280' },
 };
 
-export default function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace, isOverlay = false }) {
+function TaskCard({ task, projects = [], onEdit, isPersonalWorkspace, isOverlay = false }) {
   const { i18n, t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -115,13 +115,14 @@ export default function TaskCard({ task, projects = [], onEdit, isPersonalWorksp
             {(() => {
               const now = new Date();
               const due = task.dueDate ? new Date(task.dueDate) : null;
-              const isOverdue = due && due < now && task.status !== 'DONE';
+              const isFinal = !!task.stage?.isFinal;
+              const isOverdue = due && due < now && !isFinal;
               const isDueSoon = due && !isOverdue && (due - now) < 24 * 60 * 60 * 1000;
               const dueDateColor = isOverdue ? 'var(--danger)' : isDueSoon ? '#f59e0b' : 'var(--text-muted)';
               return due ? (
                 <span style={{
                   fontSize: '0.73rem',
-                  color: task.status === 'DONE' ? 'var(--text-muted)' : dueDateColor,
+                  color: isFinal ? 'var(--text-muted)' : dueDateColor,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.3rem',
@@ -131,7 +132,7 @@ export default function TaskCard({ task, projects = [], onEdit, isPersonalWorksp
                   {due.toLocaleDateString(i18n.language, { day: '2-digit', month: 'short' })}
                   {', '}
                   {String(due.getHours()).padStart(2, '0')}:{String(due.getMinutes()).padStart(2, '0')}
-                  {isOverdue && task.status !== 'DONE' && ` · ${t('task.overdue')}`}
+                  {isOverdue && ` · ${t('task.overdue')}`}
                 </span>
               ) : null;
             })()}
@@ -257,3 +258,7 @@ export default function TaskCard({ task, projects = [], onEdit, isPersonalWorksp
     </div>
   );
 }
+
+// Memoized: during drag, the board re-renders on every pointer move. Without
+// this, every card re-renders each frame; with stable props only moved cards do.
+export default React.memo(TaskCard);

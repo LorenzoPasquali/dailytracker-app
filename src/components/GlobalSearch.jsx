@@ -8,7 +8,6 @@ import { normalizeText, taskMatches, buildProjectIndex } from '../utils/search';
 
 const MAX_PROJECTS = 5;
 const MAX_TASKS = 7;
-const STATUS_KEY = { PLANNED: 'kanban.planned', DOING: 'kanban.doing', DONE: 'kanban.done' };
 
 export default function GlobalSearch({
   query,
@@ -271,7 +270,7 @@ export default function GlobalSearch({
                   flatCursor += 1;
                   const idx = flatCursor;
                   const project = task.projectId != null ? projectIndex.get(task.projectId) : null;
-                  const meta = [project?.name, t(STATUS_KEY[task.status] || '')].filter(Boolean).join(' · ');
+                  const meta = [project?.name, task.stage?.name].filter(Boolean).join(' · ');
                   return (
                     <Row
                       key={`t-${task.id}`}

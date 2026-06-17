@@ -576,7 +576,9 @@ html {
   flex-shrink: 0;
   height: 100%;
   overflow: hidden;
-  transition: width 0.25s ease;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: width;
+  contain: layout paint;
 }
 
 .ai-panel-dock__inner {
@@ -884,20 +886,26 @@ html {
 }
 
 .sidebar-submenu-item {
-  animation: submenuItemIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: submenuItemIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.sidebar-submenu-item:nth-child(1) { animation-delay: 0.03s; }
-.sidebar-submenu-item:nth-child(2) { animation-delay: 0.08s; }
-.sidebar-submenu-item:nth-child(3) { animation-delay: 0.13s; }
+.sidebar-submenu-item:nth-child(1) { animation-delay: 0.02s; }
+.sidebar-submenu-item:nth-child(2) { animation-delay: 0.05s; }
+.sidebar-submenu-item:nth-child(3) { animation-delay: 0.08s; }
 
 @keyframes submenuItemIn {
-  from { opacity: 0; transform: translateX(-9px); }
+  from { opacity: 0; transform: translateX(-5px); }
   to   { opacity: 1; transform: translateX(0);    }
 }
 
 .sidebar-chevron {
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Keep the sidebar's expand/collapse (Monitor + Cadastros) snappy and in sync
+   with the width animation so rows don't jump upward while it closes. */
+[data-tutorial-id="tutorial-sidebar"] .collapsing {
+  transition: height 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebar-chevron--open {

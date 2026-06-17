@@ -5,16 +5,10 @@ import { useDroppable } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 
-const STATUS_COLORS = {
-  PLANNED: 'var(--text-muted)',
-  DOING: '#f59e0b',
-  DONE: 'var(--accent)',
-};
+const COL_MIN_WIDTH = 150;
 
-const STATUSES = ['PLANNED', 'DOING', 'DONE'];
-
-function SwimlaneCell({ status, laneId, tasks, projects, onEdit, isPersonalWorkspace }) {
-  const droppableId = `${status}::${laneId}`;
+function SwimlaneCell({ stageId, laneId, tasks, projects, onEdit, isPersonalWorkspace }) {
+  const droppableId = `${stageId}::${laneId}`;
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
   const taskIds = tasks.map(t => t.id);
 
@@ -57,14 +51,14 @@ function SwimlaneCell({ status, laneId, tasks, projects, onEdit, isPersonalWorks
   );
 }
 
-function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onToggle, isLast, isPersonalWorkspace }) {
+function SwimlaneRow({ project, laneId, tasks, stages, projects, onEdit, isExpanded, onToggle, isLast, isPersonalWorkspace, gridTemplate }) {
   const { t } = useTranslation();
 
-  const tasksByStatus = {
-    PLANNED: tasks.filter(t => t.status === 'PLANNED'),
-    DOING: tasks.filter(t => t.status === 'DOING'),
-    DONE: tasks.filter(t => t.status === 'DONE'),
-  };
+  const tasksByStage = {};
+  stages.forEach(s => { tasksByStage[s.id] = []; });
+  tasks.forEach(task => {
+    if (tasksByStage[task.stageId]) tasksByStage[task.stageId].push(task);
+  });
 
   return (
     <div style={{ borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)' }}>
@@ -84,6 +78,8 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
           transition: 'background-color var(--transition)',
           userSelect: 'none',
           outline: 'none',
+          position: 'sticky',
+          left: 0,
         }}
         onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = isExpanded ? 'rgba(255,255,255,0.015)' : 'transparent'; }}
@@ -118,17 +114,17 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
         </span>
 
         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexShrink: 0 }}>
-          {STATUSES.map(status => {
-            const count = tasksByStatus[status].length;
+          {stages.map(stage => {
+            const count = tasksByStage[stage.id].length;
             return count > 0 ? (
               <span
-                key={status}
+                key={stage.id}
                 style={{
                   fontSize: '0.65rem',
                   fontWeight: 600,
-                  color: STATUS_COLORS[status],
-                  backgroundColor: `${STATUS_COLORS[status]}22`,
-                  border: `1px solid ${STATUS_COLORS[status]}44`,
+                  color: stage.color,
+                  backgroundColor: `${stage.color}22`,
+                  border: `1px solid ${stage.color}44`,
                   padding: '0.08rem 0.4rem',
                   borderRadius: '100px',
                   minWidth: '18px',
@@ -150,16 +146,16 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
       {isExpanded && (
         <div className="sidebar-submenu" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: gridTemplate,
           gap: '0.4rem',
           padding: '0.3rem 0.75rem 0.6rem',
         }}>
-          {STATUSES.map(status => (
+          {stages.map(stage => (
             <SwimlaneCell
-              key={status}
-              status={status}
+              key={stage.id}
+              stageId={stage.id}
               laneId={laneId}
-              tasks={tasksByStatus[status]}
+              tasks={tasksByStage[stage.id]}
               projects={projects}
               onEdit={onEdit}
               isPersonalWorkspace={isPersonalWorkspace}
@@ -171,7 +167,7 @@ function SwimlaneRow({ project, laneId, tasks, projects, onEdit, isExpanded, onT
   );
 }
 
-export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projects, onEdit, isPersonalWorkspace }) {
+export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projects, stages = [], onEdit, isPersonalWorkspace }) {
   const { t } = useTranslation();
 
   const tasksWithoutProject = filteredTasks.filter(
@@ -207,6 +203,9 @@ export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projec
 
   const toggleLane = id => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
+  const gridTemplate = `repeat(${stages.length}, minmax(${COL_MIN_WIDTH}px, 1fr))`;
+  const innerMinWidth = stages.length * COL_MIN_WIDTH;
+
   if (lanes.length === 0) {
     return (
       <div style={{
@@ -235,59 +234,64 @@ export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projec
       border: '1px solid var(--border-subtle)',
       backgroundColor: 'var(--bg-surface)',
     }}>
-      {/* Column Label Header (doesn't scroll) */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '0.4rem',
-        padding: '0.45rem 0.75rem',
-        borderBottom: '1px solid var(--border-default)',
-        backgroundColor: 'var(--bg-elevated)',
-        flexShrink: 0,
-        backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.025) 0%, transparent 100%)',
-      }}>
-        {STATUSES.map(status => (
-          <div key={status} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-            <div style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: STATUS_COLORS[status],
-              flexShrink: 0,
-            }} />
-            <span style={{
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.07em',
-            }}>
-              {status === 'PLANNED'
-                ? t('kanban.planned')
-                : status === 'DOING'
-                  ? t('kanban.doing')
-                  : t('kanban.done')}
-            </span>
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
+        <div style={{ minWidth: innerMinWidth }}>
+          {/* Column Label Header (sticks to top while scrolling) */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: gridTemplate,
+            gap: '0.4rem',
+            padding: '0.45rem 0.75rem',
+            borderBottom: '1px solid var(--border-default)',
+            backgroundColor: 'var(--bg-elevated)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 2,
+            backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.025) 0%, transparent 100%)',
+          }}>
+            {stages.map(stage => (
+              <div key={stage.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                <div style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: stage.color,
+                  flexShrink: 0,
+                }} />
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.07em',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {stage.name}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Scrollable Swimlane Rows */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {lanes.map((lane, idx) => (
-          <SwimlaneRow
-            key={lane.id}
-            project={lane.project}
-            laneId={lane.id}
-            tasks={lane.tasks}
-            projects={projects}
-            onEdit={onEdit}
-            isExpanded={expanded[lane.id] !== false}
-            onToggle={() => toggleLane(lane.id)}
-            isLast={idx === lanes.length - 1}
-            isPersonalWorkspace={isPersonalWorkspace}
-          />
-        ))}
+          {/* Swimlane Rows */}
+          {lanes.map((lane, idx) => (
+            <SwimlaneRow
+              key={lane.id}
+              project={lane.project}
+              laneId={lane.id}
+              tasks={lane.tasks}
+              stages={stages}
+              projects={projects}
+              onEdit={onEdit}
+              isExpanded={expanded[lane.id] !== false}
+              onToggle={() => toggleLane(lane.id)}
+              isLast={idx === lanes.length - 1}
+              isPersonalWorkspace={isPersonalWorkspace}
+              gridTemplate={gridTemplate}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

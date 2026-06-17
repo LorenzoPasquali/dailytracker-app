@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import LanguageSelector from './LanguageSelector';
+// Lazy: pulls in flag-icons CSS (~400KB) only when the profile menu opens.
+const LanguageSelector = lazy(() => import('./LanguageSelector'));
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 import GlobalSearch from './GlobalSearch';
 import api from '../services/api';
@@ -60,6 +61,8 @@ export default function AppHeader({
   const { t } = useTranslation();
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const hasOpenedMenu = useRef(false); // keep LanguageSelector mounted after first open
   const nameInputRef = useRef(null);
 
   useEffect(() => {
@@ -205,7 +208,7 @@ export default function AppHeader({
           {isMobile ? '+' : t('header.newTask')}
         </Button>
 
-        <Dropdown align="end" autoClose="outside">
+        <Dropdown align="end" autoClose="outside" show={userMenuOpen} onToggle={(next) => { if (next) hasOpenedMenu.current = true; setUserMenuOpen(next); }}>
           <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components" />
           <Dropdown.Menu
             variant={theme === 'light' ? undefined : 'dark'}
@@ -277,7 +280,11 @@ export default function AppHeader({
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.5rem', paddingLeft: '0.25rem', textTransform: 'uppercase', fontWeight: 600 }}>
                 {t('common.languageLabel')}
               </div>
-              <LanguageSelector variant="dropdown" onSaveToServer={onLanguageChange} />
+              {(userMenuOpen || hasOpenedMenu.current) && (
+                <Suspense fallback={null}>
+                  <LanguageSelector variant="dropdown" onSaveToServer={onLanguageChange} />
+                </Suspense>
+              )}
             </div>
 
             <Dropdown.Divider style={{ borderColor: 'var(--border-subtle)' }} />

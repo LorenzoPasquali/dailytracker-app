@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DndContext, DragOverlay, closestCorners, PointerSensor, TouchSensor, useSensor, useSensors, defaultDropAnimationSideEffects } from '@dnd-kit/core';
@@ -17,7 +17,6 @@ import AppHeader from '../components/AppHeader';
 import Sidebar from '../components/Sidebar';
 import KanbanColumn from '../components/KanbanColumn';
 import KanbanSwimlane from '../components/KanbanSwimlane';
-import ReportsView from '../components/ReportsView';
 import TaskCard from '../components/TaskCard';
 import TaskFormModal from '../components/TaskFormModal';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -26,18 +25,24 @@ import TaskTypesModal from '../components/TaskTypesModal';
 import WorkspaceModal from '../components/WorkspaceModal';
 import DailySummaryModal from '../components/DailySummaryModal';
 import NotificationsModal from '../components/NotificationsModal';
+import StagesModal from '../components/StagesModal';
 
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
 import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
 import Stars from 'react-bootstrap-icons/dist/icons/stars';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import DateFilterModal from '../components/DateFilterModal';
-import AiChatPanel from '../components/AiChatPanel';
 import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } from 'date-fns';
+
+// Heavy / non-initial: split into async chunks so the first dashboard paint
+// doesn't parse recharts (ReportsView) or the AI panel on the main thread.
+const ReportsView = lazy(() => import('../components/ReportsView'));
+const AiChatPanel = lazy(() => import('../components/AiChatPanel'));
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
-  const [taskColumns, setTaskColumns] = useState({ PLANNED: [], DOING: [], DONE: [] });
+  const [taskColumns, setTaskColumns] = useState({});
+  const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
@@ -56,8 +61,11 @@ export default function DashboardPage() {
   const [showDateFilterModal, setShowDateFilterModal] = useState(false);
   const [dateRange, setDateRange] = useState([null, null]);
   const [showAiChat, setShowAiChat] = useState(false);
+  const [aiMounted, setAiMounted] = useState(false); // defer AiChatPanel chunk until first open
+  useEffect(() => { if (showAiChat) setAiMounted(true); }, [showAiChat]);
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showStagesModal, setShowStagesModal] = useState(false);
 
   const [monitorView, setMonitorView] = useState(() => localStorage.getItem('monitorView') || 'classic');
 
@@ -84,7 +92,7 @@ export default function DashboardPage() {
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [workspaceModalMode, setWorkspaceModalMode] = useState('create');
   const [workspaceToManage, setWorkspaceToManage] = useState(null);
-  const [activeMobileTab, setActiveMobileTab] = useState('DOING');
+  const [activeMobileTab, setActiveMobileTab] = useState(null);
 
   const { isActive: tutorialActive, steps: tutorialSteps, currentStep: tutorialCurrentStep, currentStepId: tutorialStepId, handleNext: tutorialNext, handleSkip: tutorialSkip } = useTutorial({
     isDesktop,
@@ -143,6 +151,31 @@ export default function DashboardPage() {
     localStorage.removeItem('dashboardDateRange');
   };
   const allTasks = useMemo(() => Object.values(taskColumns).flat(), [taskColumns]);
+  const stageById = useMemo(() => {
+    const m = {};
+    stages.forEach(s => { m[s.id] = s; });
+    return m;
+  }, [stages]);
+  const firstStageId = stages[0]?.id ?? null;
+
+  // Build empty stage-keyed columns ({ [stageId]: [] }) preserving stage order.
+  const emptyColumnsForStages = (stageList) => {
+    const cols = {};
+    stageList.forEach(s => { cols[String(s.id)] = []; });
+    return cols;
+  };
+
+  // Bucket a flat task list into stage-keyed columns; tasks without a known
+  // stage fall into the first stage so nothing disappears.
+  const bucketTasksByStage = (taskList, stageList) => {
+    const cols = emptyColumnsForStages(stageList);
+    const fallback = stageList[0] ? String(stageList[0].id) : null;
+    taskList.forEach(task => {
+      const key = task.stageId != null && cols[String(task.stageId)] ? String(task.stageId) : fallback;
+      if (key != null && cols[key]) cols[key].push(task);
+    });
+    return cols;
+  };
 
   useEffect(() => {
     const savedDateRange = localStorage.getItem('dashboardDateRange');
@@ -212,27 +245,31 @@ export default function DashboardPage() {
     const workspaceId = wsId ?? activeWorkspaceId;
     const wsParams = workspaceId ? { workspaceId } : {};
     try {
-      const [userResponse, tasksResponse, projectsResponse] = await Promise.all([
+      const [userResponse, tasksResponse, projectsResponse, stagesResponse] = await Promise.all([
         api.get('/api/user/me', { signal }),
         api.get('/api/tasks', { signal, params: wsParams }),
         api.get('/api/projects', { signal, params: wsParams }),
+        api.get('/api/stages', { signal, params: wsParams }),
       ]);
-      
+
       const user = userResponse.data;
       if (user && user.language && user.language !== i18n.language) {
         localStorage.setItem('language', user.language);
         i18n.changeLanguage(user.language);
       }
-      
+
       if (user) setCurrentUser(user);
-      
-      const newColumns = { PLANNED: [], DOING: [], DONE: [] };
-      if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
-        tasksResponse.data.forEach(task => {
-          if (newColumns[task.status]) newColumns[task.status].push(task);
-        });
-      }
-      setTaskColumns(newColumns);
+
+      const fetchedStages = Array.isArray(stagesResponse.data) ? stagesResponse.data : [];
+      setStages(fetchedStages);
+      const tasksData = Array.isArray(tasksResponse.data) ? tasksResponse.data : [];
+      setTaskColumns(bucketTasksByStage(tasksData, fetchedStages));
+      // Keep the mobile tab valid for the current stage set.
+      setActiveMobileTab(prev =>
+        prev != null && fetchedStages.some(s => String(s.id) === String(prev))
+          ? prev
+          : (fetchedStages[0] ? String(fetchedStages[0].id) : null)
+      );
       setProjects(projectsResponse.data || []);
 
       // Auto-open Daily Summary once per day, only for users who completed onboarding
@@ -280,9 +317,15 @@ export default function DashboardPage() {
     return () => { document.removeEventListener('keydown', handleKeyPress); };
   }, [showTaskFormModal, showDeleteModal, showProjectsModal, showTaskTypesModal, showLogoutConfirm, showAiChat]);
 
-  const handleOpenCreateModal = () => { setTaskToEdit(null); setShowTaskFormModal(true); };
-  const handleOpenEditModal = (task) => { setTaskToEdit(task); setShowTaskFormModal(true); };
+  const handleOpenCreateModal = useCallback(() => { setTaskToEdit(null); setShowTaskFormModal(true); }, []);
+  // Stable so React.memo'd TaskCard/KanbanColumn don't re-render every drag frame.
+  const handleOpenEditModal = useCallback((task) => { setTaskToEdit(task); setShowTaskFormModal(true); }, []);
   const handleCloseTaskFormModal = () => { setTaskToEdit(null); setShowTaskFormModal(false); };
+
+  const resolveStageKey = (task, columns) => {
+    if (task.stageId != null && columns[String(task.stageId)]) return String(task.stageId);
+    return firstStageId != null && columns[String(firstStageId)] ? String(firstStageId) : null;
+  };
 
   const handleTaskCreated = (newTask) => {
     setTaskColumns(prev => {
@@ -290,38 +333,40 @@ export default function DashboardPage() {
       const alreadyExists = Object.values(prev).some(col => col.some(t => t.id === newTask.id));
       if (alreadyExists) return prev;
 
-      const status = newTask.status || 'PLANNED';
-      const column = prev[status] || [];
-      const goToBottom = newTask.priority === 'LOW' && status === 'PLANNED';
+      const key = resolveStageKey(newTask, prev);
+      if (key == null) return prev;
+      const column = prev[key] || [];
+      const goToBottom = newTask.priority === 'LOW' && key === String(firstStageId);
       const updated = goToBottom ? [...column, newTask] : [newTask, ...column];
-      return { ...prev, [status]: updated };
+      return { ...prev, [key]: updated };
     });
   };
 
   const handleTaskUpdated = (updatedTask) => {
     setTaskColumns(prev => {
       const newColumns = { ...prev };
-      const status = updatedTask.status || 'PLANNED';
-      
+      const key = resolveStageKey(updatedTask, newColumns);
+      if (key == null) return prev;
+
       // Find where the task currently is
-      let oldStatus = null;
+      let oldKey = null;
       for (const s in newColumns) {
         if (newColumns[s].some(t => t.id === updatedTask.id)) {
-          oldStatus = s;
+          oldKey = s;
           break;
         }
       }
 
-      if (oldStatus && oldStatus !== status) {
+      if (oldKey && oldKey !== key) {
         // Move to different column
-        newColumns[oldStatus] = newColumns[oldStatus].filter(t => t.id !== updatedTask.id);
-        newColumns[status] = [updatedTask, ...(newColumns[status] || [])];
-      } else if (oldStatus) {
+        newColumns[oldKey] = newColumns[oldKey].filter(t => t.id !== updatedTask.id);
+        newColumns[key] = [updatedTask, ...(newColumns[key] || [])];
+      } else if (oldKey) {
         // Update in same column
-        newColumns[oldStatus] = newColumns[oldStatus].map(t => t.id === updatedTask.id ? updatedTask : t);
+        newColumns[oldKey] = newColumns[oldKey].map(t => t.id === updatedTask.id ? updatedTask : t);
       } else {
         // Task not found in any column? Add it (could happen if it was filtered out before)
-        newColumns[status] = [updatedTask, ...(newColumns[status] || [])];
+        newColumns[key] = [updatedTask, ...(newColumns[key] || [])];
       }
       return newColumns;
     });
@@ -361,7 +406,7 @@ export default function DashboardPage() {
     return null;
   };
 
-  // Parse compound swimlane droppable IDs like "PLANNED::project_1" → "PLANNED"
+  // Parse compound swimlane droppable IDs like "12::project_1" → "12" (stageId)
   const parseContainerId = (id) => {
     if (typeof id === 'string' && id.includes('::')) return id.split('::')[0];
     return id;
@@ -409,7 +454,13 @@ export default function DashboardPage() {
       newIndex = overItems.length;
     }
 
-    const movedTask = { ...activeItems[activeIndex], status: overContainer };
+    const destStage = stageById[overContainer];
+    const movedTask = {
+      ...activeItems[activeIndex],
+      stageId: Number(overContainer),
+      stage: destStage || activeItems[activeIndex].stage,
+      status: destStage ? destStage.name : activeItems[activeIndex].status,
+    };
     applyColumns({
       ...prev,
       [activeContainer]: activeItems.filter(t => t.id !== activeId),
@@ -460,13 +511,13 @@ export default function DashboardPage() {
       // Pure reorder within the original column.
       api.put('/api/tasks/reorder', reorderPayload, { params }).catch(() => fetchData());
     } else {
-      // Moved to another column → persist new status, then persist the drop order.
-      api.put(`/api/tasks/${active.id}`, { status: finalContainer }, { params })
+      // Moved to another column → persist new stage, then persist the drop order.
+      api.put(`/api/tasks/${active.id}`, { stageId: Number(finalContainer) }, { params })
         .then(() => {
-          toast.success('Tarefa movida!');
+          toast.success(t('kanban.taskMoved'));
           api.put('/api/tasks/reorder', reorderPayload, { params }).catch(() => {});
         })
-        .catch(() => { fetchData(); toast.error('Não foi possível mover a tarefa.'); });
+        .catch(() => { fetchData(); toast.error(t('kanban.taskMoveError')); });
     }
   };
 
@@ -500,27 +551,25 @@ export default function DashboardPage() {
     );
   };
 
-  const mobileTabDotColors = { PLANNED: 'var(--text-muted)', DOING: '#f59e0b', DONE: 'var(--accent)' };
-
   const swimLaneProjects = selectedProjectIds.length > 0
     ? projects.filter(p => selectedProjectIds.includes(p.id))
     : projects;
 
   const renderDashboardContent = () => {
-    const filteredPlanned = filteredTasks.filter(t => t.status === 'PLANNED');
-    const filteredDoing = filteredTasks.filter(t => t.status === 'DOING');
-    const filteredDone = filteredTasks.filter(t => t.status === 'DONE');
-
     if (loading) {
       return <div className="w-100 text-center mt-5"><Spinner animation="border" style={{ color: 'var(--accent)' }} /></div>;
     }
+
+    const columnsByStage = bucketTasksByStage(filteredTasks, stages);
+
     if (isMobile) {
-      const mobileTabs = [
-        { status: 'PLANNED', tasks: filteredPlanned, label: t('kanban.planned') },
-        { status: 'DOING',   tasks: filteredDoing,   label: t('kanban.doing') },
-        { status: 'DONE',    tasks: filteredDone,    label: t('kanban.done') },
-      ];
-      const activeTab = mobileTabs.find(tab => tab.status === activeMobileTab) || mobileTabs[0];
+      const mobileTabs = stages.map(stage => ({
+        stage,
+        tasks: columnsByStage[String(stage.id)] || [],
+        label: stage.name,
+      }));
+      const activeTab = mobileTabs.find(tab => String(tab.stage.id) === String(activeMobileTab)) || mobileTabs[0];
+      if (!activeTab) return null;
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -533,18 +582,20 @@ export default function DashboardPage() {
             borderRadius: 'var(--radius-lg)',
             marginBottom: '0.75rem',
             flexShrink: 0,
-            border: '1px solid var(--border-subtle)'
+            border: '1px solid var(--border-subtle)',
+            overflowX: 'auto',
           }}>
             {mobileTabs.map(tab => {
-              const isActive = activeMobileTab === tab.status;
+              const isActive = String(activeMobileTab) === String(tab.stage.id);
               return (
                 <button
-                  key={tab.status}
+                  key={tab.stage.id}
                   className="press-effect"
-                  onClick={() => setActiveMobileTab(tab.status)}
+                  onClick={() => setActiveMobileTab(String(tab.stage.id))}
                   style={{
-                    flex: 1,
-                    padding: '0.5rem 0.25rem',
+                    flex: '1 0 auto',
+                    whiteSpace: 'nowrap',
+                    padding: '0.5rem 0.6rem',
                     fontSize: '0.75rem',
                     fontWeight: 600,
                     color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
@@ -567,7 +618,7 @@ export default function DashboardPage() {
                     width: '6px',
                     height: '6px',
                     borderRadius: '50%',
-                    backgroundColor: mobileTabDotColors[tab.status],
+                    backgroundColor: tab.stage.color,
                     flexShrink: 0,
                     opacity: isActive ? 1 : 0.5
                   }} />
@@ -593,9 +644,10 @@ export default function DashboardPage() {
           {/* Active column fills remaining height */}
           <div style={{ flex: 1, minHeight: 0 }}>
             <KanbanColumn
-              key={activeTab.status}
+              key={activeTab.stage.id}
               title={activeTab.label}
-              status={activeTab.status}
+              status={String(activeTab.stage.id)}
+              color={activeTab.stage.color}
               tasks={activeTab.tasks}
               projects={projects}
               onEdit={handleOpenEditModal}
@@ -607,7 +659,11 @@ export default function DashboardPage() {
       );
     }
     if (monitorView === 'reports') {
-      return <ReportsView tasks={allTasks} projects={projects} />;
+      return (
+        <Suspense fallback={<div className="w-100 text-center mt-5"><Spinner animation="border" style={{ color: 'var(--accent)' }} /></div>}>
+          <ReportsView tasks={allTasks} projects={projects} stages={stages} />
+        </Suspense>
+      );
     }
     if (monitorView === 'modern') {
       return (
@@ -615,6 +671,7 @@ export default function DashboardPage() {
           filteredTasks={filteredTasks}
           swimLaneProjects={swimLaneProjects}
           projects={projects}
+          stages={stages}
           onEdit={handleOpenEditModal}
           isPersonalWorkspace={isPersonal}
         />
@@ -622,10 +679,30 @@ export default function DashboardPage() {
     }
 
     return (
-      <div data-tutorial-id="tutorial-kanban-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem', height: '100%' }}>
-        <KanbanColumn title={t('kanban.planned')} status="PLANNED" tasks={filteredPlanned} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
-        <KanbanColumn title={t('kanban.doing')} status="DOING" tasks={filteredDoing} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
-        <KanbanColumn title={t('kanban.done')} status="DONE" tasks={filteredDone} projects={projects} onEdit={handleOpenEditModal} isPersonalWorkspace={isPersonal} />
+      <div style={{ height: '100%', overflowX: 'auto' }}>
+        <div
+          data-tutorial-id="tutorial-kanban-board"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${stages.length}, minmax(280px, 1fr))`,
+            gap: '1rem',
+            height: '100%',
+            minWidth: stages.length > 0 ? stages.length * 296 : '100%',
+          }}
+        >
+          {stages.map(stage => (
+            <KanbanColumn
+              key={stage.id}
+              title={stage.name}
+              status={String(stage.id)}
+              color={stage.color}
+              tasks={columnsByStage[String(stage.id)] || []}
+              projects={projects}
+              onEdit={handleOpenEditModal}
+              isPersonalWorkspace={isPersonal}
+            />
+          ))}
+        </div>
       </div>
     );
   };
@@ -666,6 +743,7 @@ export default function DashboardPage() {
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onProjectsClick={() => setShowProjectsModal(true)}
             onTaskTypesClick={() => setShowTaskTypesModal(true)}
+            onStagesClick={() => setShowStagesModal(true)}
             onReportsClick={() => handleMonitorViewChange('reports')}
             onDailySummaryClick={() => setShowDailySummary(true)}
             onNotificationsClick={() => setShowNotificationsModal(true)}
@@ -803,11 +881,15 @@ export default function DashboardPage() {
         {isDesktop && isPersonal && (
           <div className="ai-panel-dock" style={{ width: showAiChat ? 380 : 0 }}>
             <div className="ai-panel-dock__inner" style={{ width: 380 }} inert={!showAiChat}>
-              <AiChatPanel
-                isOpen={showAiChat}
-                isMobile={false}
-                onTasksCreated={fetchData}
-              />
+              {aiMounted && (
+                <Suspense fallback={null}>
+                  <AiChatPanel
+                    isOpen={showAiChat}
+                    isMobile={false}
+                    onTasksCreated={fetchData}
+                  />
+                </Suspense>
+              )}
             </div>
           </div>
         )}
@@ -846,6 +928,7 @@ export default function DashboardPage() {
             onToggleCollapse={() => setShowMobileSidebar(false)}
             onProjectsClick={() => { setShowProjectsModal(true); setShowMobileSidebar(false); }}
             onTaskTypesClick={() => { setShowTaskTypesModal(true); setShowMobileSidebar(false); }}
+            onStagesClick={() => { setShowStagesModal(true); setShowMobileSidebar(false); }}
             onReportsClick={() => { handleMonitorViewChange('reports'); setShowMobileSidebar(false); }}
             onDailySummaryClick={() => { setShowDailySummary(true); setShowMobileSidebar(false); }}
             onNotificationsClick={() => { setShowNotificationsModal(true); setShowMobileSidebar(false); }}
@@ -856,7 +939,7 @@ export default function DashboardPage() {
         </Offcanvas.Body>
       </Offcanvas>
 
-      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} projects={projects} workspaceId={activeWorkspaceId} isPersonal={isPersonal} workspaceMembers={workspaceMembers} currentUser={currentUser} defaultProjectId={selectedProjectIds.length === 1 ? selectedProjectIds[0] : null} />
+      <TaskFormModal show={showTaskFormModal} handleClose={handleCloseTaskFormModal} onTaskCreated={handleTaskCreated} onTaskUpdated={handleTaskUpdated} taskToEdit={taskToEdit} onDelete={handleDeleteFromModal} projects={projects} stages={stages} workspaceId={activeWorkspaceId} isPersonal={isPersonal} workspaceMembers={workspaceMembers} currentUser={currentUser} defaultProjectId={selectedProjectIds.length === 1 ? selectedProjectIds[0] : null} />
       <ConfirmationModal
         show={showDeleteModal}
         handleClose={handleCloseDeleteModal}
@@ -876,6 +959,7 @@ export default function DashboardPage() {
       />
       <ProjectsModal show={showProjectsModal} handleClose={() => setShowProjectsModal(false)} onProjectsChange={fetchData} projects={projects} workspaceId={activeWorkspaceId} />
       <TaskTypesModal show={showTaskTypesModal} handleClose={() => setShowTaskTypesModal(false)} onTaskTypesChange={fetchData} projects={projects} workspaceId={activeWorkspaceId} />
+      <StagesModal show={showStagesModal} handleClose={() => setShowStagesModal(false)} onStagesChange={fetchData} stages={stages} workspaceId={activeWorkspaceId} />
       <WorkspaceModal
         show={showWorkspaceModal}
         onHide={() => setShowWorkspaceModal(false)}
@@ -923,11 +1007,13 @@ export default function DashboardPage() {
             >
               <ChevronRight size={20} />
             </button>
-            <AiChatPanel
-              isOpen={showAiChat}
-              isMobile
-              onTasksCreated={fetchData}
-            />
+            <Suspense fallback={null}>
+              <AiChatPanel
+                isOpen={showAiChat}
+                isMobile
+                onTasksCreated={fetchData}
+              />
+            </Suspense>
           </div>
         </div>
       )}
@@ -938,6 +1024,7 @@ export default function DashboardPage() {
         tasks={allTasks}
         currentUser={currentUser}
         projects={projects}
+        stages={stages}
       />
 
       <NotificationsModal

@@ -140,7 +140,7 @@ function SummarySection({ icon, label, tasks, projects, color, accentBg }) {
   );
 }
 
-export default function DailySummaryModal({ show, onClose, tasks, currentUser, projects }) {
+export default function DailySummaryModal({ show, onClose, tasks, currentUser, projects, stages = [] }) {
   const { t, i18n } = useTranslation();
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   const [doneDay, setDoneDay] = useState('yesterday'); // 'yesterday' | 'today'
@@ -160,20 +160,24 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
     return tasks.filter(t => selectedProjectIds.includes(t.projectId));
   }, [tasks, selectedProjectIds]);
 
+  // Stage semantics: final stages = completed; first stage = planned;
+  // everything else (non-final, non-first) = in progress.
+  const firstStageId = stages[0]?.id ?? null;
+
   // Section data
   const doneTasks = useMemo(() =>
     filteredTasks.filter(task =>
-      task.status === 'DONE' &&
+      !!task.stage?.isFinal &&
       isSameDay(parseISO(task.createdAt), doneDay === 'today' ? today : yesterday)
     ), [filteredTasks, today, yesterday, doneDay]);
 
   const doingTasks = useMemo(() =>
-    filteredTasks.filter(task => task.status === 'DOING'),
-    [filteredTasks]);
+    filteredTasks.filter(task => !task.stage?.isFinal && task.stageId !== firstStageId),
+    [filteredTasks, firstStageId]);
 
   const plannedTasks = useMemo(() =>
-    filteredTasks.filter(task => task.status === 'PLANNED'),
-    [filteredTasks]);
+    filteredTasks.filter(task => !task.stage?.isFinal && task.stageId === firstStageId),
+    [filteredTasks, firstStageId]);
 
   const totalRelevant = doneTasks.length + doingTasks.length + plannedTasks.length;
   const completionRate = totalRelevant > 0

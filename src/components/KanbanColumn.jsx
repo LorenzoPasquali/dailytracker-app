@@ -4,13 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useDroppable } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
 
-const statusColors = {
-  PLANNED: 'var(--text-muted)',
-  DOING: '#f59e0b',
-  DONE: 'var(--accent)'
-};
-
-export default function KanbanColumn({ title, status, tasks = [], projects = [], onEdit, isMobile, isPersonalWorkspace }) {
+function KanbanColumn({ title, status, color, tasks = [], projects = [], onEdit, isMobile, isPersonalWorkspace }) {
   const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -38,7 +32,7 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
   };
 
   const taskIds = tasks.map(task => task.id);
-  const dotColor = statusColors[status] || 'var(--text-muted)';
+  const dotColor = color || 'var(--text-muted)';
 
   return (
     <div ref={setNodeRef} style={columnStyle} className="d-flex flex-column h-100">
@@ -131,3 +125,5 @@ export default function KanbanColumn({ title, status, tasks = [], projects = [],
     </div>
   );
 }
+
+export default React.memo(KanbanColumn);

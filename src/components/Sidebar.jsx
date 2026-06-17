@@ -6,6 +6,7 @@ import CollectionFill from 'react-bootstrap-icons/dist/icons/collection-fill';
 import BarChartFill from 'react-bootstrap-icons/dist/icons/bar-chart-fill';
 import Folder from 'react-bootstrap-icons/dist/icons/folder';
 import TagFill from 'react-bootstrap-icons/dist/icons/tag-fill';
+import Kanban from 'react-bootstrap-icons/dist/icons/kanban';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import ClipboardCheck from 'react-bootstrap-icons/dist/icons/clipboard-check';
 import BellFill from 'react-bootstrap-icons/dist/icons/bell-fill';
@@ -71,6 +72,7 @@ function CustomToggle({ children, eventKey, isCollapsed, onToggleCollapse }) {
 export default function Sidebar({
   onProjectsClick,
   onTaskTypesClick,
+  onStagesClick,
   onReportsClick,
   onDailySummaryClick,
   onNotificationsClick,
@@ -92,7 +94,7 @@ export default function Sidebar({
     width: isCollapsed ? '56px' : '240px',
     backgroundColor: 'var(--bg-surface)',
     zIndex: 2,
-    transition: 'width 0.2s ease',
+    transition: 'width 0.16s cubic-bezier(0.16, 1, 0.3, 1)',
     overflowX: 'hidden',
     borderRight: '1px solid var(--border-subtle)',
     flexShrink: 0
@@ -300,6 +302,22 @@ export default function Sidebar({
                   role="button"
                 >
                   <TagFill size={14} /> {t('sidebar.taskTypes')}
+                </Nav.Link>
+                <Nav.Link
+                  onClick={onStagesClick}
+                  className="sidebar-submenu-item"
+                  style={{ ...linkStyle, paddingLeft: '2.25rem', borderLeft: 'none' }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }}
+                  role="button"
+                >
+                  <Kanban size={14} /> {t('sidebar.stages')}
                 </Nav.Link>
               </div>
             </Accordion.Collapse>

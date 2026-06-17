@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
 import DateFilterModal from './DateFilterModal';
 
-const STATUS_COLORS = { PLANNED: '#8b949e', DOING: '#f59e0b', DONE: '#10b981' };
 const PRIORITY_COLORS = { HIGH: '#ef4444', MEDIUM: '#f59e0b', LOW: '#8b949e' };
 const TICK_STYLE = { fill: '#6b7280', fontSize: 11, fontFamily: 'var(--font-body)' };
 const GRID_COLOR = 'rgba(255,255,255,0.05)';
@@ -84,8 +83,13 @@ function KpiCard({ label, value, color }) {
 
 const PRESET_KEYS = ['7d', '30d', 'all'];
 
-export default function ReportsView({ tasks, projects }) {
+export default function ReportsView({ tasks, projects, stages = [] }) {
   const { t } = useTranslation();
+  const finalStageIds = useMemo(() => new Set(stages.filter(s => s.isFinal).map(s => s.id)), [stages]);
+  const isFinalTask = useCallback(
+    (task) => (task.stageId != null ? finalStageIds.has(task.stageId) : !!task.stage?.isFinal),
+    [finalStageIds]
+  );
 
   const PRESETS = [
     { key: '7d',  label: t('reports.preset7d')  },
@@ -144,17 +148,15 @@ export default function ReportsView({ tasks, projects }) {
 
   // ── KPIs ─────────────────────────────────────────────────────────────────────
   const total    = filteredTasks.length;
-  const done     = filteredTasks.filter(task => task.status === 'DONE').length;
-  const doing    = filteredTasks.filter(task => task.status === 'DOING').length;
-  const planned  = filteredTasks.filter(task => task.status === 'PLANNED').length;
+  const done     = filteredTasks.filter(isFinalTask).length;
   const rate     = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  // ── Chart 1: Status donut ────────────────────────────────────────────────────
-  const statusData = [
-    { name: t('kanban.planned'), value: planned, color: STATUS_COLORS.PLANNED },
-    { name: t('kanban.doing'),   value: doing,   color: STATUS_COLORS.DOING   },
-    { name: t('kanban.done'),    value: done,    color: STATUS_COLORS.DONE    },
-  ].filter(d => d.value > 0);
+  // ── Chart 1: Stage donut ─────────────────────────────────────────────────────
+  const statusData = stages.map(stage => ({
+    name: stage.name,
+    value: filteredTasks.filter(task => task.stageId === stage.id).length,
+    color: stage.color,
+  })).filter(d => d.value > 0);
 
   // ── Chart 2: Priority bars ───────────────────────────────────────────────────
   const priorityData = [
@@ -170,12 +172,15 @@ export default function ReportsView({ tasks, projects }) {
       const key = task.projectId ?? '__none__';
       if (!map[key]) {
         const p = task.projectId ? projectMap[task.projectId] : null;
-        map[key] = { name: p?.name ?? t('reports.noProject'), color: p?.color ?? '#8b949e', PLANNED: 0, DOING: 0, DONE: 0 };
+        const row = { name: p?.name ?? t('reports.noProject'), color: p?.color ?? '#8b949e', __total: 0 };
+        stages.forEach(s => { row[`s${s.id}`] = 0; });
+        map[key] = row;
       }
-      map[key][task.status]++;
+      const sk = `s${task.stageId}`;
+      if (map[key][sk] != null) { map[key][sk]++; map[key].__total++; }
     });
-    return Object.values(map).sort((a, b) => (b.PLANNED + b.DOING + b.DONE) - (a.PLANNED + a.DOING + a.DONE));
-  }, [filteredTasks, projectMap]);
+    return Object.values(map).sort((a, b) => b.__total - a.__total);
+  }, [filteredTasks, projectMap, stages]);
 
   // ── Chart 4: By task type ────────────────────────────────────────────────────
   const typeData = useMemo(() => {
@@ -221,7 +226,7 @@ export default function ReportsView({ tasks, projects }) {
         return {
           date:  format(weekStart, "dd/MM"),
           total: bucket.length,
-          done:  bucket.filter(task => task.status === 'DONE').length,
+          done:  bucket.filter(isFinalTask).length,
         };
       });
     }
@@ -234,10 +239,10 @@ export default function ReportsView({ tasks, projects }) {
       return {
         date:  format(day, "dd/MM"),
         total: bucket.length,
-        done:  bucket.filter(task => task.status === 'DONE').length,
+        done:  bucket.filter(isFinalTask).length,
       };
     });
-  }, [tasks, dateRange]);
+  }, [tasks, dateRange, isFinalTask]);
 
   const projBarHeight = Math.max(200, projectData.length * 44);
   const typeBarHeight = Math.max(200, typeData.length * 38);
@@ -320,11 +325,9 @@ export default function ReportsView({ tasks, projects }) {
 
       {/* ── KPI cards ───────────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '0.75rem', marginBottom: '1.25rem' }}>
-        <KpiCard label={t('reports.kpiTotal')}      value={total}        color="var(--text-primary)"   />
-        <KpiCard label={t('kanban.planned')}         value={planned}      color={STATUS_COLORS.PLANNED} />
-        <KpiCard label={t('kanban.doing')}           value={doing}        color={STATUS_COLORS.DOING}   />
-        <KpiCard label={t('kanban.done')}            value={done}         color={STATUS_COLORS.DONE}    />
-        <KpiCard label={t('reports.kpiCompletion')} value={`${rate}%`}   color="var(--accent)"         />
+        <KpiCard label={t('reports.kpiTotal')}        value={total}      color="var(--text-primary)" />
+        <KpiCard label={t('reports.seriesCompleted')} value={done}       color="#10b981"             />
+        <KpiCard label={t('reports.kpiCompletion')}   value={`${rate}%`} color="var(--accent)"       />
       </div>
 
       {/* ── Row 1: Status donut + Priority bars ─────────────────────────────── */}
@@ -383,9 +386,17 @@ export default function ReportsView({ tasks, projects }) {
                 <YAxis type="category" dataKey="name" tick={TICK_STYLE} axisLine={false} tickLine={false} width={projYAxisWidth} />
                 <Tooltip content={<DarkTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
                 <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{v}</span>} />
-                <Bar dataKey="PLANNED" name="Planejado"    stackId="s" fill={STATUS_COLORS.PLANNED} maxBarSize={28} />
-                <Bar dataKey="DOING"   name="Em Progresso" stackId="s" fill={STATUS_COLORS.DOING}   maxBarSize={28} />
-                <Bar dataKey="DONE"    name="Feito"        stackId="s" fill={STATUS_COLORS.DONE}    maxBarSize={28} radius={[0, 4, 4, 0]} />
+                {stages.map((stage, i) => (
+                  <Bar
+                    key={stage.id}
+                    dataKey={`s${stage.id}`}
+                    name={stage.name}
+                    stackId="s"
+                    fill={stage.color}
+                    maxBarSize={28}
+                    radius={i === stages.length - 1 ? [0, 4, 4, 0] : undefined}
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           )}

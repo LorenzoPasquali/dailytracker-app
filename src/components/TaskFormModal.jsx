@@ -20,12 +20,12 @@ const TITLE_LIMIT = 100;
 const DESCRIPTION_LIMIT = 500;
 const SUBMIT_COOLDOWN_MS = 250;
 
-export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [], workspaceId, isPersonal, workspaceMembers = [], currentUser, defaultProjectId = null }) {
+export default function TaskFormModal({ show, handleClose, onTaskCreated, onTaskUpdated, taskToEdit, onDelete, projects = [], stages = [], workspaceId, isPersonal, workspaceMembers = [], currentUser, defaultProjectId = null }) {
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('PLANNED');
+  const [stageId, setStageId] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [selectedTaskTypeId, setSelectedTaskTypeId] = useState('');
@@ -52,7 +52,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       if (taskToEdit) {
         setTitle(taskToEdit.title);
         setDescription(taskToEdit.description || '');
-        setStatus(taskToEdit.status);
+        setStageId(taskToEdit.stageId != null ? String(taskToEdit.stageId) : (stages[0] ? String(stages[0].id) : ''));
         setPriority(taskToEdit.priority || 'MEDIUM');
         setSelectedProjectId(taskToEdit.projectId || '');
         setSelectedTaskTypeId(taskToEdit.taskTypeId || '');
@@ -62,7 +62,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       } else {
         setTitle('');
         setDescription('');
-        setStatus('PLANNED');
+        setStageId(stages[0] ? String(stages[0].id) : '');
         setPriority('MEDIUM');
         setSelectedProjectId(defaultProjectId != null ? String(defaultProjectId) : '');
         setSelectedTaskTypeId('');
@@ -83,6 +83,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
         cooldownTimerRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, taskToEdit, defaultProjectId]);
 
   useEffect(() => {
@@ -133,7 +134,7 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
       const taskData = {
         title: trimmedTitle,
         description: trimmedDescription,
-        status,
+        stageId: stageId ? parseInt(stageId) : null,
         priority,
         projectId: selectedProjectId ? parseInt(selectedProjectId) : null,
         taskTypeId: selectedTaskTypeId ? parseInt(selectedTaskTypeId) : null,
@@ -282,11 +283,11 @@ export default function TaskFormModal({ show, handleClose, onTaskCreated, onTask
                     </>
                   )}
                   <Form.Group className="mb-3">
-                    <Form.Label>{t('taskForm.statusLabel')}</Form.Label>
-                    <CustomSelect value={status} onChange={(e) => setStatus(e.target.value)}>
-                        <option value="PLANNED">{t('taskForm.statusPlanned')}</option>
-                        <option value="DOING">{t('taskForm.statusDoing')}</option>
-                        <option value="DONE">{t('taskForm.statusDone')}</option>
+                    <Form.Label>{t('taskForm.stageLabel')}</Form.Label>
+                    <CustomSelect value={stageId} onChange={(e) => setStageId(e.target.value)}>
+                        {stages.map(stage => (
+                          <option key={stage.id} value={stage.id}>{stage.name}</option>
+                        ))}
                     </CustomSelect>
                   </Form.Group>
                   <Form.Group className="mb-3">
