@@ -1,20 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 
 const COL_MIN_WIDTH = 150;
 
-function SwimlaneCell({ stageId, laneId, tasks, projects, onEdit, isPersonalWorkspace }) {
+// No-shift: cards don't slide to "make room"; the drop spot is the emerald
+// insertion line instead (same model as the classic board).
+const swimNoShift = () => null;
+
+function SwimDropLine() {
+  return (
+    <div style={{
+      height: '2px',
+      margin: '1px 0.1rem',
+      background: 'var(--accent)',
+      borderRadius: '2px',
+      boxShadow: '0 0 0 1px var(--accent), 0 0 6px var(--accent-subtle)',
+      pointerEvents: 'none',
+    }} />
+  );
+}
+
+function SwimlaneCell({ stageId, laneId, tasks, projects, onEdit, isPersonalWorkspace, swimDrop }) {
   const droppableId = `${stageId}::${laneId}`;
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
   const taskIds = tasks.map(t => t.id);
+  const lineAt = swimDrop && swimDrop.cellId === droppableId ? swimDrop.index : null;
 
   return (
     <div
       ref={setNodeRef}
+      className="kanban-swim-cell"
       style={{
         flex: 1,
         minWidth: 0,
@@ -30,10 +49,13 @@ function SwimlaneCell({ stageId, laneId, tasks, projects, onEdit, isPersonalWork
         gap: '0.2rem',
       }}
     >
-      <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+      <SortableContext items={taskIds} strategy={swimNoShift}>
         {tasks.length > 0 ? (
-          tasks.map(task => (
-            <TaskCard key={task.id} task={task} projects={projects} onEdit={onEdit} isPersonalWorkspace={isPersonalWorkspace} />
+          tasks.map((task, i) => (
+            <React.Fragment key={task.id}>
+              {lineAt === i && <SwimDropLine />}
+              <TaskCard task={task} projects={projects} onEdit={onEdit} isPersonalWorkspace={isPersonalWorkspace} />
+            </React.Fragment>
           ))
         ) : (
           <div style={{
@@ -46,12 +68,13 @@ function SwimlaneCell({ stageId, laneId, tasks, projects, onEdit, isPersonalWork
             <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.35 }}>—</span>
           </div>
         )}
+        {tasks.length > 0 && lineAt != null && lineAt >= tasks.length && <SwimDropLine />}
       </SortableContext>
     </div>
   );
 }
 
-function SwimlaneRow({ project, laneId, tasks, stages, projects, onEdit, isExpanded, onToggle, isLast, isPersonalWorkspace, gridTemplate }) {
+function SwimlaneRow({ project, laneId, tasks, stages, projects, onEdit, isExpanded, onToggle, isLast, isPersonalWorkspace, gridTemplate, swimDrop }) {
   const { t } = useTranslation();
 
   const tasksByStage = {};
@@ -159,6 +182,7 @@ function SwimlaneRow({ project, laneId, tasks, stages, projects, onEdit, isExpan
               projects={projects}
               onEdit={onEdit}
               isPersonalWorkspace={isPersonalWorkspace}
+              swimDrop={swimDrop}
             />
           ))}
         </div>
@@ -167,7 +191,7 @@ function SwimlaneRow({ project, laneId, tasks, stages, projects, onEdit, isExpan
   );
 }
 
-export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projects, stages = [], onEdit, isPersonalWorkspace }) {
+export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projects, stages = [], onEdit, isPersonalWorkspace, swimDrop }) {
   const { t } = useTranslation();
 
   const tasksWithoutProject = filteredTasks.filter(
@@ -289,6 +313,7 @@ export default function KanbanSwimlane({ filteredTasks, swimLaneProjects, projec
               isLast={idx === lanes.length - 1}
               isPersonalWorkspace={isPersonalWorkspace}
               gridTemplate={gridTemplate}
+              swimDrop={swimDrop}
             />
           ))}
         </div>

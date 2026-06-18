@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DndContext, DragOverlay, closestCorners, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, defaultDropAnimationSideEffects } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
+import { DndContext, DragOverlay, closestCenter, pointerWithin, PointerSensor, TouchSensor, useSensor, useSensors, defaultDropAnimationSideEffects } from '@dnd-kit/core';
 import { toast } from 'sonner';
 import api from '../services/api';
 import { normalizeText, taskMatches, buildProjectIndex } from '../utils/search';
@@ -39,6 +38,16 @@ import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } f
 const ReportsView = lazy(() => import('../components/ReportsView'));
 const AiChatPanel = lazy(() => import('../components/AiChatPanel'));
 
+// Board collision: prefer the card directly UNDER THE POINTER (card ids are
+// numbers; the column-container droppable id is the stage-id string). This makes
+// the very top slot reachable — closestCenter alone keys off the dragged card's
+// center, which can never sit above the first card's center, so "insert above
+// the top card" was impossible. Falls back to nearest-card-by-center for the
+// thin gaps between cards, then to the raw pointer hit / closestCenter.
+// Card droppable ids are task ids (numbers); container droppable ids are the
+// stage-id string (board) or the "stageId::laneId" string (swimlane cell).
+const isCardId = (id) => typeof id === 'number';
+
 // Build empty stage-keyed columns ({ [stageId]: [] }) preserving stage order.
 // Module-scoped (pure: depend only on args) so they keep a stable identity and
 // can be used as memo inputs without re-creating every render.
@@ -68,6 +77,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
   const [dropIndicator, setDropIndicator] = useState(null); // {containerId, index} insertion line (board views)
+  const [swimDrop, setSwimDrop] = useState(null); // {cellId, index, overTaskId, isBelow} insertion line (swimlane)
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -405,15 +415,16 @@ export default function DashboardPage() {
   const applyColumns = (next) => { columnsRef.current = next; setTaskColumns(next); };
 
   const dragSourceContainer = useRef(null);
-  const dragStartSnapshot = useRef(null);
-  // Ref mirror of dropIndicator so the drop commit reads the latest value
-  // synchronously (state may lag a render behind the final dragOver event).
+  // Ref mirrors so the drop commit reads the latest indicator synchronously
+  // (state may lag a render behind the final dragMove event).
   const dropIndicatorRef = useRef(null);
   const setDrop = (val) => { dropIndicatorRef.current = val; setDropIndicator(val); };
+  const swimDropRef = useRef(null);
+  const setSwim = (val) => { swimDropRef.current = val; setSwimDrop(val); };
 
-  // Swimlane ('modern') view keeps the legacy reflow drag model. The classic
-  // grid and the mobile single-column view use the lighter insertion-line model
-  // (no mid-drag column mutation → board stays cheap under windowing).
+  // Both views now use the insertion-line model (no mid-drag column mutation).
+  // The swimlane differs only in that its containers are compound project×stage
+  // cells ("stageId::laneId") layered over the stage-keyed columnsRef.
   const isSwimlaneActive = monitorView === 'modern' && !isMobile;
 
   const findContainerIn = (columns, taskId) => {
@@ -424,10 +435,57 @@ export default function DashboardPage() {
     return null;
   };
 
+  const findTaskById = (columns, id) => {
+    for (const status in columns) {
+      const found = columns[status].find(t => t.id === id);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  // Lane id for a task, matching KanbanSwimlane's lane construction.
+  const laneIdOf = (task) =>
+    (task.projectId && projects.some(p => p.id === task.projectId))
+      ? `project_${task.projectId}`
+      : 'no_project';
+
   // Parse compound swimlane droppable IDs like "12::project_1" → "12" (stageId)
   const parseContainerId = (id) => {
     if (typeof id === 'string' && id.includes('::')) return id.split('::')[0];
     return id;
+  };
+
+  // Container the card with `id` lives in, in the CURRENT view's terms:
+  // a stage-id string on the board, a "stageId::laneId" cell on the swimlane.
+  const containerOfCard = (cols, id) => {
+    if (isSwimlaneActive) {
+      const task = findTaskById(cols, id);
+      return task ? `${task.stageId}::${laneIdOf(task)}` : null;
+    }
+    return findContainerIn(cols, id);
+  };
+
+  // Unified collision for both views. A card directly under the pointer wins
+  // (precise above/below + reaches the very top slot). Otherwise the CONTAINER
+  // under the pointer wins, and we snap to the nearest card INSIDE that same
+  // container — never a card from another column/cell (which made cross-column
+  // drops on the classic board jump to the wrong column), and without the line
+  // flicking to the end while the pointer crosses the gap between cards. Empty
+  // containers fall through to the container itself.
+  const dndCollisionDetection = (args) => {
+    const pointerHits = pointerWithin(args);
+    const pointerCards = pointerHits.filter(c => isCardId(c.id));
+    if (pointerCards.length) return pointerCards;
+
+    const container = pointerHits.find(c => !isCardId(c.id));
+    if (!container) return closestCenter(args);
+
+    const cols = columnsRef.current;
+    const containerId = String(container.id);
+    const nearestInContainer = closestCenter(args).filter(
+      c => isCardId(c.id) && containerOfCard(cols, c.id) === containerId
+    );
+    return nearestInContainer.length ? [nearestInContainer[0]] : [container];
   };
 
   const handleDragStart = (event) => {
@@ -435,59 +493,45 @@ export default function DashboardPage() {
     const task = allTasks.find(t => t.id === active.id);
     setActiveTask(task);
     dragSourceContainer.current = findContainerIn(columnsRef.current, active.id);
-    dragStartSnapshot.current = columnsRef.current;
     setDrop(null);
+    setSwim(null);
   };
 
-  // ── Swimlane drag (legacy reflow): physically move the card between columns
-  // mid-drag so the project×stage grid previews the drop.
-  const handleSwimlaneDragOver = (event) => {
+  // ── Swimlane drag (insertion-line): compute the target cell + index within
+  // that cell. The card never moves mid-drag; only the emerald line previews the
+  // drop. Pointer-based + continuous (onDragMove) for the same reasons as the
+  // board. cellId = "stageId::laneId"; the commit maps it back to the stage column.
+  const handleSwimlaneDragMove = (event) => {
     const { active, over } = event;
-    if (!over) return;
-    const activeId = active.id;
+    if (!over) { setSwim(null); return; }
     const overId = over.id;
-    if (activeId === overId) return;
+    if (overId === active.id) return; // hovering own card → keep last indicator
 
     const prev = columnsRef.current;
-    const activeContainer = findContainerIn(prev, activeId);
-    const overTaskContainer = findContainerIn(prev, overId);
-    const overContainer = overTaskContainer || parseContainerId(String(overId));
-    if (!activeContainer || !overContainer || !prev[activeContainer] || !prev[overContainer]) return;
-    if (activeContainer === overContainer) return;
+    let cellId, index, overTaskId, isBelow = false;
 
-    const activeItems = prev[activeContainer];
-    const overItems = prev[overContainer];
-    const activeIndex = activeItems.findIndex(t => t.id === activeId);
-    if (activeIndex === -1) return;
-    const overIndex = overItems.findIndex(t => t.id === overId);
-
-    let newIndex;
-    if (overTaskContainer) {
-      const isBelowOverItem =
-        over.rect &&
-        active.rect.current.translated &&
-        active.rect.current.translated.top > over.rect.top + over.rect.height / 2;
-      newIndex = overIndex >= 0 ? overIndex + (isBelowOverItem ? 1 : 0) : overItems.length;
+    if (typeof overId === 'number') {
+      const overTask = findTaskById(prev, overId);
+      if (!overTask) { setSwim(null); return; }
+      const stageId = String(overTask.stageId);
+      const lane = laneIdOf(overTask);
+      cellId = `${stageId}::${lane}`;
+      const cellTasks = (prev[stageId] || []).filter(t => laneIdOf(t) === lane);
+      const overIdxInCell = cellTasks.findIndex(t => t.id === overId);
+      if (over.rect) isBelow = pointerYFromEvent(event) > over.rect.top + over.rect.height / 2;
+      index = overIdxInCell >= 0 ? overIdxInCell + (isBelow ? 1 : 0) : cellTasks.length;
+      overTaskId = overId;
     } else {
-      newIndex = overItems.length;
+      cellId = String(overId);
+      const [stageId, lane] = cellId.split('::');
+      if (!stageId || !prev[stageId]) { setSwim(null); return; }
+      index = prev[stageId].filter(t => laneIdOf(t) === lane).length;
+      overTaskId = null;
     }
 
-    const destStage = stageById[overContainer];
-    const movedTask = {
-      ...activeItems[activeIndex],
-      stageId: Number(overContainer),
-      stage: destStage || activeItems[activeIndex].stage,
-      status: destStage ? destStage.name : activeItems[activeIndex].status,
-    };
-    applyColumns({
-      ...prev,
-      [activeContainer]: activeItems.filter(t => t.id !== activeId),
-      [overContainer]: [
-        ...overItems.slice(0, newIndex),
-        movedTask,
-        ...overItems.slice(newIndex),
-      ],
-    });
+    const cur = swimDropRef.current;
+    if (cur && cur.cellId === cellId && cur.index === index && cur.overTaskId === overTaskId) return;
+    setSwim({ cellId, index, overTaskId, isBelow });
   };
 
   // Current pointer Y across pointer & touch sensors. activatorEvent is the
@@ -539,44 +583,62 @@ export default function DashboardPage() {
   };
 
   const handleDragMove = (event) => {
-    if (!isSwimlaneActive) handleBoardDragMove(event);
+    if (isSwimlaneActive) handleSwimlaneDragMove(event);
+    else handleBoardDragMove(event);
   };
 
-  const handleDragOver = (event) => {
-    if (isSwimlaneActive) handleSwimlaneDragOver(event);
-  };
-
+  // ── Swimlane drop commit: remove the active card from its stage column and
+  // re-insert it in the target cell's stage column adjacent to the over card
+  // (by identity, so it lands exactly where the line was), then persist.
   const handleSwimlaneDragEnd = (event) => {
-    const { active, over } = event;
-    const sourceContainer = dragSourceContainer.current;
+    const { active } = event;
+    const source = dragSourceContainer.current; // stageId of the active card
+    const indicator = swimDropRef.current;
     dragSourceContainer.current = null;
     setActiveTask(null);
+    setSwim(null);
 
-    // Dropped outside any droppable → revert to the pre-drag snapshot.
-    if (!over) {
-      if (dragStartSnapshot.current) applyColumns(dragStartSnapshot.current);
-      dragStartSnapshot.current = null;
-      return;
-    }
-    dragStartSnapshot.current = null;
-
+    if (!indicator || !source) return;
     const prev = columnsRef.current;
-    const finalContainer = findContainerIn(prev, active.id);
-    if (!finalContainer || !prev[finalContainer]) return;
-    const overContainer = findContainerIn(prev, over.id) || parseContainerId(String(over.id));
+    const [targetStageId, lane] = indicator.cellId.split('::');
+    if (!prev[source] || !prev[targetStageId]) return;
 
-    let columns = prev;
-    if (overContainer === finalContainer) {
-      const items = prev[finalContainer];
-      const activeIndex = items.findIndex(t => t.id === active.id);
-      const overIndex = items.findIndex(t => t.id === over.id);
-      if (activeIndex !== -1 && overIndex !== -1 && activeIndex !== overIndex) {
-        columns = { ...prev, [finalContainer]: arrayMove(items, activeIndex, overIndex) };
-        applyColumns(columns);
-      }
+    const srcCol = [...prev[source]];
+    const aIdx = srcCol.findIndex(t => t.id === active.id);
+    if (aIdx === -1) return;
+    const [moved] = srcCol.splice(aIdx, 1);
+
+    const sameStage = source === targetStageId;
+    const targetCol = sameStage ? srcCol : [...prev[targetStageId]];
+
+    let insertAt;
+    if (indicator.overTaskId != null) {
+      const oi = targetCol.findIndex(t => t.id === indicator.overTaskId);
+      insertAt = oi >= 0 ? oi + (indicator.isBelow ? 1 : 0) : targetCol.length;
+    } else {
+      // End of the cell → after that lane's last task in the stage column.
+      const cellTasks = targetCol.filter(t => laneIdOf(t) === lane);
+      insertAt = cellTasks.length > 0
+        ? targetCol.indexOf(cellTasks[cellTasks.length - 1]) + 1
+        : targetCol.length;
     }
+    insertAt = Math.max(0, Math.min(insertAt, targetCol.length));
 
-    persistDrop(columns, finalContainer, sourceContainer, active.id);
+    const destStage = stageById[targetStageId];
+    const movedTask = {
+      ...moved,
+      stageId: Number(targetStageId),
+      stage: destStage || moved.stage,
+      status: destStage ? destStage.name : moved.status,
+    };
+    targetCol.splice(insertAt, 0, movedTask);
+
+    const columns = sameStage
+      ? { ...prev, [source]: targetCol }
+      : { ...prev, [source]: srcCol, [targetStageId]: targetCol };
+    applyColumns(columns);
+
+    persistDrop(columns, targetStageId, source, active.id);
   };
 
   // ── Board drop commit: remove from source, insert at the indicator index,
@@ -586,7 +648,6 @@ export default function DashboardPage() {
     const source = dragSourceContainer.current;
     const indicator = dropIndicatorRef.current;
     dragSourceContainer.current = null;
-    dragStartSnapshot.current = null;
     setActiveTask(null);
     setDrop(null);
 
@@ -653,13 +714,12 @@ export default function DashboardPage() {
   };
 
   const handleDragCancel = () => {
-    // Board model never mutates columns mid-drag, so only the swimlane needs a
-    // revert to its pre-drag snapshot.
-    if (isSwimlaneActive && dragStartSnapshot.current) applyColumns(dragStartSnapshot.current);
-    dragStartSnapshot.current = null;
+    // Neither model mutates columns mid-drag, so cancel just clears transient
+    // drag state — no snapshot revert needed.
     dragSourceContainer.current = null;
     setActiveTask(null);
     setDrop(null);
+    setSwim(null);
   };
 
   const sensors = useSensors(
@@ -810,6 +870,7 @@ export default function DashboardPage() {
           stages={stages}
           onEdit={handleOpenEditModal}
           isPersonalWorkspace={isPersonal}
+          swimDrop={swimDrop}
         />
       );
     }
@@ -1005,7 +1066,7 @@ export default function DashboardPage() {
             </div>}
           </header>
 
-          <DndContext sensors={sensors} collisionDetection={isSwimlaneActive ? closestCorners : closestCenter} autoScroll={dndAutoScroll} onDragStart={handleDragStart} onDragMove={handleDragMove} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
+          <DndContext sensors={sensors} collisionDetection={dndCollisionDetection} autoScroll={dndAutoScroll} onDragStart={handleDragStart} onDragMove={handleDragMove} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <h2 className="visually-hidden">{t('dashboard.title')}</h2>
               {renderDashboardContent()}

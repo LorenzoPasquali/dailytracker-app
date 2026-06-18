@@ -855,7 +855,8 @@ html {
    the drop position is shown only by a thin insertion line, so suppress the
    full-card dashed placeholder here. The source slot stays as a clean empty gap.
    (The swimlane reflow view keeps the dashed placeholder.) */
-.kanban-virtual-col .task-card-wrapper--dragging::after {
+.kanban-virtual-col .task-card-wrapper--dragging::after,
+.kanban-swim-cell .task-card-wrapper--dragging::after {
   content: none;
 }
 
