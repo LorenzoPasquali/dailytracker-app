@@ -9,6 +9,7 @@ import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
 import Trash from 'react-bootstrap-icons/dist/icons/trash';
 import { toast } from 'sonner';
 import api from '../services/api';
+import ChatMarkdown from './ChatMarkdown';
 
 const STORAGE_KEY = 'dt_ai_chat_history';
 
@@ -280,11 +281,11 @@ export default function AiChatPanel({ isOpen, isMobile, onTasksCreated }) {
               color: 'var(--text-secondary)',
               fontSize: '0.85rem',
               lineHeight: 1.5,
-              whiteSpace: 'pre-wrap',
+              whiteSpace: msg.role === 'user' ? 'pre-wrap' : 'normal',
               wordBreak: 'break-word',
             }}
           >
-            {msg.text}
+            {msg.role === 'model' ? <ChatMarkdown>{msg.text}</ChatMarkdown> : msg.text}
           </div>
         ))}
         {loading && (

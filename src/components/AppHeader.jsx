@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Dropdown, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Button, Dropdown, Badge } from 'react-bootstrap';
 // Lazy: pulls in flag-icons CSS (~400KB) only when the profile menu opens.
 const LanguageSelector = lazy(() => import('./LanguageSelector'));
 import WorkspaceSwitcher from './WorkspaceSwitcher';
@@ -10,8 +10,7 @@ import { toast } from 'sonner';
 import List from 'react-bootstrap-icons/dist/icons/list';
 import PersonCircle from 'react-bootstrap-icons/dist/icons/person-circle';
 import BoxArrowRight from 'react-bootstrap-icons/dist/icons/box-arrow-right';
-import ArrowLeftSquare from 'react-bootstrap-icons/dist/icons/arrow-left-square';
-import ArrowRightSquare from 'react-bootstrap-icons/dist/icons/arrow-right-square';
+import { PanelLeftIcon } from './icons/animated-icons';
 import MoonFill from 'react-bootstrap-icons/dist/icons/moon-fill';
 import SunFill from 'react-bootstrap-icons/dist/icons/sun-fill';
 import CircleHalf from 'react-bootstrap-icons/dist/icons/circle-half';
@@ -122,25 +121,15 @@ export default function AppHeader({
             <List size={20} />
           </Button>
         ) : (
-          <OverlayTrigger
-            placement="right"
-            delay={{ show: 250, hide: 400 }}
-            overlay={
-              <Tooltip id="tooltip-collapse">
-                {isSidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')}
-              </Tooltip>
-            }
+          <Button
+            variant="link"
+            onClick={onToggleCollapse}
+            className="sidebar-toggle-btn no-focus-override"
+            aria-label={isSidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')}
+            style={{ color: 'var(--text-muted)', padding: '0.25rem', display: 'flex' }}
           >
-            <Button
-              variant="link"
-              onClick={onToggleCollapse}
-              className="sidebar-toggle-btn no-focus-override"
-              aria-label={isSidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')}
-              style={{ color: 'var(--text-muted)', padding: '0.25rem' }}
-            >
-              {isSidebarCollapsed ? <ArrowRightSquare size={15} /> : <ArrowLeftSquare size={15} />}
-            </Button>
-          </OverlayTrigger>
+            <PanelLeftIcon size={18} style={{ display: 'flex', transform: isSidebarCollapsed ? 'scaleX(-1)' : 'none' }} />
+          </Button>
         )}
         <span style={{
           fontFamily: 'var(--font-display)',
