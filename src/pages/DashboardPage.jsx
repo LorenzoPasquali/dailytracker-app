@@ -76,8 +76,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
-  const [dropIndicator, setDropIndicator] = useState(null); // {containerId, index} insertion line (board views)
-  const [swimDrop, setSwimDrop] = useState(null); // {cellId, index, overTaskId, isBelow} insertion line (swimlane)
+  const [dropIndicator, setDropIndicator] = useState(null); // {containerId, index, overTaskId, isBelow} insertion line (all views)
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -419,8 +418,6 @@ export default function DashboardPage() {
   // (state may lag a render behind the final dragMove event).
   const dropIndicatorRef = useRef(null);
   const setDrop = (val) => { dropIndicatorRef.current = val; setDropIndicator(val); };
-  const swimDropRef = useRef(null);
-  const setSwim = (val) => { swimDropRef.current = val; setSwimDrop(val); };
 
   // Both views now use the insertion-line model (no mid-drag column mutation).
   // The swimlane differs only in that its containers are compound project×stage
@@ -494,44 +491,6 @@ export default function DashboardPage() {
     setActiveTask(task);
     dragSourceContainer.current = findContainerIn(columnsRef.current, active.id);
     setDrop(null);
-    setSwim(null);
-  };
-
-  // ── Swimlane drag (insertion-line): compute the target cell + index within
-  // that cell. The card never moves mid-drag; only the emerald line previews the
-  // drop. Pointer-based + continuous (onDragMove) for the same reasons as the
-  // board. cellId = "stageId::laneId"; the commit maps it back to the stage column.
-  const handleSwimlaneDragMove = (event) => {
-    const { active, over } = event;
-    if (!over) { setSwim(null); return; }
-    const overId = over.id;
-    if (overId === active.id) return; // hovering own card → keep last indicator
-
-    const prev = columnsRef.current;
-    let cellId, index, overTaskId, isBelow = false;
-
-    if (typeof overId === 'number') {
-      const overTask = findTaskById(prev, overId);
-      if (!overTask) { setSwim(null); return; }
-      const stageId = String(overTask.stageId);
-      const lane = laneIdOf(overTask);
-      cellId = `${stageId}::${lane}`;
-      const cellTasks = (prev[stageId] || []).filter(t => laneIdOf(t) === lane);
-      const overIdxInCell = cellTasks.findIndex(t => t.id === overId);
-      if (over.rect) isBelow = pointerYFromEvent(event) > over.rect.top + over.rect.height / 2;
-      index = overIdxInCell >= 0 ? overIdxInCell + (isBelow ? 1 : 0) : cellTasks.length;
-      overTaskId = overId;
-    } else {
-      cellId = String(overId);
-      const [stageId, lane] = cellId.split('::');
-      if (!stageId || !prev[stageId]) { setSwim(null); return; }
-      index = prev[stageId].filter(t => laneIdOf(t) === lane).length;
-      overTaskId = null;
-    }
-
-    const cur = swimDropRef.current;
-    if (cur && cur.cellId === cellId && cur.index === index && cur.overTaskId === overTaskId) return;
-    setSwim({ cellId, index, overTaskId, isBelow });
   };
 
   // Current pointer Y across pointer & touch sensors. activatorEvent is the
@@ -547,60 +506,66 @@ export default function DashboardPage() {
     return startY + (event.delta?.y || 0);
   };
 
-  // ── Board drag (classic + mobile): never mutate the columns mid-drag; just
-  // compute where the insertion line should sit {containerId, index}. Runs on
-  // onDragMove (continuous) rather than onDragOver — onDragOver only fires when
-  // `over` changes, so the above/below side wouldn't update while the pointer
-  // moves within the same card (the "line won't go back above" bug). Threshold
-  // is the pointer Y vs the target card's midpoint (pointer, not card center, so
-  // the grab offset doesn't bias it).
-  const handleBoardDragMove = (event) => {
-    const { over } = event;
+  // Cards belonging to a container in the current view: a board column (stageId)
+  // or a swimlane cell ("stageId::laneId"). null if the stage doesn't exist.
+  const cardsInContainer = (cols, containerId) => {
+    if (typeof containerId === 'string' && containerId.includes('::')) {
+      const [stageId, lane] = containerId.split('::');
+      return cols[stageId] ? cols[stageId].filter(t => laneIdOf(t) === lane) : null;
+    }
+    return cols[containerId] || null;
+  };
+
+  // ── Unified insertion-line drag (classic, mobile AND swimlane — identical
+  // logic). Never mutates the columns mid-drag; just computes where the line sits
+  // {containerId, index, overTaskId, isBelow}. Runs on onDragMove (continuous, so
+  // the above/below side updates while the pointer moves within one card) with a
+  // pointer-vs-midpoint threshold (pointer, not card center → grab offset doesn't
+  // bias it). The real move is committed once, at drop, by the over card's identity.
+  const handleDragMove = (event) => {
+    const { active, over } = event;
     if (!over) { setDrop(null); return; }
+    const overId = over.id;
+    if (overId === active.id) return; // hovering own card → keep last indicator
 
     const prev = columnsRef.current;
-    const overId = over.id;
-    const overTaskContainer = findContainerIn(prev, overId);
-    const overContainer = overTaskContainer || parseContainerId(String(overId));
-    if (!overContainer || !prev[overContainer]) { setDrop(null); return; }
+    let containerId, index, overTaskId = null, isBelow = false;
 
-    const overItems = prev[overContainer];
-    let index;
-    if (overTaskContainer && over.rect) {
-      const overIndex = overItems.findIndex(t => t.id === overId);
-      const overMid = over.rect.top + over.rect.height / 2;
-      const isBelowOverItem = pointerYFromEvent(event) > overMid;
-      index = overIndex >= 0 ? overIndex + (isBelowOverItem ? 1 : 0) : overItems.length;
+    if (isCardId(overId)) {
+      const overTask = findTaskById(prev, overId);
+      if (!overTask) { setDrop(null); return; }
+      containerId = containerOfCard(prev, overId);
+      const items = cardsInContainer(prev, containerId) || [];
+      const overIdx = items.findIndex(t => t.id === overId);
+      if (over.rect) isBelow = pointerYFromEvent(event) > over.rect.top + over.rect.height / 2;
+      index = overIdx >= 0 ? overIdx + (isBelow ? 1 : 0) : items.length;
+      overTaskId = overId;
     } else {
-      // Hovering the column body (not a card) → append to the end.
-      index = overItems.length;
+      containerId = String(overId);
+      const items = cardsInContainer(prev, containerId);
+      if (items == null) { setDrop(null); return; }
+      index = items.length;
     }
 
-    const cid = String(overContainer);
     const cur = dropIndicatorRef.current;
-    if (cur && cur.containerId === cid && cur.index === index) return; // no-op
-    setDrop({ containerId: cid, index });
+    if (cur && cur.containerId === containerId && cur.index === index && cur.overTaskId === overTaskId) return;
+    setDrop({ containerId, index, overTaskId, isBelow });
   };
 
-  const handleDragMove = (event) => {
-    if (isSwimlaneActive) handleSwimlaneDragMove(event);
-    else handleBoardDragMove(event);
-  };
-
-  // ── Swimlane drop commit: remove the active card from its stage column and
-  // re-insert it in the target cell's stage column adjacent to the over card
-  // (by identity, so it lands exactly where the line was), then persist.
-  const handleSwimlaneDragEnd = (event) => {
+  // ── Unified drop commit: remove the active card from its stage column and
+  // re-insert it in the target stage column adjacent to the over card (by
+  // identity, so it lands exactly where the line was), then persist.
+  const handleDragEnd = (event) => {
     const { active } = event;
     const source = dragSourceContainer.current; // stageId of the active card
-    const indicator = swimDropRef.current;
+    const indicator = dropIndicatorRef.current;
     dragSourceContainer.current = null;
     setActiveTask(null);
-    setSwim(null);
+    setDrop(null);
 
     if (!indicator || !source) return;
     const prev = columnsRef.current;
-    const [targetStageId, lane] = indicator.cellId.split('::');
+    const targetStageId = parseContainerId(indicator.containerId);
     if (!prev[source] || !prev[targetStageId]) return;
 
     const srcCol = [...prev[source]];
@@ -615,12 +580,16 @@ export default function DashboardPage() {
     if (indicator.overTaskId != null) {
       const oi = targetCol.findIndex(t => t.id === indicator.overTaskId);
       insertAt = oi >= 0 ? oi + (indicator.isBelow ? 1 : 0) : targetCol.length;
-    } else {
-      // End of the cell → after that lane's last task in the stage column.
+    } else if (typeof indicator.containerId === 'string' && indicator.containerId.includes('::')) {
+      // End of a swimlane cell → after that lane's last task in the stage column.
+      const lane = indicator.containerId.split('::')[1];
       const cellTasks = targetCol.filter(t => laneIdOf(t) === lane);
       insertAt = cellTasks.length > 0
         ? targetCol.indexOf(cellTasks[cellTasks.length - 1]) + 1
         : targetCol.length;
+    } else {
+      // End of a board column.
+      insertAt = targetCol.length;
     }
     insertAt = Math.max(0, Math.min(insertAt, targetCol.length));
 
@@ -639,54 +608,6 @@ export default function DashboardPage() {
     applyColumns(columns);
 
     persistDrop(columns, targetStageId, source, active.id);
-  };
-
-  // ── Board drop commit: remove from source, insert at the indicator index,
-  // persist. Cross-column also persists the new stageId first.
-  const handleBoardDragEnd = (event) => {
-    const { active } = event;
-    const source = dragSourceContainer.current;
-    const indicator = dropIndicatorRef.current;
-    dragSourceContainer.current = null;
-    setActiveTask(null);
-    setDrop(null);
-
-    if (!indicator || !source) return;
-    const target = indicator.containerId;
-    let insertIndex = indicator.index;
-
-    const prev = columnsRef.current;
-    if (!prev[source] || !prev[target]) return;
-
-    const sourceItems = [...prev[source]];
-    const activeIndex = sourceItems.findIndex(t => t.id === active.id);
-    if (activeIndex === -1) return;
-    const [moved] = sourceItems.splice(activeIndex, 1);
-
-    let columns;
-    if (source === target) {
-      // Removing the active card shifts later indices down by one.
-      if (activeIndex < insertIndex) insertIndex -= 1;
-      insertIndex = Math.max(0, Math.min(insertIndex, sourceItems.length));
-      if (insertIndex === activeIndex) return; // dropped back in place → no-op
-      sourceItems.splice(insertIndex, 0, moved);
-      columns = { ...prev, [source]: sourceItems };
-    } else {
-      const destStage = stageById[target];
-      const movedTask = {
-        ...moved,
-        stageId: Number(target),
-        stage: destStage || moved.stage,
-        status: destStage ? destStage.name : moved.status,
-      };
-      const targetItems = [...prev[target]];
-      insertIndex = Math.max(0, Math.min(insertIndex, targetItems.length));
-      targetItems.splice(insertIndex, 0, movedTask);
-      columns = { ...prev, [source]: sourceItems, [target]: targetItems };
-    }
-    applyColumns(columns);
-
-    persistDrop(columns, target, source, active.id);
   };
 
   // Persist the post-drop order of `finalContainer`; cross-column also writes
@@ -708,18 +629,11 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDragEnd = (event) => {
-    if (isSwimlaneActive) handleSwimlaneDragEnd(event);
-    else handleBoardDragEnd(event);
-  };
-
   const handleDragCancel = () => {
-    // Neither model mutates columns mid-drag, so cancel just clears transient
-    // drag state — no snapshot revert needed.
+    // No mid-drag column mutation, so cancel just clears transient drag state.
     dragSourceContainer.current = null;
     setActiveTask(null);
     setDrop(null);
-    setSwim(null);
   };
 
   const sensors = useSensors(
@@ -870,7 +784,7 @@ export default function DashboardPage() {
           stages={stages}
           onEdit={handleOpenEditModal}
           isPersonalWorkspace={isPersonal}
-          swimDrop={swimDrop}
+          swimDrop={dropIndicator}
         />
       );
     }

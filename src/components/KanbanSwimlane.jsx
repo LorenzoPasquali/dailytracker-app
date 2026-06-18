@@ -28,7 +28,7 @@ function SwimlaneCell({ stageId, laneId, tasks, projects, onEdit, isPersonalWork
   const droppableId = `${stageId}::${laneId}`;
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
   const taskIds = tasks.map(t => t.id);
-  const lineAt = swimDrop && swimDrop.cellId === droppableId ? swimDrop.index : null;
+  const lineAt = swimDrop && swimDrop.containerId === droppableId ? swimDrop.index : null;
 
   return (
     <div
