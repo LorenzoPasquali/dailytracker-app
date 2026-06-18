@@ -9,6 +9,7 @@ import GearFill from 'react-bootstrap-icons/dist/icons/gear-fill';
 import TrashFill from 'react-bootstrap-icons/dist/icons/trash-fill';
 import { toast } from 'sonner';
 import api from '../services/api';
+import ChatMarkdown from './ChatMarkdown';
 
 export default function AiChatModal({ show, onClose, isMobile, onTasksCreated }) {
   const { t } = useTranslation();
@@ -287,11 +288,11 @@ export default function AiChatModal({ show, onClose, isMobile, onTasksCreated })
               color: 'var(--text-secondary)',
               fontSize: '0.83rem',
               lineHeight: 1.5,
-              whiteSpace: 'pre-wrap',
+              whiteSpace: msg.role === 'user' ? 'pre-wrap' : 'normal',
               wordBreak: 'break-word',
             }}
           >
-            {msg.text}
+            {msg.role === 'model' ? <ChatMarkdown>{msg.text}</ChatMarkdown> : msg.text}
           </div>
         ))}
         {loading && (

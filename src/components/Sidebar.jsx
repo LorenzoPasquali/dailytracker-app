@@ -172,7 +172,6 @@ export default function Sidebar({
   // highlight isn't hidden behind a collapsed header.
   useEffect(() => {
     if (monitorView === 'reports') setAnalysisKey('analysis');
-    if (monitorView === 'mcp') setIntegrationsKey('integrations');
   }, [monitorView]);
 
   const handleMonitorHeaderClick = (e) => {
@@ -316,7 +315,6 @@ export default function Sidebar({
                   Icon={BotIcon}
                   label={t('sidebar.mcp')}
                   onClick={onMcpClick}
-                  active={monitorView === 'mcp'}
                 />
               </div>
             </Accordion.Collapse>

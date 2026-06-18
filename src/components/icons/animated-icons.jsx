@@ -277,3 +277,20 @@ export const TagIcon = forwardRef(({ onMouseEnter, onMouseLeave, className, size
   );
 });
 TagIcon.displayName = 'TagIcon';
+
+// ── PanelLeft (Recolher sidebar) ────────────────────────────────────────────
+const PANEL_SPRING = { type: 'spring', stiffness: 250, damping: 16 };
+const panelStart = async (c) => { await c.start('firstState'); await c.start('secondState'); };
+const panelStop = (c) => c.start('normal');
+export const PanelLeftIcon = forwardRef(({ onMouseEnter, onMouseLeave, className, size = 16, ...props }, ref) => {
+  const { controls, handleMouseEnter, handleMouseLeave } = useAnimatedIcon(ref, onMouseEnter, onMouseLeave, panelStart, panelStop);
+  return (
+    <div className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
+      <svg {...SVG_BASE} width={size} height={size}>
+        <rect width="18" height="18" x="3" y="3" rx="2" />
+        <motion.path animate={controls} d="M9 3v18" transition={PANEL_SPRING} variants={{ normal: { x: 0 }, firstState: { x: -3 }, secondState: { x: 0 } }} />
+      </svg>
+    </div>
+  );
+});
+PanelLeftIcon.displayName = 'PanelLeftIcon';
