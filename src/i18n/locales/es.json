@@ -309,7 +309,10 @@
     "reportsTooltip": "Módulo de Reportes aún no implementado",
     "aiAssistant": "Asistente IA",
     "notifications": "Notificaciones",
-    "stages": "Etapas"
+    "stages": "Etapas",
+    "analysis": "Análisis",
+    "integrations": "Integraciones",
+    "mcp": "MCP"
   },
   "dashboard": {
     "title": "Monitor de Tareas",
@@ -332,7 +335,9 @@
     "tasksCount_other": "{{count}} tareas en esta columna",
     "taskMoved": "¡Tarea movida!",
     "taskMoveError": "No se pudo mover la tarea.",
-    "taskDeleteError": "No se pudo eliminar la tarea."
+    "taskDeleteError": "No se pudo eliminar la tarea.",
+    "taskDeleted": "¡Tarea eliminada!",
+    "taskRemovedByOther": "Se eliminó una tarea."
   },
   "taskForm": {
     "createTitle": "Crear Nueva Tarea",
@@ -485,7 +490,7 @@
     },
     "sidebar": {
       "title": "Barra de navegación",
-      "body": "Aquí cambias entre vistas, gestionas proyectos y tipos de tarea, accedes a reportes y abres el asistente de IA."
+      "body": "Aquí cambias entre vistas, gestionas proyectos, tipos de tarea y columnas, y accedes a reportes."
     },
     "workspace": {
       "title": "Espacios de trabajo",
@@ -501,11 +506,19 @@
     },
     "kanban": {
       "title": "Tu tablero Kanban",
-      "body": "Las tareas fluyen por tres columnas: Planificado, En Progreso y Terminado."
+      "body": "Tus tareas se organizan en columnas. Las cuentas nuevas empiezan con Planificado, En Progreso y Terminado."
+    },
+    "columns": {
+      "title": "Columnas personalizables",
+      "body": "Las columnas son totalmente personalizables: renómbralas, cambia su color, reordénalas o crea nuevas en \"Etapas\", en la barra lateral. Marca una como final para contar sus tareas como completadas."
     },
     "drag-drop": {
       "title": "Arrastrar y soltar",
       "body": "Arrastra cualquier tarjeta y suéltala en otra columna para cambiar su estado. También puedes reordenar dentro de la misma columna."
+    },
+    "ai": {
+      "title": "Asistente de IA",
+      "body": "Tu asistente de IA ahora está en la pestaña \"IA\" en el borde de la pantalla (resaltada). Haz clic para crear y organizar tareas conversando."
     },
     "done": {
       "title": "¡Todo listo!",
@@ -561,5 +574,9 @@
     "moveTasksHint": "Esta etapa tiene tareas. Elige a qué etapa deben moverse.",
     "noStages": "Aún no hay etapas. Crea la primera arriba.",
     "lastStageError": "Debes mantener al menos una etapa."
+  },
+  "mcp": {
+    "title": "MCP",
+    "comingSoon": "La configuración del servidor MCP estará disponible pronto."
   }
 }

@@ -309,7 +309,10 @@
     "reportsTooltip": "Reports module not yet implemented",
     "aiAssistant": "AI Assistant",
     "notifications": "Notifications",
-    "stages": "Stages"
+    "stages": "Stages",
+    "analysis": "Analysis",
+    "integrations": "Integrations",
+    "mcp": "MCP"
   },
   "dashboard": {
     "title": "Task Monitor",
@@ -332,7 +335,9 @@
     "tasksCount_other": "{{count}} tasks in this column",
     "taskMoved": "Task moved!",
     "taskMoveError": "Could not move the task.",
-    "taskDeleteError": "Could not delete the task."
+    "taskDeleteError": "Could not delete the task.",
+    "taskDeleted": "Task deleted!",
+    "taskRemovedByOther": "A task was removed."
   },
   "taskForm": {
     "createTitle": "Create New Task",
@@ -485,7 +490,7 @@
     },
     "sidebar": {
       "title": "Navigation sidebar",
-      "body": "Here you switch between views, manage projects and task types, access reports and open the AI assistant."
+      "body": "Here you switch between views, manage projects, task types and columns, and access reports."
     },
     "workspace": {
       "title": "Workspaces",
@@ -501,11 +506,19 @@
     },
     "kanban": {
       "title": "Your Kanban board",
-      "body": "Tasks flow through three columns: Planned, In Progress and Done."
+      "body": "Your tasks are organized into columns. New accounts start with Planned, In Progress and Done."
+    },
+    "columns": {
+      "title": "Customizable columns",
+      "body": "Columns are fully customizable: rename, recolor, reorder or add new ones under \"Stages\" in the sidebar. Mark one as final to count its tasks as completed."
     },
     "drag-drop": {
       "title": "Drag and drop",
       "body": "Drag any card and drop it into another column to change its status. You can also reorder within the same column."
+    },
+    "ai": {
+      "title": "AI assistant",
+      "body": "Your AI assistant now lives in the \"AI\" tab on the edge of the screen (highlighted). Click it to create and organize tasks just by chatting."
     },
     "done": {
       "title": "All set!",
@@ -561,5 +574,9 @@
     "moveTasksHint": "This stage has tasks. Choose which stage they should move to.",
     "noStages": "No stages yet. Create the first one above.",
     "lastStageError": "You must keep at least one stage."
+  },
+  "mcp": {
+    "title": "MCP",
+    "comingSoon": "MCP server setup is coming soon."
   }
 }

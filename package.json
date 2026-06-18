@@ -20,6 +20,7 @@
     "date-fns": "^4.1.0",
     "flag-icons": "^7.5.0",
     "i18next": "^25.8.14",
+    "motion": "^12.40.0",
     "react": "^19.1.1",
     "react-bootstrap": "^2.10.10",
     "react-bootstrap-icons": "^1.11.6",
@@ -37,6 +38,7 @@
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
     "eslint": "^9.33.0",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "vite": "^7.1.2"

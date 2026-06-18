@@ -5,10 +5,12 @@ export const TUTORIAL_STEPS = [
   { id: 'welcome',    target: null,                              actionTarget: null },
   { id: 'sidebar',    target: 'tutorial-sidebar',                actionTarget: null },
   { id: 'workspace',  target: 'tutorial-workspace-switcher',     actionTarget: null },
+  { id: 'columns',    target: 'tutorial-sidebar-stages',         actionTarget: null },
   { id: 'projects',   target: 'tutorial-sidebar-projects',       actionTarget: 'tutorial-sidebar-projects' },
   { id: 'new-task',   target: 'tutorial-new-task-btn',           actionTarget: 'tutorial-new-task-btn' },
   { id: 'kanban',     target: 'tutorial-kanban-board',           actionTarget: null },
   { id: 'drag-drop',  target: 'tutorial-kanban-board',           actionTarget: null },
+  { id: 'ai',         target: 'tutorial-sidebar-ai',             actionTarget: null },
   { id: 'done',       target: null,                              actionTarget: null },
 ];
 

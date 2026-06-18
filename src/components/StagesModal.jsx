@@ -79,6 +79,7 @@ function SortableStageRow({
             <Form.Control
               value={editingName}
               onChange={(e) => setEditingName(e.target.value)}
+              maxLength={100}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') { e.preventDefault(); saveEditing(stage); }
                 if (e.key === 'Escape') cancelEditing();
@@ -317,6 +318,7 @@ export default function StagesModal({ show, handleClose, onStagesChange, stages 
                     placeholder={t('stages.namePlaceholder')}
                     value={newStageName}
                     onChange={(e) => setNewStageName(e.target.value)}
+                    maxLength={100}
                     style={{ ...inputStyle, flex: 1, minWidth: '140px', height: '42px' }}
                     className="custom-form-control"
                   />

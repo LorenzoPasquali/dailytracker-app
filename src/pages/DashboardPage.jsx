@@ -28,6 +28,7 @@ import StagesModal from '../components/StagesModal';
 
 import { Spinner, Offcanvas, Button } from 'react-bootstrap';
 import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
+import Robot from 'react-bootstrap-icons/dist/icons/robot';
 import Stars from 'react-bootstrap-icons/dist/icons/stars';
 import ChevronRight from 'react-bootstrap-icons/dist/icons/chevron-right';
 import DateFilterModal from '../components/DateFilterModal';
@@ -134,6 +135,11 @@ export default function DashboardPage() {
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // The socket captures handleWsEvent once (stale closure), so read the current
+  // user through a ref to compare against WS event authors at fire time.
+  const currentUserIdRef = useRef(null);
+  useEffect(() => { currentUserIdRef.current = currentUser?.id ?? null; }, [currentUser]);
+
   // WS events from other workspace members
   const handleWsEvent = (event) => {
     const { type, payload } = event;
@@ -148,7 +154,11 @@ export default function DashboardPage() {
         Object.keys(cols).forEach(s => { cols[s] = cols[s].filter(t => t.id !== payload.id); });
         return cols;
       });
-      toast.info('Uma tarefa foi removida.');
+      // The actor already gets a success toast locally; only notify *other*
+      // members so the deleter doesn't see a duplicate from the WS echo.
+      if (Number(payload.userId) !== Number(currentUserIdRef.current)) {
+        toast.info(t('kanban.taskRemovedByOther'));
+      }
     } else if (type === 'TASK_REORDERED') {
       const positionMap = new Map((payload.items || []).map(i => [i.id, i.position]));
       setTaskColumns(prev => {
@@ -402,9 +412,10 @@ export default function DashboardPage() {
         return newColumns;
       });
       handleCloseDeleteModal();
+      toast.success(t('kanban.taskDeleted'));
     } catch (error) {
       console.error("Erro ao deletar tarefa:", error);
-      toast.error('Não foi possível deletar a tarefa.');
+      toast.error(t('kanban.taskDeleteError'));
     }
   };
   // Mirror of taskColumns kept in sync so drag handlers always read the freshest
@@ -775,6 +786,26 @@ export default function DashboardPage() {
         </Suspense>
       );
     }
+    if (monitorView === 'mcp') {
+      return (
+        <div style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          color: 'var(--text-muted)',
+          gap: '0.75rem',
+        }}>
+          <Robot size={44} style={{ opacity: 0.3 }} />
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0 }}>
+            {t('mcp.title')}
+          </h2>
+          <p style={{ fontSize: '0.9rem', maxWidth: '360px', margin: 0 }}>{t('mcp.comingSoon')}</p>
+        </div>
+      );
+    }
     if (monitorView === 'modern') {
       return (
         <KanbanSwimlane
@@ -859,9 +890,10 @@ export default function DashboardPage() {
             onReportsClick={() => handleMonitorViewChange('reports')}
             onDailySummaryClick={() => setShowDailySummary(true)}
             onNotificationsClick={() => setShowNotificationsModal(true)}
+            onMcpClick={() => handleMonitorViewChange('mcp')}
             monitorView={monitorView}
             onMonitorViewChange={handleMonitorViewChange}
-            forceOpenRegistrations={tutorialActive && (tutorialStepId === 'projects')}
+            forceOpenRegistrations={tutorialActive && (tutorialStepId === 'projects' || tutorialStepId === 'columns')}
             isPersonalWorkspace={isPersonal}
           />
         )}
@@ -887,12 +919,12 @@ export default function DashboardPage() {
               letterSpacing: '-0.3px',
               display: isMobile ? 'none' : 'block'
             }}>
-              {monitorView === 'reports' ? t('sidebar.reports') : t('dashboard.title')}
+              {monitorView === 'reports' ? t('sidebar.reports') : monitorView === 'mcp' ? t('sidebar.mcp') : t('dashboard.title')}
             </h1>
             {/* SEO and Accessibility H1 for Mobile */}
-            {isMobile && <h1 className="visually-hidden">{monitorView === 'reports' ? t('sidebar.reports') : t('dashboard.title')}</h1>}
-            
-            {monitorView !== 'reports' && <div title={isSearching ? t('search.filtersDisabled') : undefined} style={{
+            {isMobile && <h1 className="visually-hidden">{monitorView === 'reports' ? t('sidebar.reports') : monitorView === 'mcp' ? t('sidebar.mcp') : t('dashboard.title')}</h1>}
+
+            {monitorView !== 'reports' && monitorView !== 'mcp' && <div title={isSearching ? t('search.filtersDisabled') : undefined} style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
@@ -1044,6 +1076,7 @@ export default function DashboardPage() {
             onReportsClick={() => { handleMonitorViewChange('reports'); setShowMobileSidebar(false); }}
             onDailySummaryClick={() => { setShowDailySummary(true); setShowMobileSidebar(false); }}
             onNotificationsClick={() => { setShowNotificationsModal(true); setShowMobileSidebar(false); }}
+            onMcpClick={() => { handleMonitorViewChange('mcp'); setShowMobileSidebar(false); }}
             isPersonalWorkspace={isPersonal}
             monitorView={monitorView}
             onMonitorViewChange={(view) => { handleMonitorViewChange(view); setShowMobileSidebar(false); }}

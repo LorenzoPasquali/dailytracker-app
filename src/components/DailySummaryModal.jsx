@@ -4,10 +4,7 @@ import { Modal } from 'react-bootstrap';
 import { isSameDay, parseISO, format, subDays } from 'date-fns';
 import { getDatepickerLocale } from '../i18n/datepicker-locales';
 import CheckCircleFill from 'react-bootstrap-icons/dist/icons/check-circle-fill';
-import ArrowClockwise from 'react-bootstrap-icons/dist/icons/arrow-clockwise';
 import ClipboardCheck from 'react-bootstrap-icons/dist/icons/clipboard-check';
-import ChevronDown from 'react-bootstrap-icons/dist/icons/chevron-down';
-import ChevronUp from 'react-bootstrap-icons/dist/icons/chevron-up';
 import XLg from 'react-bootstrap-icons/dist/icons/x-lg';
 import PlayFill from 'react-bootstrap-icons/dist/icons/play-fill';
 
@@ -18,7 +15,20 @@ function getGreeting(date, t) {
   return t('summary.goodEvening');
 }
 
-const TASK_LIMIT = 5;
+// Marker shown in a section header: a check for final (completed) stages,
+// otherwise a solid dot tinted with the stage's own color.
+function StageMarker({ color, isFinal }) {
+  if (isFinal) return <CheckCircleFill size={14} />;
+  return (
+    <span style={{
+      width: '10px',
+      height: '10px',
+      borderRadius: '50%',
+      backgroundColor: color,
+      display: 'block',
+    }} />
+  );
+}
 
 function TaskItem({ task, projects }) {
   const project = projects.find(p => p.id === task.projectId);
@@ -145,8 +155,10 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   const [doneDay, setDoneDay] = useState('yesterday'); // 'yesterday' | 'today'
 
-  const today = new Date();
-  const yesterday = subDays(today, 1);
+  // Pin "now" for the lifetime of the open modal so the memos below don't
+  // recompute on every render (a fresh Date() each render would defeat them).
+  const today = useMemo(() => new Date(), []);
+  const yesterday = useMemo(() => subDays(today, 1), [today]);
   const locale = getDatepickerLocale(i18n.language);
 
   const greeting = getGreeting(today, t);
@@ -160,31 +172,40 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
     return tasks.filter(t => selectedProjectIds.includes(t.projectId));
   }, [tasks, selectedProjectIds]);
 
-  // Stage semantics: final stages = completed; first stage = planned;
-  // everything else (non-final, non-first) = in progress.
-  const firstStageId = stages[0]?.id ?? null;
+  // One section per workspace stage, in the order the user configured them.
+  // Final stages show what was completed on the selected day (yesterday/today);
+  // every other stage shows whatever is currently sitting in that column.
+  // Tasks pointing at a missing stage fall back to the first column, matching
+  // the board's bucketing.
+  const sections = useMemo(() => {
+    const knownIds = new Set(stages.map(s => String(s.id)));
+    const fallbackId = stages[0] ? String(stages[0].id) : null;
+    const targetDay = doneDay === 'today' ? today : yesterday;
 
-  // Section data
-  const doneTasks = useMemo(() =>
-    filteredTasks.filter(task =>
-      !!task.stage?.isFinal &&
-      isSameDay(parseISO(task.createdAt), doneDay === 'today' ? today : yesterday)
-    ), [filteredTasks, today, yesterday, doneDay]);
+    return stages.map(stage => {
+      const stageId = String(stage.id);
+      const isFinal = !!stage.isFinal;
+      const stageTasks = filteredTasks.filter(task => {
+        const taskKey = task.stageId != null && knownIds.has(String(task.stageId))
+          ? String(task.stageId)
+          : fallbackId;
+        if (taskKey !== stageId) return false;
+        if (isFinal) return isSameDay(parseISO(task.createdAt), targetDay);
+        return true;
+      });
+      return { stage, isFinal, tasks: stageTasks };
+    });
+  }, [stages, filteredTasks, doneDay, today, yesterday]);
 
-  const doingTasks = useMemo(() =>
-    filteredTasks.filter(task => !task.stage?.isFinal && task.stageId !== firstStageId),
-    [filteredTasks, firstStageId]);
+  const hasFinalStage = useMemo(() => stages.some(s => s.isFinal), [stages]);
 
-  const plannedTasks = useMemo(() =>
-    filteredTasks.filter(task => !task.stage?.isFinal && task.stageId === firstStageId),
-    [filteredTasks, firstStageId]);
-
-  const totalRelevant = doneTasks.length + doingTasks.length + plannedTasks.length;
+  const doneCount = sections.reduce((sum, s) => sum + (s.isFinal ? s.tasks.length : 0), 0);
+  const totalRelevant = sections.reduce((sum, s) => sum + s.tasks.length, 0);
   const completionRate = totalRelevant > 0
-    ? Math.round((doneTasks.length / totalRelevant) * 100)
+    ? Math.round((doneCount / totalRelevant) * 100)
     : 0;
 
-  const noTasksAtAll = tasks.length === 0;
+  const noTasksAtAll = tasks.length === 0 || sections.length === 0;
 
   const handleProjectToggle = (id) => {
     setSelectedProjectIds(prev =>
@@ -343,14 +364,26 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
             </div>
           </div>
 
-          {/* Date Selector */}
-          <div style={{
-            display: 'flex',
-            gap: '0.3rem',
-            backgroundColor: 'var(--bg-active)',
-            borderRadius: '100px',
-            padding: '2px',
-          }}>
+          {/* Date Selector — scopes only the completed (final) columns */}
+          {hasFinalStage && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{
+              fontSize: '0.7rem',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-display)',
+            }}>
+              {t('summary.doneFilter')}
+            </span>
+            <div style={{
+              display: 'flex',
+              gap: '0.3rem',
+              backgroundColor: 'var(--bg-active)',
+              borderRadius: '100px',
+              padding: '2px',
+            }}>
             {['yesterday', 'today'].map(day => (
               <button
                 key={day}
@@ -372,7 +405,9 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
                 {t(`summary.day_${day}`)}
               </button>
             ))}
+            </div>
           </div>
+          )}
         </div>
 
         {/* ── TASK GRID ── */}
@@ -390,34 +425,21 @@ export default function DailySummaryModal({ show, onClose, tasks, currentUser, p
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
               gap: '1.25rem',
               alignItems: 'start',
             }}>
-              <SummarySection
-                icon={<CheckCircleFill size={14} />}
-                label={doneDay === 'today' ? t('summary.completedToday') : t('summary.completedYesterday')}
-                tasks={doneTasks}
-                projects={projects}
-                color="#10b981"
-                accentBg="rgba(16,185,129,0.06)"
-              />
-              <SummarySection
-                icon={<ArrowClockwise size={14} />}
-                label={t('summary.inProgress')}
-                tasks={doingTasks}
-                projects={projects}
-                color="#f59e0b"
-                accentBg="rgba(245,158,11,0.06)"
-              />
-              <SummarySection
-                icon={<ClipboardCheck size={14} />}
-                label={t('summary.plannedToday')}
-                tasks={plannedTasks}
-                projects={projects}
-                color="var(--text-muted)"
-                accentBg="var(--bg-hover)"
-              />
+              {sections.map(({ stage, isFinal, tasks: stageTasks }) => (
+                <SummarySection
+                  key={stage.id}
+                  icon={<StageMarker color={stage.color} isFinal={isFinal} />}
+                  label={stage.name}
+                  tasks={stageTasks}
+                  projects={projects}
+                  color={stage.color}
+                  accentBg={`${stage.color}0d`}
+                />
+              ))}
             </div>
           )}
         </div>
