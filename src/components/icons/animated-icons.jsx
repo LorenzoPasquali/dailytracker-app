@@ -294,3 +294,72 @@ export const PanelLeftIcon = forwardRef(({ onMouseEnter, onMouseLeave, className
   );
 });
 PanelLeftIcon.displayName = 'PanelLeftIcon';
+
+// ── Columns (Monitor → Clássico) — kanban board with vertical columns; the two
+// dividers nudge apart and back, like cards reflowing between columns.
+const COLUMNS_TIMING = { duration: 0.5, ease: 'easeInOut' };
+const COLUMNS_VARIANTS = [
+  { normal: { x: 0 }, animate: { x: [0, -2, 0], transition: COLUMNS_TIMING } },
+  { normal: { x: 0 }, animate: { x: [0, 2, 0], transition: COLUMNS_TIMING } },
+];
+export const ColumnsIcon = forwardRef(({ onMouseEnter, onMouseLeave, className, size = 16, ...props }, ref) => {
+  const { controls, handleMouseEnter, handleMouseLeave } = useAnimatedIcon(ref, onMouseEnter, onMouseLeave, startAnimate, stopNormal);
+  return (
+    <div className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
+      <svg {...SVG_BASE} width={size} height={size}>
+        <rect width="18" height="18" x="3" y="3" rx="2" />
+        <motion.path animate={controls} initial="normal" d="M9 3v18" variants={COLUMNS_VARIANTS[0]} />
+        <motion.path animate={controls} initial="normal" d="M15 3v18" variants={COLUMNS_VARIANTS[1]} />
+      </svg>
+    </div>
+  );
+});
+ColumnsIcon.displayName = 'ColumnsIcon';
+
+// ── Rows (Monitor → Moderno) — swimlane board with horizontal lanes; the two
+// dividers breathe vertically, mirroring ColumnsIcon on the other axis.
+const ROWS_TIMING = { duration: 0.5, ease: 'easeInOut' };
+const ROWS_VARIANTS = [
+  { normal: { y: 0 }, animate: { y: [0, -2, 0], transition: ROWS_TIMING } },
+  { normal: { y: 0 }, animate: { y: [0, 2, 0], transition: ROWS_TIMING } },
+];
+export const RowsIcon = forwardRef(({ onMouseEnter, onMouseLeave, className, size = 16, ...props }, ref) => {
+  const { controls, handleMouseEnter, handleMouseLeave } = useAnimatedIcon(ref, onMouseEnter, onMouseLeave, startAnimate, stopNormal);
+  return (
+    <div className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
+      <svg {...SVG_BASE} width={size} height={size}>
+        <rect width="18" height="18" x="3" y="3" rx="2" />
+        <motion.path animate={controls} initial="normal" d="M3 9h18" variants={ROWS_VARIANTS[0]} />
+        <motion.path animate={controls} initial="normal" d="M3 15h18" variants={ROWS_VARIANTS[1]} />
+      </svg>
+    </div>
+  );
+});
+RowsIcon.displayName = 'RowsIcon';
+
+// ── ShareNodes (Monitor → Grafo) — three nodes + two edges; nodes pop in and
+// the edges draw between them in sequence, like a graph forming.
+const NODE_ORIGIN = { transformBox: 'fill-box', transformOrigin: 'center' };
+const graphNode = (delay) => ({
+  normal: { scale: 1, opacity: 1 },
+  animate: { scale: [0.4, 1.2, 1], opacity: [0, 1, 1], transition: { duration: 0.45, delay, ease: 'easeInOut' } },
+});
+const graphEdge = (delay) => ({
+  normal: { pathLength: 1, opacity: 1 },
+  animate: { pathLength: [0, 1], opacity: [0, 1], transition: { duration: 0.4, delay, ease: 'easeInOut' } },
+});
+export const ShareNodesIcon = forwardRef(({ onMouseEnter, onMouseLeave, className, size = 16, ...props }, ref) => {
+  const { controls, handleMouseEnter, handleMouseLeave } = useAnimatedIcon(ref, onMouseEnter, onMouseLeave, startAnimate, stopNormal);
+  return (
+    <div className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
+      <svg {...SVG_BASE} width={size} height={size}>
+        <motion.line animate={controls} initial="normal" variants={graphEdge(0.15)} x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
+        <motion.line animate={controls} initial="normal" variants={graphEdge(0.25)} x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
+        <motion.circle animate={controls} initial="normal" style={NODE_ORIGIN} variants={graphNode(0)} cx="18" cy="5" r="3" />
+        <motion.circle animate={controls} initial="normal" style={NODE_ORIGIN} variants={graphNode(0.1)} cx="6" cy="12" r="3" />
+        <motion.circle animate={controls} initial="normal" style={NODE_ORIGIN} variants={graphNode(0.2)} cx="18" cy="19" r="3" />
+      </svg>
+    </div>
+  );
+});
+ShareNodesIcon.displayName = 'ShareNodesIcon';

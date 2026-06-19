@@ -37,6 +37,7 @@ import { isWithinInterval, startOfDay, endOfDay, isSameDay, parseISO, format } f
 // Heavy / non-initial: split into async chunks so the first dashboard paint
 // doesn't parse recharts (ReportsView) or the AI panel on the main thread.
 const ReportsView = lazy(() => import('../components/ReportsView'));
+const TaskGraphView = lazy(() => import('../components/TaskGraphView'));
 const AiChatPanel = lazy(() => import('../components/AiChatPanel'));
 
 // Board collision: prefer the card directly UNDER THE POINTER (card ids are
@@ -683,6 +684,14 @@ export default function DashboardPage() {
       return <div className="w-100 text-center mt-5"><Spinner animation="border" style={{ color: 'var(--accent)' }} /></div>;
     }
 
+    if (monitorView === 'graph') {
+      return (
+        <Suspense fallback={<div className="w-100 text-center mt-5"><Spinner animation="border" style={{ color: 'var(--accent)' }} /></div>}>
+          <TaskGraphView tasks={filteredTasks} projects={projects} stages={stages} onEditTask={handleOpenEditModal} isMobile={isMobile} />
+        </Suspense>
+      );
+    }
+
     if (isMobile) {
       const mobileTabs = stages.map(stage => ({
         stage,
@@ -900,10 +909,10 @@ export default function DashboardPage() {
               letterSpacing: '-0.3px',
               display: isMobile ? 'none' : 'block'
             }}>
-              {monitorView === 'reports' ? t('sidebar.reports') : t('dashboard.title')}
+              {monitorView === 'reports' ? t('sidebar.reports') : monitorView === 'graph' ? t('sidebar.monitorGraph') : t('dashboard.title')}
             </h1>
             {/* SEO and Accessibility H1 for Mobile */}
-            {isMobile && <h1 className="visually-hidden">{monitorView === 'reports' ? t('sidebar.reports') : t('dashboard.title')}</h1>}
+            {isMobile && <h1 className="visually-hidden">{monitorView === 'reports' ? t('sidebar.reports') : monitorView === 'graph' ? t('sidebar.monitorGraph') : t('dashboard.title')}</h1>}
 
             {monitorView !== 'reports' && <div title={isSearching ? t('search.filtersDisabled') : undefined} style={{
               display: 'flex',

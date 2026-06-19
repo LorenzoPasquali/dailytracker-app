@@ -14,6 +14,9 @@ import {
   FoldersIcon,
   LayoutGridIcon,
   TagIcon,
+  ColumnsIcon,
+  RowsIcon,
+  ShareNodesIcon,
 } from './icons/animated-icons';
 
 // Shared row geometry. Padding-left is fixed so the icon sits at the same x
@@ -113,8 +116,10 @@ function SubItem({ Icon, label, onClick, active = false, dataTutorialId }) {
   );
 }
 
-// Monitor sub-view row (Clássico / Moderno) — a tinted dot, not an icon.
-function MonitorItem({ label, isActive, onClick }) {
+// Monitor sub-view row (Clássico / Moderno / Grafo) — an animated icon driven
+// on row hover, matching the rest of the sidebar.
+function MonitorItem({ Icon, label, isActive, onClick }) {
+  const iconRef = useRef(null);
   return (
     <div
       role="button"
@@ -122,22 +127,14 @@ function MonitorItem({ label, isActive, onClick }) {
       onClick={onClick}
       style={{
         ...SUBITEM_STYLE,
-        gap: '0.5rem',
         color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
         borderLeft: `2px solid ${isActive ? 'var(--accent)' : 'transparent'}`,
         backgroundColor: isActive ? 'var(--bg-active)' : 'transparent',
       }}
-      onMouseEnter={(e) => { if (!isActive) applyHover(e); }}
-      onMouseLeave={(e) => { if (!isActive) clearHover(e); }}
+      onMouseEnter={(e) => { if (!isActive) applyHover(e); iconRef.current?.startAnimation(); }}
+      onMouseLeave={(e) => { if (!isActive) clearHover(e); iconRef.current?.stopAnimation(); }}
     >
-      <span style={{
-        width: '5px',
-        height: '5px',
-        borderRadius: '50%',
-        backgroundColor: isActive ? 'var(--accent)' : 'var(--text-muted)',
-        flexShrink: 0,
-        transition: 'background-color var(--transition)',
-      }} />
+      <Icon ref={iconRef} size={14} className="sidebar-ico sidebar-ico--sm" />
       {label}
     </div>
   );
@@ -219,14 +216,22 @@ export default function Sidebar({
           <Collapse in={!isCollapsed && monitorExpanded}>
             <div>
               <MonitorItem
+                Icon={ColumnsIcon}
                 label={t('sidebar.monitorClassic')}
                 isActive={monitorView === 'classic'}
                 onClick={() => onMonitorViewChange('classic')}
               />
               <MonitorItem
+                Icon={RowsIcon}
                 label={t('sidebar.monitorModern')}
                 isActive={monitorView === 'modern'}
                 onClick={() => onMonitorViewChange('modern')}
+              />
+              <MonitorItem
+                Icon={ShareNodesIcon}
+                label={t('sidebar.monitorGraph')}
+                isActive={monitorView === 'graph'}
+                onClick={() => onMonitorViewChange('graph')}
               />
             </div>
           </Collapse>
