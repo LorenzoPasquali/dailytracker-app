@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { toast } from 'sonner';
@@ -16,6 +16,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Return target after login (e.g. the OAuth consent page). Same-origin paths only.
+  const nextParam = searchParams.get('next');
+  const destination = nextParam && nextParam.startsWith('/') ? nextParam : '/dashboard';
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -29,14 +33,14 @@ export default function LoginPage() {
           localStorage.setItem('refreshToken', refreshToken);
         }
         toast.success(t('login.googleSuccessToast'));
-        navigate('/dashboard');
+        navigate(destination);
       } else if (error) {
         toast.error(t('login.googleErrorToast'));
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [navigate]);
+  }, [navigate, destination]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -58,7 +62,7 @@ export default function LoginPage() {
         sessionStorage.removeItem('pendingInviteToken');
       }
       toast.success(t('login.successToast'));
-      navigate('/dashboard');
+      navigate(destination);
     } catch (err) {
       const msg = err.response?.data?.error || t('login.invalidCredentials');
       toast.error(msg);
