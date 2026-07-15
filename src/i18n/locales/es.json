@@ -632,6 +632,31 @@
     "tokenCreatedWarning": "Cópialo ahora — este token no se mostrará de nuevo.",
     "tokenCreatedToast": "Token generado.",
     "tokenCopied": "Token copiado.",
-    "dismiss": "Listo, copiado"
+    "dismiss": "Listo, copiado",
+    "connectTitle": "Conectar en Claude (conector nativo)",
+    "connectHelp": "Pega la URL de abajo en 'Añadir conector personalizado'. La autorización se abre en el navegador — sin pegar ningún token.",
+    "connectStep1": "En Claude, abre Ajustes → Conectores → Añadir conector personalizado.",
+    "connectStep2": "Pega la URL del MCP de abajo y confirma.",
+    "connectStep3": "Inicia sesión y autoriza el acceso de lectura/escritura a tus tareas.",
+    "grantsTitle": "Apps autorizadas",
+    "noGrants": "Aún no hay ninguna app conectada por OAuth.",
+    "authorizedOn": "Autorizado el {{date}}",
+    "grantRevokeConfirm": "¿Revocar el acceso de esta app? Tendrá que autorizar de nuevo.",
+    "grantRevoked": "Acceso revocado.",
+    "legacyTitle": "Avanzado: token manual (mcp-remote)",
+    "legacyHelp": "Alternativa para clientes sin OAuth (p. ej. Claude Desktop vía mcp-remote). Genera un token y pégalo en el header Authorization."
+  },
+  "oauthConsent": {
+    "title": "Autorizar acceso",
+    "subtitle": "{{client}} quiere acceder a tu cuenta de DailyTracker.",
+    "permissionsLabel": "Permisos solicitados:",
+    "scopeRead": "Ver tus tareas, proyectos y etapas",
+    "scopeWrite": "Crear y editar tareas",
+    "approve": "Autorizar",
+    "deny": "Rechazar",
+    "needScope": "Selecciona al menos un permiso.",
+    "invalidRequest": "Solicitud de autorización inválida o incompleta.",
+    "errorTitle": "No se pudo autorizar",
+    "backToApp": "Volver a la app"
   }
 }
