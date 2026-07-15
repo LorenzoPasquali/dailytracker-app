@@ -15,6 +15,9 @@ import api from '../services/api';
 // mcp-remote (legacy dt_mcp_ fallback) also connects to.
 const MCP_URL = `${api.defaults.baseURL}/mcp`;
 
+// AI providers we show connect instructions for. Steps/labels live in i18n under mcp.providers.<id>.
+const PROVIDERS = ['claude', 'openai', 'gemini'];
+
 function buildSnippet(token) {
   return JSON.stringify(
     {
@@ -40,6 +43,7 @@ export default function McpModal({ show, handleClose }) {
   const [newToken, setNewToken] = useState(null); // plaintext, shown once
   const [grants, setGrants] = useState(null);      // authorized OAuth apps
   const [legacyOpen, setLegacyOpen] = useState(false);
+  const [provider, setProvider] = useState('claude'); // which AI's connect steps to show
 
   useEffect(() => {
     if (show) {
@@ -213,11 +217,49 @@ export default function McpModal({ show, handleClose }) {
               <code style={{ ...codeBox, flex: 1, whiteSpace: 'nowrap' }}>{MCP_URL}</code>
               <button style={iconBtn} onClick={() => copy(MCP_URL)}><Clipboard size={13} /></button>
             </div>
+
+            {/* Per-AI instructions: pick the assistant, show its steps. */}
+            <label style={{ color: 'var(--text-muted)', fontSize: '0.78rem', display: 'block', marginBottom: '0.4rem' }}>
+              {t('mcp.providerPickerLabel')}
+            </label>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
+              {PROVIDERS.map((id) => {
+                const active = provider === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setProvider(id)}
+                    style={{
+                      padding: '0.4rem 0.85rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: `1px solid ${active ? 'var(--accent)' : 'var(--border-default)'}`,
+                      background: active ? 'var(--accent-subtle)' : 'transparent',
+                      color: active ? 'var(--accent)' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {t(`mcp.providers.${id}.name`)}
+                  </button>
+                );
+              })}
+            </div>
+
             <ol style={stepList}>
-              <li>{t('mcp.connectStep1')}</li>
-              <li>{t('mcp.connectStep2')}</li>
-              <li>{t('mcp.connectStep3')}</li>
+              {(() => {
+                const steps = t(`mcp.providers.${provider}.steps`, { returnObjects: true });
+                return (Array.isArray(steps) ? steps : []).map((step, i) => <li key={i}>{step}</li>);
+              })()}
             </ol>
+            {(() => {
+              const note = t(`mcp.providers.${provider}.note`, { defaultValue: '' });
+              return note ? (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontStyle: 'italic', margin: '0.2rem 0 0' }}>
+                  {note}
+                </p>
+              ) : null;
+            })()}
           </div>
 
           {/* ── Authorized apps (OAuth grants) ──────────────────────────────── */}

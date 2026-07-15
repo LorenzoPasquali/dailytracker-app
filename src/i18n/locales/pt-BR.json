@@ -603,7 +603,7 @@
     "subtitle": "Conecte uma IA externa (ex: Claude Desktop) às suas tarefas via Model Context Protocol.",
     "comingSoon": "A configuração do servidor MCP estará disponível em breve.",
     "connectionTitle": "Conexão",
-    "endpointLabel": "Endpoint do servidor MCP",
+    "endpointLabel": "URL do servidor MCP",
     "snippetTitle": "Configuração do Claude Desktop",
     "snippetHelp": "Adicione ao seu claude_desktop_config.json e reinicie o Claude Desktop.",
     "tokenPlaceholder": "SEU_TOKEN_AQUI",
@@ -633,18 +633,48 @@
     "tokenCreatedToast": "Token gerado.",
     "tokenCopied": "Token copiado.",
     "dismiss": "Ok, copiei",
-    "connectTitle": "Conectar no Claude (conector nativo)",
-    "connectHelp": "Cole a URL abaixo em 'Adicionar conector personalizado'. A autorização abre no navegador — sem precisar colar token.",
-    "connectStep1": "No Claude, abra Configurações → Conectores → Adicionar conector personalizado.",
-    "connectStep2": "Cole a URL do MCP abaixo e confirme.",
-    "connectStep3": "Faça login e autorize o acesso de leitura/escrita às suas tarefas.",
+    "connectTitle": "Conectar sua IA (conector nativo)",
+    "connectHelp": "Cole a URL abaixo no seu app de IA como conector personalizado. A autorização abre a tela do DailyTracker no navegador — sem precisar colar token.",
     "grantsTitle": "Apps autorizados",
     "noGrants": "Nenhum app conectado via OAuth ainda.",
     "authorizedOn": "Autorizado em {{date}}",
     "grantRevokeConfirm": "Revogar o acesso deste app? Ele precisará autorizar novamente.",
     "grantRevoked": "Acesso revogado.",
     "legacyTitle": "Avançado: token manual (mcp-remote)",
-    "legacyHelp": "Alternativa para clientes sem OAuth (ex: Claude Desktop via mcp-remote). Gere um token e cole no header Authorization."
+    "legacyHelp": "Alternativa para clientes sem OAuth (ex: Claude Desktop via mcp-remote). Gere um token e cole no header Authorization.",
+    "providerPickerLabel": "Escolha a sua IA:",
+    "providers": {
+      "claude": {
+        "name": "Claude",
+        "steps": [
+          "No Claude (web ou celular), abra Configurações → Conectores.",
+          "Clique em \"Adicionar conector personalizado\".",
+          "Cole a URL acima e clique em \"Vincular\" (deixe Client ID e Client Secret em branco).",
+          "Faça login na tela do DailyTracker que abrir e autorize o acesso.",
+          "Pronto — as ferramentas do DailyTracker já aparecem no Claude."
+        ]
+      },
+      "openai": {
+        "name": "ChatGPT",
+        "steps": [
+          "No ChatGPT, abra Configurações → Conectores.",
+          "Se necessário, ative o Modo desenvolvedor em Configurações → Conectores → Avançado.",
+          "Clique em \"Adicionar\"/\"Criar\" e cole a URL acima como servidor MCP remoto.",
+          "Faça login na tela do DailyTracker que abrir para autorizar o acesso."
+        ],
+        "note": "Conectores MCP personalizados no ChatGPT dependem do seu plano (Plus/Pro/Business/Enterprise) e podem exigir o Modo desenvolvedor."
+      },
+      "gemini": {
+        "name": "Gemini",
+        "steps": [
+          "Instale o Gemini CLI e abra o arquivo ~/.gemini/settings.json.",
+          "Adicione a URL acima em \"mcpServers\" (campo httpUrl).",
+          "Para autenticar, gere um token na seção \"Avançado\" abaixo e use-o no header Authorization.",
+          "Reinicie o Gemini CLI para carregar as ferramentas do DailyTracker."
+        ],
+        "note": "O app do Gemini ainda não tem tela de conector OAuth como a do Claude; use o Gemini CLI ou a API com um token manual."
+      }
+    }
   },
   "oauthConsent": {
     "title": "Autorizar acesso",

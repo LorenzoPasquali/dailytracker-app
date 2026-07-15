@@ -603,7 +603,7 @@
     "subtitle": "Connect an external AI (e.g. Claude Desktop) to your tasks via the Model Context Protocol.",
     "comingSoon": "MCP server setup is coming soon.",
     "connectionTitle": "Connection",
-    "endpointLabel": "MCP server endpoint",
+    "endpointLabel": "MCP server URL",
     "snippetTitle": "Claude Desktop configuration",
     "snippetHelp": "Add this to your claude_desktop_config.json and restart Claude Desktop.",
     "tokenPlaceholder": "YOUR_TOKEN_HERE",
@@ -633,18 +633,48 @@
     "tokenCreatedToast": "Token generated.",
     "tokenCopied": "Token copied.",
     "dismiss": "Done, copied",
-    "connectTitle": "Connect in Claude (native connector)",
-    "connectHelp": "Paste the URL below into 'Add custom connector'. Authorization opens in your browser — no token to paste.",
-    "connectStep1": "In Claude, open Settings → Connectors → Add custom connector.",
-    "connectStep2": "Paste the MCP URL below and confirm.",
-    "connectStep3": "Log in and authorize read/write access to your tasks.",
+    "connectTitle": "Connect your AI (native connector)",
+    "connectHelp": "Paste the URL below into your AI app as a custom connector. Authorization opens the DailyTracker screen in your browser — no token to paste.",
     "grantsTitle": "Authorized apps",
     "noGrants": "No app connected via OAuth yet.",
     "authorizedOn": "Authorized on {{date}}",
     "grantRevokeConfirm": "Revoke this app's access? It will need to authorize again.",
     "grantRevoked": "Access revoked.",
     "legacyTitle": "Advanced: manual token (mcp-remote)",
-    "legacyHelp": "Alternative for clients without OAuth (e.g. Claude Desktop via mcp-remote). Generate a token and paste it in the Authorization header."
+    "legacyHelp": "Alternative for clients without OAuth (e.g. Claude Desktop via mcp-remote). Generate a token and paste it in the Authorization header.",
+    "providerPickerLabel": "Choose your AI:",
+    "providers": {
+      "claude": {
+        "name": "Claude",
+        "steps": [
+          "In Claude (web or mobile), open Settings → Connectors.",
+          "Click \"Add custom connector\".",
+          "Paste the URL above and click \"Connect\" (leave Client ID and Client Secret blank).",
+          "Log in on the DailyTracker screen that opens and authorize access.",
+          "Done — the DailyTracker tools now show up in Claude."
+        ]
+      },
+      "openai": {
+        "name": "ChatGPT",
+        "steps": [
+          "In ChatGPT, open Settings → Connectors.",
+          "If needed, enable Developer mode under Settings → Connectors → Advanced.",
+          "Click \"Add\"/\"Create\" and paste the URL above as a remote MCP server.",
+          "Log in on the DailyTracker screen that opens to authorize access."
+        ],
+        "note": "Custom MCP connectors in ChatGPT depend on your plan (Plus/Pro/Business/Enterprise) and may require Developer mode."
+      },
+      "gemini": {
+        "name": "Gemini",
+        "steps": [
+          "Install the Gemini CLI and open ~/.gemini/settings.json.",
+          "Add the URL above under \"mcpServers\" (httpUrl field).",
+          "To authenticate, generate a token in the \"Advanced\" section below and use it in the Authorization header.",
+          "Restart the Gemini CLI to load the DailyTracker tools."
+        ],
+        "note": "The Gemini app doesn't have an OAuth connector screen like Claude's yet; use the Gemini CLI or API with a manual token."
+      }
+    }
   },
   "oauthConsent": {
     "title": "Authorize access",
