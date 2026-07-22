@@ -15,10 +15,19 @@ import { useMediaQuery } from '../hooks/useMediaQuery';
 import CssParticles from '../components/CssParticles';
 import LanguageSelector from '../components/LanguageSelector';
 import CookieConsent from '../components/CookieConsent';
-import heroVideo from '../assets/dailytracker1.mp4';
+import demoPt from '../assets/demo-pt.mp4';
+import demoEn from '../assets/demo-en.mp4';
+import demoEs from '../assets/demo-es.mp4';
+
+const DEMO_VIDEOS = {
+  'pt-BR': demoPt,
+  'en-US': demoEn,
+  'es': demoEs,
+};
 import kanbanImg from '../assets/kanban.png';
 import reportsImg from '../assets/reportsIA.png';
 import googleLogo from '../assets/google-icon.svg';
+import dtLogo from '../assets/logo.png';
 
 /* ── FAQ Accordion Item ─────────────────────────────── */
 const FAQItem = ({ question, answer }) => {
@@ -145,22 +154,35 @@ const VideoShowcase = ({ src, label }) => {
     v.playbackRate = 1.3;
   };
 
-  /* IntersectionObserver — trigger reveal + autoplay */
+  /* IntersectionObserver — reveal fade-in as soon as section edges in */
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setRevealed(true);
-          if (!hasPlayed.current) {
-            hasPlayed.current = true;
-            applyVideoSettings();
-            videoRef.current?.play().catch(() => {});
-          }
+          observer.disconnect();
         }
       },
       { threshold: 0.12 }
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  /* IntersectionObserver — start playback only once ≥50% of video block is visible */
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio >= 0.5 && !hasPlayed.current) {
+          hasPlayed.current = true;
+          applyVideoSettings();
+          videoRef.current?.play().catch(() => {});
+          observer.disconnect();
+        }
+      },
+      { threshold: [0, 0.5, 1] }
+    );
+    if (videoRef.current) observer.observe(videoRef.current);
     return () => observer.disconnect();
   }, []);
 
@@ -259,7 +281,8 @@ const VideoShowcase = ({ src, label }) => {
 /* ══  HomePage                                       ══ */
 /* ══════════════════════════════════════════════════════ */
 export default function HomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const heroVideo = DEMO_VIDEOS[i18n.language] || demoPt;
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -344,14 +367,9 @@ export default function HomePage() {
         border: '1px solid var(--border-subtle)', width: 'calc(100% - 2rem)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{
-            width: '32px', height: '32px', borderRadius: '8px',
-            background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 12px var(--accent-subtle)', flexShrink: 0
-          }}>
-            <CalendarCheck size={16} color="#fafafa" />
-          </div>
+          <img src={dtLogo} alt="DailyTracker" width="32" height="32" style={{
+            display: 'block', flexShrink: 0, objectFit: 'contain'
+          }} />
           <Link to="/" style={{
             fontFamily: 'var(--font-display)', fontSize: isMobile ? '1.05rem' : '1.25rem', fontWeight: 800,
             color: 'var(--text-primary)', textDecoration: 'none', letterSpacing: '-0.5px'
@@ -537,7 +555,7 @@ export default function HomePage() {
         {/* ══════════════════════════════════════════════ */}
         {/* ══  1b. VIDEO SHOWCASE — parallax reveal    ══ */}
         {/* ══════════════════════════════════════════════ */}
-        <VideoShowcase src={heroVideo} label={t('home.videoLabel')} />
+        <VideoShowcase key={heroVideo} src={heroVideo} label={t('home.videoLabel')} />
 
         {/* ══════════════════════════════════════════════ */}
         {/* ══  2. FEATURE HIGHLIGHTS                   ══ */}
