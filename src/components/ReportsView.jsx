@@ -12,74 +12,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import Calendar from 'react-bootstrap-icons/dist/icons/calendar';
 import DateFilterModal from './DateFilterModal';
+import KpiCard from './charts/KpiCard';
+import DarkTooltip from './charts/DarkTooltip';
+import EmptyState from './charts/EmptyState';
+import { TICK_STYLE, GRID_COLOR, cardStyle, chartTitleStyle } from './charts/chartTheme';
 
 const PRIORITY_COLORS = { HIGH: '#ef4444', MEDIUM: '#f59e0b', LOW: '#8b949e' };
-const TICK_STYLE = { fill: '#6b7280', fontSize: 11, fontFamily: 'var(--font-body)' };
-const GRID_COLOR = 'rgba(255,255,255,0.05)';
-
-const cardStyle = {
-  background: 'var(--bg-surface)',
-  border: '1px solid var(--border-subtle)',
-  borderRadius: 'var(--radius-lg)',
-  padding: '1.25rem',
-};
-
-const chartTitleStyle = {
-  fontSize: '0.75rem',
-  color: 'var(--text-muted)',
-  marginBottom: '1rem',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  textTransform: 'uppercase',
-  letterSpacing: '0.06em',
-};
-
-function DarkTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{
-      background: 'var(--bg-elevated)',
-      border: '1px solid var(--border-subtle)',
-      borderRadius: 'var(--radius-md)',
-      padding: '0.5rem 0.75rem',
-      fontFamily: 'var(--font-body)',
-      fontSize: '0.82rem',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-    }}>
-      {label && (
-        <p style={{ color: 'var(--text-muted)', marginBottom: '0.35rem', fontSize: '0.75rem' }}>{label}</p>
-      )}
-      {payload.map((entry, i) => (
-        <div key={i} style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', lineHeight: 1.6 }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color || entry.fill, flexShrink: 0 }} />
-          <span style={{ color: 'var(--text-secondary)' }}>{entry.name}:</span>
-          <strong>{entry.value}</strong>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function EmptyState({ label }) {
-  return (
-    <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-      {label}
-    </div>
-  );
-}
-
-function KpiCard({ label, value, color }) {
-  return (
-    <div style={{ ...cardStyle, textAlign: 'center', padding: '1rem' }}>
-      <div style={{ fontSize: '1.75rem', fontWeight: 700, color, fontFamily: 'var(--font-display)', lineHeight: 1 }}>
-        {value}
-      </div>
-      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        {label}
-      </div>
-    </div>
-  );
-}
 
 const PRESET_KEYS = ['7d', '30d', 'all'];
 

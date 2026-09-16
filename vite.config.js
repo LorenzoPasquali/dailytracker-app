@@ -33,6 +33,7 @@ export default defineConfig({
           ) return 'react-vendor';
           // Libs que NAO dependem de react sao seguras em chunks separados.
           if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-vendor')) return 'recharts';
+          if (id.includes('react-simple-maps') || id.includes('world-atlas') || id.includes('i18n-iso-countries') || id.includes('topojson')) return 'worldmap';
           if (id.includes('date-fns')) return 'datefns';
           if (id.includes('@dnd-kit') || id.includes('@tanstack/react-virtual')) return 'dndkit';
           if (id.includes('flag-icons')) return 'flag-icons';
