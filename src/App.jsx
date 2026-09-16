@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { Spinner } from 'react-bootstrap';
 import { useSessionRefresh } from './hooks/useSessionRefresh';
+import { usePageviewTracking } from './hooks/usePageviewTracking';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -12,6 +13,8 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const InviteAcceptPage = lazy(() => import('./pages/InviteAcceptPage'));
 const LegalPage = lazy(() => import('./pages/LegalPage'));
 const OAuthConsent = lazy(() => import('./pages/OAuthConsent'));
+// Hidden admin dashboard: no link anywhere, own password gate (see pages/analytics).
+const AnalyticsPage = lazy(() => import('./pages/analytics/AnalyticsPage'));
 
 const LoadingFallback = () => (
   <div style={{
@@ -25,6 +28,11 @@ const LoadingFallback = () => (
     <Spinner animation="border" variant="success" />
   </div>
 );
+
+function PageviewTracker() {
+  usePageviewTracking();
+  return null;
+}
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = !!localStorage.getItem('authToken');
@@ -65,6 +73,7 @@ function App() {
           },
         }}
       />
+      <PageviewTracker />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -85,6 +94,7 @@ function App() {
           
           <Route path="/invite/:token" element={<InviteAcceptPage />} />
           <Route path="/oauth/consent" element={<OAuthConsent />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
