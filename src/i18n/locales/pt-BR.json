@@ -658,5 +658,14 @@
     "invalidRequest": "Pedido de autorização inválido ou incompleto.",
     "errorTitle": "Não foi possível autorizar",
     "backToApp": "Voltar ao app"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "O endereço que você tentou acessar não existe ou foi movido. Confira o link ou volte para um lugar conhecido.",
+    "pathLabel": "Endereço acessado",
+    "goHome": "Voltar ao início",
+    "goApp": "Voltar ao app",
+    "signIn": "Entrar",
+    "documentTitle": "Página não encontrada · Daily Tracker"
   }
 }

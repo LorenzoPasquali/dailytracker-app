@@ -658,5 +658,14 @@
     "invalidRequest": "Invalid or incomplete authorization request.",
     "errorTitle": "Could not authorize",
     "backToApp": "Back to app"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address you tried to open doesn't exist or has moved. Check the link or head back somewhere familiar.",
+    "pathLabel": "Requested address",
+    "goHome": "Back to home",
+    "goApp": "Back to app",
+    "signIn": "Sign in",
+    "documentTitle": "Page not found · Daily Tracker"
   }
 }
