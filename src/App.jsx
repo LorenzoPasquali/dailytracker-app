@@ -15,6 +15,7 @@ const LegalPage = lazy(() => import('./pages/LegalPage'));
 const OAuthConsent = lazy(() => import('./pages/OAuthConsent'));
 // Hidden admin dashboard: no link anywhere, own password gate (see pages/analytics).
 const AnalyticsPage = lazy(() => import('./pages/analytics/AnalyticsPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const LoadingFallback = () => (
   <div style={{
@@ -95,7 +96,7 @@ function App() {
           <Route path="/invite/:token" element={<InviteAcceptPage />} />
           <Route path="/oauth/consent" element={<OAuthConsent />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
