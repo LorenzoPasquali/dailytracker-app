@@ -842,6 +842,16 @@ export default function HomePage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', margin: 0 }}>
             {t('home.footer', 'Todos os direitos reservados.')}
           </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', margin: 0 }}>
+            {t('home.builtBy', 'Desenvolvido por')}{' '}
+            <a href="https://lorenzopasquali.dev" target="_blank" rel="author noopener" style={{
+              color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500,
+              transition: 'color 0.2s ease',
+            }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}>
+              Lorenzo Pasquali
+            </a>
+          </p>
         </div>
       </footer>
 
