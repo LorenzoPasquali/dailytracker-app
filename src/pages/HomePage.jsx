@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import KanbanFill from 'react-bootstrap-icons/dist/icons/kanban-fill';
 import CalendarCheck from 'react-bootstrap-icons/dist/icons/calendar-check';
@@ -19,15 +19,19 @@ import demoPt from '../assets/demo-pt.mp4';
 import demoEn from '../assets/demo-en.mp4';
 import demoEs from '../assets/demo-es.mp4';
 
+/* pt-BR is the motion design cut: plays from 0:00 at 1×, no letterbox.
+   en-US / es are still the original screen recordings (legacy), which skip
+   their first second, play at 1.3× and crop their baked-in letterbox bars. */
 const DEMO_VIDEOS = {
-  'pt-BR': demoPt,
-  'en-US': demoEn,
-  'es': demoEs,
+  'pt-BR': { src: demoPt, legacy: false },
+  'en-US': { src: demoEn, legacy: true },
+  'es': { src: demoEs, legacy: true },
 };
 import kanbanImg from '../assets/kanban.png';
 import reportsImg from '../assets/reportsIA.png';
 import googleLogo from '../assets/google-icon.svg';
 import dtLogo from '../assets/logo.png';
+import demoPoster from '../assets/demo-poster.jpg';
 
 /* ── FAQ Accordion Item ─────────────────────────────── */
 const FAQItem = ({ question, answer }) => {
@@ -138,142 +142,60 @@ const StepCard = ({ number, icon, title, description }) => (
   </div>
 );
 
-/* ── Video Showcase (parallax reveal) ───────────────── */
-const VideoShowcase = ({ src, label }) => {
-  const sectionRef   = useRef(null);
-  const videoRef     = useRef(null);
-  const parallaxRef  = useRef(null);
-  const rafRef       = useRef(null);
-  const hasPlayed    = useRef(false);
-  const [revealed, setRevealed] = useState(false);
+/* ── Hero video (plays in the first viewport) ───────── */
+const HeroVideo = ({ src, legacy, poster, label }) => {
+  const videoRef = useRef(null);
+  const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
-  const applyVideoSettings = () => {
+  const applyVideoSettings = useCallback(() => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !legacy) return;
     v.currentTime = 1;
     v.playbackRate = 1.3;
-  };
+  }, [legacy]);
 
-  /* IntersectionObserver — reveal fade-in as soon as section edges in */
+  /* Start muted playback right away, unless the visitor prefers reduced motion */
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setRevealed(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  /* IntersectionObserver — start playback only once ≥50% of video block is visible */
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.intersectionRatio >= 0.5 && !hasPlayed.current) {
-          hasPlayed.current = true;
-          applyVideoSettings();
-          videoRef.current?.play().catch(() => {});
-          observer.disconnect();
-        }
-      },
-      { threshold: [0, 0.5, 1] }
-    );
-    if (videoRef.current) observer.observe(videoRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  /* Scroll-driven parallax */
-  useEffect(() => {
-    const onScroll = () => {
-      if (rafRef.current) return;
-      rafRef.current = requestAnimationFrame(() => {
-        rafRef.current = null;
-        if (!sectionRef.current || !parallaxRef.current) return;
-        const rect = sectionRef.current.getBoundingClientRect();
-        const vh   = window.innerHeight;
-        const progress = (vh - rect.top) / (vh + rect.height);
-        const clamped  = Math.max(0, Math.min(1, progress));
-        /* Move inner video from +36px to -36px as section scrolls through viewport */
-        const y = 36 - clamped * 72;
-        parallaxRef.current.style.transform = `translateY(${y}px)`;
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  const isMobileVid = useMediaQuery('(max-width: 768px)');
+    const v = videoRef.current;
+    if (!v || reduceMotion) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, [reduceMotion]);
 
   return (
-    <section ref={sectionRef} style={{
-      padding: isMobileVid ? '0 1rem 4rem' : '0 2rem 8rem',
-      maxWidth: '1320px',
-      margin: '0 auto',
-    }}>
-      {/* Eye-brow label */}
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <span style={{
-          display: 'inline-block',
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          color: 'var(--accent)',
-          padding: '0.3rem 0.9rem',
-          border: '1px solid var(--accent-border)',
-          borderRadius: '100px',
-          backgroundColor: 'var(--accent-subtle)',
-        }}>
-          {label}
-        </span>
+    <div className="glow-wrapper" style={{ borderRadius: '20px' }}>
+      <div style={{
+        borderRadius: '20px',
+        overflow: 'hidden',
+        boxShadow: '0 40px 80px -16px rgba(0,0,0,0.65)',
+        lineHeight: 0,
+        backgroundColor: 'var(--bg-base)',
+      }}>
+        <video
+          ref={videoRef}
+          src={src}
+          poster={poster}
+          aria-label={label}
+          muted
+          loop
+          playsInline
+          autoPlay={!reduceMotion}
+          controls={reduceMotion}
+          preload="auto"
+          onLoadedMetadata={applyVideoSettings}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            aspectRatio: '16 / 9',
+            /* Legacy recordings: clip baked-in letterbox bars (58px top, 80px bottom at 1920x1080)
+               Margins as % of width: top=58/1920, bottom=80/1920 */
+            marginTop: legacy ? '-3.021%' : 0,
+            marginBottom: legacy ? '-4.167%' : 0,
+          }}
+        />
       </div>
-
-      {/* Parallax outer — JS sets translateY directly, no CSS transition here */}
-      <div ref={parallaxRef} style={{ willChange: 'transform' }}>
-        {/* Reveal inner — CSS opacity + scale transition on scroll-into-view */}
-        <div style={{
-          opacity:    revealed ? 1    : 0,
-          transform:  revealed ? 'scale(1) translateY(0)' : 'scale(0.91) translateY(32px)',
-          transition: 'opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1.1s cubic-bezier(0.16, 1, 0.3, 1)',
-        }}>
-          <div className="glow-wrapper" style={{ borderRadius: '20px' }}>
-            <div style={{
-              borderRadius: '20px',
-              overflow: 'hidden',
-              boxShadow: '0 40px 80px -16px rgba(0,0,0,0.65)',
-              lineHeight: 0,
-            }}>
-              <video
-                ref={videoRef}
-                src={src}
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                onLoadedMetadata={applyVideoSettings}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  height: 'auto',
-                  /* Clip baked-in letterbox bars (58px top, 80px bottom at 1920x1080)
-                     Margins as % of width: top=58/1920, bottom=80/1920 */
-                  marginTop: '-3.021%',
-                  marginBottom: '-4.167%',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
   );
 };
 
@@ -282,9 +204,10 @@ const VideoShowcase = ({ src, label }) => {
 /* ══════════════════════════════════════════════════════ */
 export default function HomePage() {
   const { t, i18n } = useTranslation();
-  const heroVideo = DEMO_VIDEOS[i18n.language] || demoPt;
+  const heroVideo = DEMO_VIDEOS[i18n.language] || DEMO_VIDEOS['pt-BR'];
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const isStacked = useMediaQuery('(max-width: 1024px)');
 
   /* Force dark theme on mount, restore on unmount */
   useEffect(() => {
@@ -412,150 +335,172 @@ export default function HomePage() {
       <main style={{ position: 'relative', zIndex: 1, width: '100%' }}>
 
         {/* ══════════════════════════════════════════════ */}
-        {/* ══  1. HERO — Full-viewport centered text   ══ */}
+        {/* ══  1. HERO — text left, product video right ══ */}
         {/* ══════════════════════════════════════════════ */}
         <section className="animate-slide-up" style={{
           width: '100%',
-          minHeight: isMobile ? '70dvh' : '82dvh',
-          display: 'flex',
-          flexDirection: 'column',
+          maxWidth: '1400px',
+          margin: '0 auto',
+          minHeight: isStacked ? 'auto' : '82dvh',
+          display: 'grid',
+          gridTemplateColumns: isStacked ? 'minmax(0, 1fr)' : 'minmax(0, 0.9fr) minmax(0, 1.5fr)',
           alignItems: 'center',
-          justifyContent: 'center',
-          padding: isMobile ? '4rem 1.25rem 3rem' : '5rem 2rem',
-          textAlign: 'center',
+          gap: isStacked ? '2.5rem' : '3.5rem',
+          padding: isMobile ? '3rem 1.25rem 3.5rem' : isStacked ? '4rem 2rem 5rem' : '4rem 2rem 6rem',
+          textAlign: isStacked ? 'center' : 'left',
           position: 'relative',
           boxSizing: 'border-box',
         }}>
 
-          <h1 className="text-glow" style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(2rem, 3.8vw, 3.2rem)',
-            fontWeight: 800,
-            color: 'var(--text-primary)',
-            lineHeight: 1.08,
-            letterSpacing: '-0.03em',
-            marginBottom: '1.5rem',
-            maxWidth: '760px',
-            width: '100%',
-            margin: '0 auto 1.5rem',
-          }}>
-            {t('home.heroTitle', 'Mude a forma como')} <br />
+          <div style={{ minWidth: 0 }}>
             <span style={{
-              background: 'linear-gradient(to right, var(--accent), #34d399)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              color: 'transparent',
+              display: 'inline-block',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'var(--accent)',
+              padding: '0.3rem 0.9rem',
+              border: '1px solid var(--accent-border)',
+              borderRadius: '100px',
+              backgroundColor: 'var(--accent-subtle)',
+              marginBottom: '1.5rem',
             }}>
-              {t('home.heroAccent', 'você produz.')}
+              {t('home.betaBadge')}
             </span>
-          </h1>
 
-          <p style={{
-            fontSize: isMobile ? '1rem' : '1.25rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.65,
-            maxWidth: '580px',
-            width: '100%',
-            margin: '0 auto 2.5rem',
-          }}>
-            {t('home.heroParagraph')}
-          </p>
-
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link to="/register" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-              color: '#fafafa', backgroundColor: 'var(--accent)', textDecoration: 'none',
-              padding: '1rem 2.25rem', fontSize: '1.05rem', fontWeight: 600,
-              borderRadius: '12px', boxShadow: '0 8px 28px -6px rgba(16,185,129,0.4)',
-              transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s',
-            }} onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 12px 32px -6px rgba(16,185,129,0.5)';
-            }} onMouseLeave={e => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 28px -6px rgba(16,185,129,0.4)';
-            }} onMouseDown={e => e.currentTarget.style.transform = 'translateY(1px) scale(0.98)'}>
-              {t('home.ctaStart', 'Começar a usar')}
-              <ArrowRight size={18} />
-            </Link>
-            <a href="#how-it-works" style={{
-              display: 'inline-flex', alignItems: 'center', color: 'var(--text-secondary)',
-              textDecoration: 'none', padding: '1rem 2.25rem', fontSize: '1.05rem', fontWeight: 500,
-              backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
-              borderRadius: '12px', transition: 'background-color 0.2s, color 0.2s, transform 0.2s',
-            }} onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }} onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-              e.currentTarget.style.transform = 'translateY(0)';
+            <h1 className="text-glow" style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: isStacked ? 'clamp(2rem, 6vw, 3rem)' : 'clamp(2.2rem, 3.4vw, 3.3rem)',
+              fontWeight: 800,
+              color: 'var(--text-primary)',
+              lineHeight: 1.08,
+              letterSpacing: '-0.03em',
+              margin: '0 0 1.5rem',
             }}>
-              {t('home.howItWorksLink')}
-            </a>
-          </div>
+              {t('home.heroTitle', 'Mude a forma como')} <br />
+              <span style={{
+                background: 'linear-gradient(to right, var(--accent), #34d399)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                color: 'transparent',
+              }}>
+                {t('home.heroAccent', 'você produz.')}
+              </span>
+            </h1>
 
-          <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'center' }}>
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              aria-label={t('login.googleButton')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.6rem',
-                padding: '0.75rem 1.5rem',
-                fontSize: '0.95rem',
-                fontWeight: 500,
-                color: 'var(--text-secondary)',
-                backgroundColor: 'transparent',
-                border: '1px solid var(--border-default)',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s, color 0.2s, transform 0.2s, border-color 0.2s',
-              }}
-              onMouseEnter={e => {
+            <p style={{
+              fontSize: isMobile ? '1rem' : '1.15rem',
+              color: 'var(--text-muted)',
+              lineHeight: 1.65,
+              maxWidth: '520px',
+              margin: isStacked ? '0 auto 2.25rem' : '0 0 2.25rem',
+            }}>
+              {t('home.heroParagraph')}
+            </p>
+
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: isStacked ? 'center' : 'flex-start' }}>
+              <Link to="/register" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                color: '#fafafa', backgroundColor: 'var(--accent)', textDecoration: 'none',
+                padding: '1rem 2.25rem', fontSize: '1.05rem', fontWeight: 600,
+                borderRadius: '12px', boxShadow: '0 8px 28px -6px rgba(16,185,129,0.4)',
+                transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s',
+              }} onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 12px 32px -6px rgba(16,185,129,0.5)';
+              }} onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 28px -6px rgba(16,185,129,0.4)';
+              }} onMouseDown={e => e.currentTarget.style.transform = 'translateY(1px) scale(0.98)'}>
+                {t('home.ctaStart', 'Começar a usar')}
+                <ArrowRight size={18} />
+              </Link>
+              <a href="#how-it-works" style={{
+                display: 'inline-flex', alignItems: 'center', color: 'var(--text-secondary)',
+                textDecoration: 'none', padding: '1rem 2.25rem', fontSize: '1.05rem', fontWeight: 500,
+                backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+                borderRadius: '12px', transition: 'background-color 0.2s, color 0.2s, transform 0.2s',
+              }} onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
                 e.currentTarget.style.color = 'var(--text-primary)';
-                e.currentTarget.style.borderColor = 'var(--border-strong)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }} onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
                 e.currentTarget.style.color = 'var(--text-secondary)';
-                e.currentTarget.style.borderColor = 'var(--border-default)';
                 e.currentTarget.style.transform = 'translateY(0)';
-              }}
-              onMouseDown={e => (e.currentTarget.style.transform = 'translateY(1px) scale(0.99)')}
-            >
-              <img src={googleLogo} alt="" aria-hidden="true" width="18" height="18" loading="lazy" />
-              {t('login.googleButton')}
-            </button>
+              }}>
+                {t('home.howItWorksLink')}
+              </a>
+            </div>
+
+            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: isStacked ? 'center' : 'flex-start' }}>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                aria-label={t('login.googleButton')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.6rem',
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 500,
+                  color: 'var(--text-secondary)',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s, color 0.2s, transform 0.2s, border-color 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
+                  e.currentTarget.style.borderColor = 'var(--border-strong)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                  e.currentTarget.style.borderColor = 'var(--border-default)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+                onMouseDown={e => (e.currentTarget.style.transform = 'translateY(1px) scale(0.99)')}
+              >
+                <img src={googleLogo} alt="" aria-hidden="true" width="18" height="18" loading="lazy" />
+                {t('login.googleButton')}
+              </button>
+            </div>
+
           </div>
+
+          <HeroVideo
+            key={heroVideo.src}
+            src={heroVideo.src}
+            legacy={heroVideo.legacy}
+            poster={demoPoster}
+            label={t('home.videoLabel')}
+          />
 
           {/* Scroll indicator */}
-          <div style={{
-            position: 'absolute',
-            bottom: '2.5rem',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '0.35rem',
-            color: 'var(--text-muted)',
-          }}>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.6 }}>scroll</span>
-            <ChevronDown size={16} className="scroll-indicator-bounce" />
-          </div>
+          {!isStacked && (
+            <div style={{
+              position: 'absolute',
+              bottom: '2.5rem',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.35rem',
+              color: 'var(--text-muted)',
+            }}>
+              <span style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.6 }}>scroll</span>
+              <ChevronDown size={16} className="scroll-indicator-bounce" />
+            </div>
+          )}
         </section>
-
-        {/* ══════════════════════════════════════════════ */}
-        {/* ══  1b. VIDEO SHOWCASE — parallax reveal    ══ */}
-        {/* ══════════════════════════════════════════════ */}
-        <VideoShowcase key={heroVideo} src={heroVideo} label={t('home.videoLabel')} />
 
         {/* ══════════════════════════════════════════════ */}
         {/* ══  2. FEATURE HIGHLIGHTS                   ══ */}
